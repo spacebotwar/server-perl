@@ -47,7 +47,7 @@
 
                 ws.onopen = function() {
                     self.displayMessage('Connected. Loading...');
-
+                    ws.send($.toJSON({"type" : "room", "content" : { "number" : 5 } } ))
                     self.init();
 
                 };
@@ -71,7 +71,7 @@
                         delete self.players[content.id];
                     }
                     else if (type == 'rooms') {
-                        $('#top').html("room content = ["+content[$('#room').val()]+"]");
+                        $('#top').html("room content = ["+content[5]+"]");
                     }
                     else if (type == 'room_data') {
                         var c_arena = content.arena;
@@ -129,10 +129,6 @@
                     self.displayMessage('Disconnected. <a href="/">Reconnect</a>');
                 };
 
-                $('#room').keyup(function() {
-        //            $('#debug').html('room change');
-                    ws.send($.toJSON({"type" : "room", "content" : { "number" : $('#room').val() } } ));
-                });
 
             });
         }

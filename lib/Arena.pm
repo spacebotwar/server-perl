@@ -28,14 +28,14 @@ has 'max_ships' => (
 has 'width' => (
     is      => 'rw',
     isa     => 'Int',
-    default => 1000,
+    default => 500,
 );
 # The height of the arena (in pixels)
 #
 has 'height' => (
     is      => 'rw',
     isa     => 'Int',
-    default => 1000,
+    default => 500,
 );
 # The 'time' (in seconds) from when the Tournament was started
 # 
@@ -67,8 +67,8 @@ sub BUILD {
 
     my @ships;
     for (my $i=0; $i < $self->max_ships; $i++) {
-        my $start_x = int(rand(400) + 200);
-        my $start_y = int(rand(400) + 200);
+        my $start_x = int(rand($self->width * 0.4) + $self->width * 0.2);
+        my $start_y = int(rand($self->height * 0.4) + $self->width * 0.2);
         my $speed   = 30;
         my $direction   = rand(PI * 2);
 
