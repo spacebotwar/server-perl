@@ -1,0 +1,20 @@
+% layout 'arena';
+% title 'Space Bot War';
+% content_for banner => 'Space Bot War';
+
+        <div class="page-contents">
+          <canvas id="canvas" width="500" height="500"></canvas>
+          <div class="container">
+            <table border="0" height="100%" style="margin:auto">
+              <tr>
+                <dt><input type="text" id="room" value="0"></td>
+                <td style="vertical-align:top"><div id="top"></div></td>
+                <td ><div id="rooms"></div></td>
+                <td style="vertical-align:middle">
+                  <div id="content"></div>
+                </td>
+                <td><div id="debug"></div></td>
+              </tr>
+            </table>
+          </div>
+        </div>

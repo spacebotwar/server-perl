@@ -1,0 +1,7 @@
+% layout 'standard';
+% title 'FOO This is the title';
+% content_for banner => 'FOO This is the title';
+
+<div class="page-contents">
+  FOO hello world
+</div>
