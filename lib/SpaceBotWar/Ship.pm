@@ -206,6 +206,14 @@ sub speed {
     my $speed = sqrt($forward * $forward + $self->thrust_sideway * $self->thrust_sideway);
 }
 
+# Return the value in so many significant points
+sub decpoint {
+    my ($value, $points) = @_;
+
+    return int($value * 10) / 10;
+}
+
+
 # Create a hash representation of the object
 #
 sub to_hash {
@@ -214,13 +222,13 @@ sub to_hash {
     return {
         id              => $self->id,
         owner_id        => $self->owner_id,
-        x               => $self->x,
-        y               => $self->y,
-        direction       => $self->direction,
-        speed           => $self->speed,
-        rotation        => $self->rotation,
-        orientation     => $self->orientation,
-        max_rotation    => $self->max_rotation,
+        x               => decpoint($self->x),
+        y               => decpoint($self->y),
+        direction       => decpoint($self->direction),
+        speed           => decpoint($self->speed),
+        rotation        => decpoint($self->rotation),
+        orientation     => decpoint($self->orientation),
+        max_rotation    => decpoint($self->max_rotation),
         name            => $self->name,
         type            => $self->type,
         status          => $self->status,
