@@ -1,4 +1,4 @@
-package Ship;
+package SpaceBotWar::Ship;
 
 use Moose;
 use namespace::autoclean;

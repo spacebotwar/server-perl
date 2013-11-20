@@ -1,18 +1,18 @@
-package WS::Root;
+package SpaceBotWar::WS::Root;
 
 use Moose;
 use Mojo::IOLoop;
 use Data::Dumper;
-use Room;
-use Arena;
+use SpaceBotWar::Room;
+use SpaceBotWar::Arena;
 
 use namespace::autoclean;
 
-extends "WS";
+extends "SpaceBotWar::WS";
 
 has 'rooms' => (
     is          => 'rw',
-    isa         => 'HashRef[Room]',
+    isa         => 'HashRef[SpaceBotWar::Room]',
     default     => sub { {} },
 );
 
@@ -60,11 +60,11 @@ sub room {
     if (not defined $room) {
         # Create a 'room' containing an Arena 
         #
-        my $arena = Arena->new({
+        my $arena = SpaceBotWar::Arena->new({
             duration    => 500,
             max_ships   => $room_number,
         });
-        $room = Room->new({
+        $room = SpaceBotWar::Room->new({
             id          => $room_number,
             arena       => $arena,
         });

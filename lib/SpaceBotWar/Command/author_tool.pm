@@ -1,4 +1,4 @@
-package Galileo::Command::author_tool;
+package SpaceBotWar::Command::author_tool;
 use Mojo::Base 'Mojolicious::Command';
 
 use DBIx::Class::DeploymentHandler;
@@ -19,7 +19,7 @@ sub generate_install_scripts {
   my $dh = DBIx::Class::DeploymentHandler->new({
     schema => $schema,
     databases => [],
-    script_directory => 'lib/Galileo/files/sql',
+    script_directory => 'sql',
   });
   my $version = $schema->schema_version;
 

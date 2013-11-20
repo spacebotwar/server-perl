@@ -1,4 +1,4 @@
-package Galileo;
+package SpaceBotWar;
 use Mojo::Base 'Mojolicious';
 
 our $VERSION = '0.030';
@@ -28,9 +28,9 @@ has home_path => sub {
 
 has config_file => sub {
     my $self = shift;
-    return $ENV{GALILEO_CONFIG} if $ENV{GALILEO_CONFIG}; 
+    return $ENV{SBW_CONFIG} if $ENV{SBW_CONFIG}; 
 
-    return rel2abs( 'galileo.conf', $self->home_path );
+    return rel2abs( 'spacebotwar.conf', $self->home_path );
 };
 
 sub load_config {
@@ -39,8 +39,8 @@ sub load_config {
     $app->plugin( Config => { 
         file => $app->config_file,
         default => {
-            db_schema       => 'Galileo::DB::Schema',
-            db_dsn          => 'dbi:SQLite:dbname=' . $app->home->rel_file( 'galileo.db' ),
+            db_schema       => 'SpaceBotWar:DB::Schema',
+            db_dsn          => 'dbi:SQLite:dbname=' . $app->home->rel_file( 'spacebotwar.db' ),
             db_username     => undef,
             db_password     => undef,
             db_options      => { sqlite_unicode => 1 },
@@ -80,8 +80,8 @@ sub startup {
         $app->renderer->paths->[0] = catdir($base, 'templates');
     }
 
-    # use commands from Galileo::Command namespace
-    push @{$app->commands->namespaces}, 'Galileo::Command';
+    # use commands from SpaceBotWar::Command namespace
+    push @{$app->commands->namespaces}, 'SpaceBotWar::Command';
 
     ## Helpers ##
 
@@ -120,7 +120,7 @@ sub startup {
     });
 
     $app->plugin( 'Memorize' );
-    $app->plugin( 'Galileo::Plugin::Modal' );
+    $app->plugin( 'SpaceBotWar::Plugin::Modal' );
 
     ## Routing ##
 

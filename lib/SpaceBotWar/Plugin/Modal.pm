@@ -1,4 +1,4 @@
-package Galileo::Plugin::Modal;
+package SpaceBotWar::Plugin::Modal;
 
 use Mojo::Base 'Mojolicious::Plugin';
 
@@ -11,10 +11,10 @@ sub register {
     my ($self, $id, $body) = @_;
     $body = $body->() if ref $body;
     return $self->render(
-      template => 'galileo_modal',
+      template => 'spacebotwar_modal',
       partial  => 1,
-      'galileo.modal.id'   => $id,
-      'galileo.modal.body' => $body,
+      'spacebotwar.modal.id'   => $id,
+      'spacebotwar.modal.body' => $body,
     );
   });
 }
@@ -23,14 +23,14 @@ sub register {
 
 __DATA__
 
-@@ galileo_modal.html.ep
-<div class="modal hide fade" id="<%= stash 'galileo.modal.id' %>">
+@@ spacebotwar_modal.html.ep
+<div class="modal hide fade" id="<%= stash 'spacebotwar.modal.id' %>">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h3>Confirm Action</h3>
   </div>
   <div class="modal-body">
-    <p><%= stash 'galileo.modal.body' %></p>
+    <p><%= stash 'spacebotwar.modal.body' %></p>
   </div>
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">Close</a>

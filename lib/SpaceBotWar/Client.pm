@@ -1,4 +1,4 @@
-package Client;
+package SpaceBotWar::Client;
 
 use Moose;
 use namespace::autoclean;

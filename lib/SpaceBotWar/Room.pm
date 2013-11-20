@@ -1,4 +1,4 @@
-package Room;
+package SpaceBotWar::Room;
 
 use Moose;
 use namespace::autoclean;
@@ -12,13 +12,13 @@ has 'id' => (
 # Rooms have subscribers
 has 'subscribers' => (
     is          => 'rw',
-    isa         => 'Maybe[HashRef[Client]]',
+    isa         => 'Maybe[HashRef[SpaceBotWar::Client]]',
     default     => sub { {} },
 );
 # Room has an Arena 
 has 'arena' => (
     is          => 'rw',
-    isa         => 'Arena',
+    isa         => 'SpaceBotWar::Arena',
     required    => 1,
 );
 

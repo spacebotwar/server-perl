@@ -1,4 +1,4 @@
-package Galileo::Admin;
+package SpaceBotWar::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub users { shift->render }

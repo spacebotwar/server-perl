@@ -1,9 +1,9 @@
-package Arena;
+package SpaceBotWar::Arena;
 
 # An arena contaning many ships
 
 use Moose;
-use Ship;
+use SpaceBotWar::Ship;
 use namespace::autoclean;
 use Data::Dumper;
 
@@ -13,7 +13,7 @@ use constant PI => 3.14159;
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[Ship]',
+    isa     => 'ArrayRef[SpaceBotWar::Ship]',
     default => sub { [] },
 );
 # Number of ships in the Arena (temp)
@@ -72,7 +72,7 @@ sub BUILD {
         my $speed   = 30;
         my $direction   = rand(PI * 2);
 
-        my $ship = Ship->new({
+        my $ship = SpaceBotWar::Ship->new({
             id              => $i,
             owner_id        => $i % 2,
             type            => 'ship',

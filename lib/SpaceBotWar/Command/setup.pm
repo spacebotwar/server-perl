@@ -1,4 +1,4 @@
-package Galileo::Command::setup;
+package SpaceBotWar::Command::setup;
 use Mojo::Base 'Mojolicious::Command';
 
 use Mojolicious::Command::daemon;
@@ -7,9 +7,9 @@ use Mojolicious::Routes;
 use Mojo::JSON 'j';
 use Mojo::Util 'spurt';
 
-use Galileo::DB::Deploy;
+use SpaceBotWar::DB::Deploy;
 
-has description => "Configure your Galileo CMS via a web interface\n";
+has description => "Configure your SpaceBotWar CMS via a web interface\n";
 
 sub run {
   my ($self, @args) = @_;
@@ -23,7 +23,7 @@ sub run {
 
   $app->helper( dh => sub {
     my $self = shift;
-    state $dh = Galileo::DB::Deploy->new( schema => $self->app->schema );
+    state $dh = SpaceBotWar::DB::Deploy->new( schema => $self->app->schema );
     $dh;
   });
 
@@ -158,22 +158,22 @@ __DATA__
 
 @@ galileo_setup.html.ep
 
-% title 'Galileo Setup - Home';
+% title 'SpaceBotWar Setup - Home';
 % layout 'basic';
 
-<p>Welcome to Galileo! This utility helps you setup your Galileo CMS.</p>
+<p>Welcome to SpaceBotWar! This utility helps you setup your SpaceBotWar.</p>
 
 <ul>
   %= tag li => begin 
-    %= link_to 'Configure your Galileo CMS' => 'configure'
+    %= link_to 'Configure your SpaceBotWar' => 'configure'
     <p>Configuration is not necessary, defaults can be used. 
-    Configuring Galileo CMS should be done before installing the database.</p>
+    Configuring SpaceBotWar should be done before installing the database.</p>
   % end
 
   %= tag li => begin
     %= link_to 'Install or upgrade your database' => 'database'
     <p>If this is a new installation you <b>must</b> to run the database setup utility.
-    If you have not configured Galileo (see above), you will use the defaults, including using an SQLite database for the backend.</p>
+    If you have not configured SpaceBotWar (see above), you will use the defaults, including using an SQLite database for the backend.</p>
   % end
 
   %= tag li => begin
@@ -186,7 +186,7 @@ __DATA__
 @@ galileo_config.html.ep
 
 % use Mojo::JSON 'j';
-% title 'Galileo Setup - Configure';
+% title 'SpaceBotWar Setup - Configure';
 % layout 'basic';
 
 %= form_for 'store_config' => method => 'POST', class => 'form-horizontal' => begin
@@ -240,7 +240,7 @@ __DATA__
 
 @@ galileo_database_install.html.ep
 
-% title 'Galileo Setup - Database';
+% title 'SpaceBotWar Setup - Database';
 % layout 'basic';
 
 %= form_for 'database_install' => method => 'POST', class => 'form-horizontal' => begin
@@ -265,7 +265,7 @@ __DATA__
 
 @@ galileo_finish.html.ep
 
-% title 'Galileo Setup - Finished';
+% title 'SpaceBotWar Setup - Finished';
 % layout 'basic';
 
 % if ( my $message = stash 'galileo.message' ) {

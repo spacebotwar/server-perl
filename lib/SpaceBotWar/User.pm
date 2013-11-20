@@ -1,4 +1,4 @@
-package Galileo::User;
+package SpaceBotWar::User;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub login {

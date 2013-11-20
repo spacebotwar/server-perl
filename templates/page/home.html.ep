@@ -1,4 +1,6 @@
-% my $url = $self->req->url->to_abs->scheme($self->req->is_secure ? 'wss' : 'ws')->path('/');
+% my $ws_url = $self->req->url->to_abs->scheme($self->req->is_secure ? 'wss' : 'ws')->path('/ws');
+% my $url = $self->req->url->to_abs;
+
 <!doctype html><html>
     <head>
         <title>Robot Space War Demo</title>
@@ -25,15 +27,15 @@
         <script>
 
 $(document).ready(function() {
-    $('#arena').room({"url" : "ws://git.icydee.com:3000/ws"});
+    $('#arena').room({"url" : "<%= $ws_url %>"});
     var canvas = document.getElementById("icydee_canvas");
     context = canvas.getContext('2d');
     imageObj = new Image();
     imageObj.onLoad = function() {
     };
-    imageObj.src = 'http://git.icydee.com:3000/sp_ship.png';
+    imageObj.src = '/sp_ship.png';
     bgImage = new Image();
-    bgImage.src = 'http://git.icydee.com:3000/starfield.png';
+    bgImage.src = '/starfield.png';
     bgImage.onLoad = function() {};
 
     arena = new Arena({

@@ -1,10 +1,10 @@
-package Galileo::Page;
+package SpaceBotWar::Page;
 use Mojo::Base 'Mojolicious::Controller';
 
-use Client;
-use WS::Root;
+use SpaceBotWar::Client;
+use SpaceBotWar::WS::Root;
 
-my $ws_root = WS::Root->new({
+my $ws_root = SpaceBotWar::WS::Root->new({
 });
 
 sub ws_home {
@@ -14,7 +14,7 @@ sub ws_home {
 
     my $tx  = $self->tx;
     Mojo::IOLoop->stream($tx->connection)->timeout(0);
-    my $client = Client->new({
+    my $client = SpaceBotWar::Client->new({
         tx      => $tx,
         name    => 'foo',
         id      => "$tx",

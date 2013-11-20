@@ -1,4 +1,4 @@
-package WS;
+package SpaceBotWar::WS;
 
 use Moose;
 use Mojo::JSON;
@@ -12,7 +12,7 @@ has 'log' => (
 
 has 'clients' => (
     is          => 'rw',
-    isa         => 'HashRef[Client]',
+    isa         => 'HashRef[SpaceBotWar::Client]',
     default     => sub { {} },
 );
 
