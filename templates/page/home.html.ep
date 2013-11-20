@@ -3,7 +3,7 @@
 
 <!doctype html><html>
     <head>
-        <title>Robot Space War Demo</title>
+        <title>Space Bot War</title>
         <meta charset="utf-8" />
         <script type="text/javascript" src="/assets/jquery-2.0.3.min.js"></script>
         <script type="text/javascript" src="/jquery.json.min.js"></script>
