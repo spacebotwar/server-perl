@@ -10,6 +10,13 @@ use namespace::autoclean;
 
 extends "SpaceBotWar::WS";
 
+# This class controlls all Games that are currently running
+# A game takes place in a 'room' which contains an 'arena'
+# The Room may have a number of clients that are either registered
+# to 'observe' the game. There must also be two 'opponents' 
+# registered with the room. The Opponents are the clients that 
+# supply the instructions to the server.
+
 has 'rooms' => (
     is          => 'rw',
     isa         => 'HashRef[SpaceBotWar::Room]',
@@ -19,14 +26,14 @@ has 'rooms' => (
 sub BUILD {
     my ($self) = @_;
 
-    # every second, update the room states (compute the future state of the ships)
+    # every half second, update the room states (compute the future state of the ships)
     #
     Mojo::IOLoop->singleton->recurring(0.5 => sub {
         foreach my $room_id (keys %{$self->rooms}) {
-            # Update the state of the room to at least now + 5 seconds
-            #
             my $room = $self->rooms->{$room_id};
             $self->log->debug("ROOM - $room_id [$room]");
+
+            # 5/10ths of a second
             $room->update_state(5);
 
             # Send the room status to each of the subscribed clients
@@ -35,19 +42,50 @@ sub BUILD {
                 type    => 'room_data',
                 content => $room->to_hash,
             });
-            print STDERR "OUTPUT: $json\n";
+            $self->log->debug("OUTPUT : $json");
+
+            # Broadcast the room state to all clients.
             $room->for_all_subscribers( sub {
                 my $client = shift;
                 $client->send($json);
             });
+
+            # TODO When the game in the room has finished. Close
+            # the room.
         }
-        # TODO: If there are no subscribers, close the room down?
-        #
-        #
-        #
-        #
     });
 }
+
+# A message to start a new tournament in a room
+#
+sub start {
+    my ($self, $client, $data) = @_;
+
+    my $room_number = $data->{number};
+    my $player_1    = $data->{player_1};
+    my $player_2    = $data->{player_2};
+    my $secret      = $data->{secret};
+
+    my $arena = SpaceBotWar::Arena->new({
+        duration    => 600,
+        max_ships   => 6,
+    });
+    # If we were to just create a new room, then
+    # all the existing clients would be removed.
+    # This may or may not be a good thing
+    #
+    if (defined $self->rooms->{$room_number}) {
+        $self->rooms->arena($arena);
+    }
+    else {
+        my $room = SpaceBotWar::Room->new({
+            id          => $room_number,
+            arena       => $arena,
+        });
+        $self->rooms->{$room_number} = $room;
+    }
+}
+
 
 
 # A Data Message 'room' asking for a client to register in a room
@@ -56,6 +94,8 @@ sub room {
     my ($self, $client, $data) = @_;
 
     my $room_number = $data->{number};
+    
+
     my $room = $self->rooms->{$room_number};
     if (not defined $room) {
         # Create a 'room' containing an Arena 

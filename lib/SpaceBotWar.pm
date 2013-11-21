@@ -129,6 +129,13 @@ sub startup {
     $r->get( '/' )->to('page#home');
     $r->websocket( '/ws' )->to('page#ws_home');
 
+    $r->get( '/remote/game' )->to('remote#game');
+    $r->get( '/server/game' )->to('server#game');
+    $r->get( '/server/start_game' )->to('server#start_game');
+    $r->websocket( '/server/ws_connect' )->to('server#ws');
+   
+
+
     $r->any( '/foo' )->to('page#foo');
 
     $r->post( '/login' )->to('user#login');

@@ -149,16 +149,16 @@ sub update {
         $end_y = int($start_y + $delta_y);
 
         my $on_edge = 0;
-        if ($end_x > $self->width - 100 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
+        if ($start_x > $self->width - 50 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
             $on_edge = 1;
         }
-        if ($end_x < 100 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
+        if ($start_x < 50 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
             $on_edge = 1;
         }
-        if ($end_y > $self->height - 100 and $ship->orientation < PI) {
+        if ($start_y > $self->height - 50 and $ship->orientation < PI) {
             $on_edge = 1;
         }
-        if ($end_y < 100 and $ship->orientation > PI) {
+        if ($start_y < 50 and $ship->orientation > PI) {
             $on_edge = 1;
         }
         if ($on_edge) {

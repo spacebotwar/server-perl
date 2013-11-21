@@ -8,7 +8,7 @@ The URL can either be on a server hosted by SpaceBot or an external
 server hosted by the player. In either case the protocol is the
 same.
 
-For each player a URL is called, e.g. http://spacebotwar.com/remote/xyz
+For each player a URL is called, e.g. http://spacebotwar.com/remote/game
 and parameters may be passed in, such as 'type' (the type of competition)
 and 'enemy' (details about the enemy fleet) etc. A full list to be determined,
 but it will include a 'nonce' which will allow a web socket to be set up.
