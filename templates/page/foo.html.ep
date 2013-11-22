@@ -1,7 +1,93 @@
-% layout 'standard';
-% title 'FOO This is the title';
-% content_for banner => 'FOO This is the title';
+% my $ws_url = $self->req->url->to_abs->scheme($self->req->is_secure ? 'wss' : 'ws')->path('/ws');
+% my $url = $self->req->url->to_abs;
 
-<div class="page-contents">
-  FOO hello world
+<!doctype html><html>
+    <head>
+        <title>Space Bot War</title>
+        <meta charset="utf-8" />
+        <script type="text/javascript" src="/assets/jquery-2.0.3.min.js"></script>
+        <script type="text/javascript" src="/jquery.json.min.js"></script>
+%= javascript '/assets/bootstrap/js/bootstrap.js'
+%= stylesheet '/assets/bootstrap/css/bootstrap.css'
+%= stylesheet '/assets/bootstrap/css/bootstrap-theme.css'
+%= humane_include
+        <script type="text/javascript" src="/room.js"></script>
+        <style type="text/css">
+        <!--
+        body {
+            background-color: #ededed;
+        }
+        #icydee_canvas {
+            background: #fff;
+            border: 1px;
+            solid : #cbcbcb;
+        }
+        -->
+        </style>
+        <script>
+
+$(document).ready(function() {
+
+    console.log("got here");
+    // Connect to WebSocket
+    var ws = new WebSocket('<%= $ws_url %>');
+
+    ws.onerror = function(e) {
+        console.log("Error: " + e);
+    };
+
+    ws.onopen = function() {
+        console.log('Connected to...<%= $ws_url %>');
+        ws.send($.toJSON({"type" : "room", "content" : { "number" : 5 } } ))
+    };
+    ws.onmessage = function(e) {
+        console.log(e.data);
+    };
+});
+
+
+        </script>
+    </head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Space Bot War</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right"  method="post" action="/login" id="login">
+            <input type="hidden" name="from" value="<%= $url %>">
+            <div class="form-group">
+              <input type="text" placeholder="Username" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+
+
+<div class="container">
+  <div class="page-header">
+    <h1><%= content_for 'banner' %></h1>
+  </div>
+  <div class="row">
+    <div class="span10" id="content">
+      <div class="container">
+        FOO!
+      </div>
+    </div>
+  </div>
 </div>
+</body>
+
+

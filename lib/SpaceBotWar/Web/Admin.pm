@@ -1,4 +1,4 @@
-package SpaceBotWar::Admin;
+package SpaceBotWar::Web::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub users { shift->render }

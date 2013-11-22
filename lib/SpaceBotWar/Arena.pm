@@ -56,41 +56,93 @@ has 'duration' => (
     isa     => 'Int',
     default => 500,
 );
+# Player 'A'
+#
+has 'player_a' => (
+    is      => 'rw',
+    isa     => '',
+    default => 0,
+);
+# Player 'B'
+#
+has 'player_b' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 0,
+);
+# Arena Status
+#
+has 'status' => (
+    is      => 'rw',
+    isa     => 'Str',
+    default => 'starting',
+);
 
 # Create an Arena with random ships
 #
 sub BUILD {
     my ($self) = @_;
 
-    my $max_ships = $self->max_ships;
-    $max_ships = 100 if $max_ships > 100;
+    $self->initiate;
+}
+
+# Set initial ship positions.
+sub initiate {
+    my ($self) = @_;
+    
+    my $ship_layout = {
+       
+        1   => { x => 150, y => 150, direction => PI/4 },
+        2   => { x => 100, y => 150, direction => PI/4 },
+        3   => { x => 150, y => 100, direction => PI/4 },
+        4   => { x => 350, y => 350, direction => PI/4 + PI },
+        5   => { x => 400, y => 350, direction => PI/4 + PI },
+        6   => { x => 350, y => 400, direction => PI/4 + PI },
+    };
 
     my @ships;
-    for (my $i=0; $i < $self->max_ships; $i++) {
-        my $start_x = int(rand($self->width * 0.4) + $self->width * 0.2);
-        my $start_y = int(rand($self->height * 0.4) + $self->width * 0.2);
-        my $speed   = 30;
-        my $direction   = rand(PI * 2);
+    foreach my $ship_id (sort keys %$ship_layout) {
+        my $ship_ref = $ship_layout->{$ship_id};
 
         my $ship = SpaceBotWar::Ship->new({
-            id              => $i,
-            owner_id        => $i % 2,
+            id              => $ship_id,
+            owner_id        => int(($ship_id - 1) / 3) + 1,
             type            => 'ship',
-            x               => $start_x,
-            y               => $start_y,
-            thrust_forward  => $speed,
-            orientation     => $direction,
-            rotation        => 0,
+            x               => $ship_ref->{x},
+            y               => $ship_ref->{y},
+            thrust_forward  => 0,
+            orientation     => $ship_ref->{direction},
+            rotation        => $ship_ref->{direction},
         });
-        print STDERR "CREATE SHIP: [".$ship->x."][".$ship->y."][".$ship->orientation."]\n";
         push @ships, $ship;
     }
     $self->ships(\@ships);
-    $self->update($self->duration);
+    $self->start_time(-1);
+    $self->end_time(-1);
+
 }
 
-# Update the arena by a number of milliseconds
-sub update {
+before 'status' => sub {
+    my ($self, $val) = @_;
+
+    if (defined $val) {
+        if ($val eq 'init') {
+            $self->initiate;            
+        }
+    }
+};
+
+
+# Accept players move
+#
+sub accept_move {
+    my ($self, $message) = @_;
+
+    
+
+# Update the arena by $duration (10ths of a second)
+#
+sub tick {
     my ($self, $duration) = @_;
 
     print STDERR "DURATION: $duration\n";
@@ -131,94 +183,104 @@ sub update {
     # were received during the previous tick period, only to be acted upon now 'as if'
     # the command were received at the start of the previous tick period.
     # 
-    foreach my $ship (@{$self->ships}) {
-        my ($rotation, $thrust_forward, $thrust_sideway, $thrust_reverse) = (0,0,0,0);
 
-        my $start_x = $ship->x;
-        my $start_y = $ship->y;
-        my $end_x = $start_x;
-        my $end_y = $start_y;
-        
-        my $start_orientation = $ship->orientation;
-
-        # Move the required distance
-        my $distance = $ship->speed * $duration_millisec / 1000;
-        my $delta_x = $distance * cos($ship->direction);
-        my $delta_y = $distance * sin($ship->direction);
-        $end_x = int($start_x + $delta_x);
-        $end_y = int($start_y + $delta_y);
-
-        my $on_edge = 0;
-        if ($start_x > $self->width - 50 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
-            $on_edge = 1;
-        }
-        if ($start_x < 50 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
-            $on_edge = 1;
-        }
-        if ($start_y > $self->height - 50 and $ship->orientation < PI) {
-            $on_edge = 1;
-        }
-        if ($start_y < 50 and $ship->orientation > PI) {
-            $on_edge = 1;
-        }
-        if ($on_edge) {
-            $thrust_forward = 0;
-        }
-        else {
-            $thrust_forward = $ship->max_thrust_forward;
-        }
-
-        my $delta_rotation;
-        if ($on_edge) {
-            $delta_rotation = $ship->id % 2 ? PI/8 : 0-PI/8;
-        }
-        else {
-            $delta_rotation = rand(PI/2) - PI/4;
-        }
-        my $end_orientation = $ship->orientation + $delta_rotation;
-
-        $rotation = ($end_orientation - $start_orientation) / ($duration_millisec / 1000);
-
-        # Set the values
-        $ship->rotation($rotation);
-        $ship->thrust_forward($thrust_forward);
-        $ship->thrust_reverse($thrust_reverse);
-        $ship->thrust_sideway($thrust_sideway);
+    # We should do this with status changes
+    if ($self->start_time < 5000) {
+        # during the first 10 seconds, we don't allow ship movement
     }
-    # This is where the server interprets these player request and adjusts them
-    # to ensure they do not break game rules
-    #
-    foreach my $ship (@{$self->ships}) {
-        # Safety net
-        $ship->thrust_forward($ship->max_thrust_forward) if $ship->thrust_forward > $ship->max_thrust_forward;
-        $ship->thrust_sideway($ship->max_thrust_sideway) if $ship->thrust_sideway > $ship->max_thrust_sideway;
-        $ship->thrust_reverse($ship->max_thrust_reverse) if $ship->thrust_reverse > $ship->max_thrust_reverse;
-        $ship->rotation($ship->max_rotation) if $ship->rotation > $ship->max_rotation;
-        $ship->rotation(0-$ship->max_rotation) if $ship->rotation < 0-$ship->max_rotation;
+    elsif ($self->start_time > 30000) {
+        $self->status('init');
+    }
+    else {
+        foreach my $ship (@{$self->ships}) {
+            my ($rotation, $thrust_forward, $thrust_sideway, $thrust_reverse) = (0,0,0,0);
 
-        # Calculate the final position based on thrust and direction
-        my $distance = $ship->speed * $duration_millisec / 1000;
-        my $delta_x = $distance * cos($ship->direction);
-        my $delta_y = $distance * sin($ship->direction);
-        my $end_x = int($ship->x + $delta_x);
-        my $end_y = int($ship->y + $delta_y);
+            my $start_x = $ship->x;
+            my $start_y = $ship->y;
+            my $end_x = $start_x;
+            my $end_y = $start_y;
+        
+            my $start_orientation = $ship->orientation;
 
-        # check for limits.
-        $end_x = $self->width   if $end_x > $self->width;
-        $end_x = 0              if $end_x < 0;
-        $end_y = $self->height  if $end_y > $self->height;
-        $end_y = 0              if $end_y < 0;
+            # Move the required distance
+            my $distance = $ship->speed * $duration_millisec / 1000;
+            my $delta_x = $distance * cos($ship->direction);
+            my $delta_y = $distance * sin($ship->direction);
+            $end_x = int($start_x + $delta_x);
+            $end_y = int($start_y + $delta_y);
 
-        # Check for collisions, in which case come to an early halt
+            my $on_edge = 0;
+            if ($start_x > $self->width - 50 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
+                $on_edge = 1;
+            }
+            if ($start_x < 50 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
+                $on_edge = 1;
+            }
+            if ($start_y > $self->height - 50 and $ship->orientation < PI) {
+                $on_edge = 1;
+            }
+            if ($start_y < 50 and $ship->orientation > PI) {
+                $on_edge = 1;
+            }
+            if ($on_edge) {
+                $thrust_forward = 0;
+            }
+            else {
+                $thrust_forward = $ship->max_thrust_forward;
+            }
 
-        # Check for hits by missiles. In which case cause damage
+            my $delta_rotation;
+            if ($on_edge) {
+                $delta_rotation = $ship->id % 2 ? PI/8 : 0 - PI/8;
+            }
+            else {
+                $delta_rotation = rand(PI/2) - PI/4;
+            }
+            my $end_orientation = $ship->orientation + $delta_rotation;
+    
+            $rotation = ($end_orientation - $start_orientation) / ($duration_millisec / 1000);
 
-        $ship->x($end_x);
-        $ship->y($end_y);
-
-        # angle of rotation over the tick.
-        my $angle_rad = $ship->rotation * $duration_millisec / 1000;
-        $ship->orientation($ship->orientation+$angle_rad);
+            # Set the values
+            $ship->rotation($rotation);
+            $ship->thrust_forward($thrust_forward);
+            $ship->thrust_reverse($thrust_reverse);
+            $ship->thrust_sideway($thrust_sideway);
+        }
+        # This is where the server interprets these player request and adjusts them
+        # to ensure they do not break game rules
+        #
+        foreach my $ship (@{$self->ships}) {
+            # Safety net
+            $ship->thrust_forward($ship->max_thrust_forward) if $ship->thrust_forward > $ship->max_thrust_forward;
+            $ship->thrust_sideway($ship->max_thrust_sideway) if $ship->thrust_sideway > $ship->max_thrust_sideway;
+            $ship->thrust_reverse($ship->max_thrust_reverse) if $ship->thrust_reverse > $ship->max_thrust_reverse;
+            $ship->rotation($ship->max_rotation) if $ship->rotation > $ship->max_rotation;
+            $ship->rotation(0-$ship->max_rotation) if $ship->rotation < 0-$ship->max_rotation;
+    
+            # Calculate the final position based on thrust and direction
+            my $distance = $ship->speed * $duration_millisec / 1000;
+            my $delta_x = $distance * cos($ship->direction);
+            my $delta_y = $distance * sin($ship->direction);
+            my $end_x = int($ship->x + $delta_x);
+            my $end_y = int($ship->y + $delta_y);
+    
+            # check for limits.
+            $end_x = $self->width   if $end_x > $self->width;
+            $end_x = 0              if $end_x < 0;
+            $end_y = $self->height  if $end_y > $self->height;
+            $end_y = 0              if $end_y < 0;
+    
+            # Check for collisions, in which case come to an early halt
+    
+            # Check for hits by missiles. In which case cause damage
+    
+            $ship->x($end_x);
+            $ship->y($end_y);
+    
+            # angle of rotation over the tick.
+            my $angle_rad = $ship->rotation * $duration_millisec / 1000;
+            $ship->orientation($ship->orientation+$angle_rad);
+        }
     }
 }
 

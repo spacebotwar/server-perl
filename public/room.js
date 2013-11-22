@@ -36,7 +36,7 @@
             return self.each(function() {
                 var o = options;
 
-                self.displayMessage('Connecting...');
+                self.displayMessage('Connecting to...'+o.url);
 
                 // Connect to WebSocket
                 var ws = new WebSocket(o.url);
@@ -46,7 +46,7 @@
                 };
 
                 ws.onopen = function() {
-                    self.displayMessage('Connected. Loading...');
+                    self.displayMessage('Connected to...'+o.url);
                     ws.send($.toJSON({"type" : "room", "content" : { "number" : 5 } } ))
                     self.init();
 

@@ -21,12 +21,29 @@ has 'arena' => (
     isa         => 'SpaceBotWar::Arena',
     required    => 1,
 );
+# Room has a status that determines what it is currently doing
+has 'status' => (
+    is          => 'rw',
+    isa         => 'Str',
+    default     => 'starting',
+);
+# Room has an age (in seconds) since it was started
+has 'age' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
+
 
 # Update the state of the room for a further $duration period
-sub update_state {
+# (10ths of a second)
+#
+sub tick {
     my ($self, $duration) = @_;
 
-    $self->arena->update($duration);
+    $self->arena->tick($duration);
+    $self->age($self->age + $duration / 10);
 }
 
 # Unsubscribe a client from this room

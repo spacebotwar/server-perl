@@ -4,6 +4,8 @@ use Mojo::Base 'Mojolicious';
 our $VERSION = '0.030';
 $VERSION = eval $VERSION;
 
+use SpaceBotWar::WS::Root;
+
 use File::Basename 'dirname';
 use File::Spec::Functions qw'rel2abs catdir';
 use File::ShareDir 'dist_dir';
@@ -32,6 +34,18 @@ has config_file => sub {
 
     return rel2abs( 'spacebotwar.conf', $self->home_path );
 };
+
+# 'rooms' are where web socket things happen, be they chat or competitions
+# or play-back of battles.
+# 
+has rooms => sub {
+    my ($self) = @_;
+
+    return SpaceBotWar::WS::Root->new({
+        log     => $self->app->log,
+    });
+};
+
 
 sub load_config {
     my $app = shift;
@@ -125,19 +139,19 @@ sub startup {
     ## Routing ##
 
     my $r = $app->routes;
+    $r->namespaces(['SpaceBotWar::Web']);
 
-    $r->get( '/' )->to('page#home');
-    $r->websocket( '/ws' )->to('page#ws_home');
+    $r->get( '/' )->to(controller => 'page', action => 'home');
+    $r->websocket( '/ws' )->to(controller => 'page', action => 'ws_home');
+
+    $r->get( '/foo' )->to(controller => 'page', action => 'foo');
+
 
     $r->get( '/remote/game' )->to('remote#game');
     $r->get( '/server/game' )->to('server#game');
     $r->get( '/server/start_game' )->to('server#start_game');
     $r->websocket( '/server/ws_connect' )->to('server#ws');
    
-
-
-    $r->any( '/foo' )->to('page#foo');
-
     $r->post( '/login' )->to('user#login');
     $r->any( '/logout' )->to('user#logout');
 
@@ -150,8 +164,8 @@ sub startup {
     });
 
     $if_author->any( '/admin/menu' )->to('menu#edit');
-    $if_author->any( '/edit/:name' )->to('page#edit');
-    $if_author->websocket( '/store/page' )->to('page#store');
+    $if_author->any( '/edit/:name' )->to('web#page#edit');
+    $if_author->websocket( '/store/page' )->to('web#page#store');
     $if_author->websocket( '/store/menu' )->to('menu#store');
     $if_author->websocket( '/files/list' )->to('file#list');
 

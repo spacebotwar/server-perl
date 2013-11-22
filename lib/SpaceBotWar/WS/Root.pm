@@ -10,7 +10,7 @@ use namespace::autoclean;
 
 extends "SpaceBotWar::WS";
 
-# This class controlls all Games that are currently running
+# This class controls all Games that are currently running
 # A game takes place in a 'room' which contains an 'arena'
 # The Room may have a number of clients that are either registered
 # to 'observe' the game. There must also be two 'opponents' 
@@ -34,7 +34,7 @@ sub BUILD {
             $self->log->debug("ROOM - $room_id [$room]");
 
             # 5/10ths of a second
-            $room->update_state(5);
+            $room->tick(5);
 
             # Send the room status to each of the subscribed clients
             #
@@ -58,7 +58,7 @@ sub BUILD {
 
 # A message to start a new tournament in a room
 #
-sub start {
+sub msg_start {
     my ($self, $client, $data) = @_;
 
     my $room_number = $data->{number};
@@ -86,15 +86,40 @@ sub start {
     }
 }
 
+# Remove a client from all currently subscribed rooms
+#
+sub unsub_client {
+    my ($self, $client) = @_;
+
+    # Remove the client from all subscribed rooms
+    my $rooms = $self->rooms;
+    foreach my $room_id (keys %$rooms ) {
+        $rooms->{$room_id}->un_subscribe_client($client);
+    }
+}
+
+# When the client is done, unsubscribe from all rooms
+# 
+after 'finish' => sub {
+    my ($self, $client) = @_;
+
+    $self->unsub_client($client);   
+};
+
+
+
 
 
 # A Data Message 'room' asking for a client to register in a room
 #
-sub room {
+sub msg_room {
     my ($self, $client, $data) = @_;
 
     my $room_number = $data->{number};
-    
+    my $player = '';    
+    if ($data->{player}) {
+        $player = $data->{player};
+    }
 
     my $room = $self->rooms->{$room_number};
     if (not defined $room) {
@@ -120,26 +145,6 @@ sub room {
         $room->subscribe_client($client);
     }
 }
-
-# Remove a client from all currently subscribed rooms
-#
-sub unsub_client {
-    my ($self, $client) = @_;
-
-    # Remove the client from all subscribed rooms
-    my $rooms = $self->rooms;
-    foreach my $room_id (keys %$rooms ) {
-        $rooms->{$room_id}->un_subscribe_client($client);
-    }
-}
-
-# When the client is done, unsubscribe from all rooms
-# 
-after 'finish' => sub {
-    my ($self, $client) = @_;
-
-    $self->unsub_client($client);   
-};
 
 
 __PACKAGE__->meta->make_immutable;

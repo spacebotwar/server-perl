@@ -84,10 +84,11 @@ sub add_client {
                 $self->log->debug("JSON Error [No type]");
                 return;
             }
-            if (not $self->can($type)) {
+            if (not $self->can("msg_$type")) {
                 $self->log->debug("No method for type [$type]");
                 return;
             }
+            $type = "msg_$type";
             # Call the 'method' specifed in the 'type'
             $self->$type($client, $msg->{content});
         }

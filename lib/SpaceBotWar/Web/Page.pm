@@ -1,16 +1,24 @@
-package SpaceBotWar::Page;
+package SpaceBotWar::Web::Page;
 use Mojo::Base 'Mojolicious::Controller';
 
 use SpaceBotWar::Client;
 use SpaceBotWar::WS::Root;
 
-my $ws_root = SpaceBotWar::WS::Root->new({
-});
+sub home {
+    my ($self) = @_;
+
+    $self->render;
+}
+
+sub foo {
+    my ($self) = @_;
+
+    $self->render;
+}
+
 
 sub ws_home {
     my ($self) = @_;
-
-    $ws_root->log($self->app->log);
 
     my $tx  = $self->tx;
     Mojo::IOLoop->stream($tx->connection)->timeout(0);
@@ -19,21 +27,7 @@ sub ws_home {
         name    => 'foo',
         id      => "$tx",
     });
-    $ws_root->add_client($self, $client);
-}
-
-sub home {
-    my $self = shift;
-
-    $self->app->log->debug("GOT HOME!!!");
-
-    $self->render;
-}
-
-sub foo {
-    my $self = shift;
-
-    $self->redirect_to("/");
+    $self->app->rooms->add_client($self, $client);
 }
 
 sub show {

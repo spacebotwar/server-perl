@@ -1,4 +1,4 @@
-package SpaceBotWar::User;
+package SpaceBotWar::Web::User;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub login {

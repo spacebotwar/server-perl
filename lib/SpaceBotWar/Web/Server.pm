@@ -1,4 +1,4 @@
-package SpaceBotWar::Server;
+package SpaceBotWar::Web::Server;
 use Mojo::Base 'Mojolicious::Controller';
 
 use SpaceBotWar::Client;

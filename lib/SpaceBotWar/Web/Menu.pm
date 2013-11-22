@@ -1,4 +1,4 @@
-package SpaceBotWar::Menu;
+package SpaceBotWar::Web::Menu;
 use Mojo::Base 'Mojolicious::Controller';
 
 use Mojo::JSON 'j';

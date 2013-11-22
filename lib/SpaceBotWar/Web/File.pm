@@ -1,4 +1,4 @@
-package SpaceBotWar::File;
+package SpaceBotWar::Web::File;
 use Mojo::Base 'Mojolicious::Controller';
 
 use File::Next;
