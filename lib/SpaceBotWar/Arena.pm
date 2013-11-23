@@ -60,14 +60,12 @@ has 'duration' => (
 #
 has 'player_a' => (
     is      => 'rw',
-    isa     => '',
     default => 0,
 );
 # Player 'B'
 #
 has 'player_b' => (
     is      => 'rw',
-    isa     => 'Int',
     default => 0,
 );
 # Arena Status
@@ -137,7 +135,7 @@ before 'status' => sub {
 #
 sub accept_move {
     my ($self, $message) = @_;
-
+}
     
 
 # Update the arena by $duration (10ths of a second)

@@ -107,9 +107,6 @@ after 'finish' => sub {
 };
 
 
-
-
-
 # A Data Message 'room' asking for a client to register in a room
 #
 sub msg_room {
