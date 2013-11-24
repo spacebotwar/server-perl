@@ -26,8 +26,6 @@ sub start_game {
 sub ws_connect {
     my ($self) = @_;
 
-    $ws_server->log($self->app->log);
-
     my $tx  = $self->tx;
     Mojo::IOLoop->stream($tx->connection)->timeout(0);
     my $client = SpaceBotWar::Client->new({
@@ -35,7 +33,7 @@ sub ws_connect {
         name    => 'foo',
         id      => "$tx",
     });
-    $ws_server->add_client($self, $client);
+    $self->app->scripts->add_client($self, $client);
 }
 
 #

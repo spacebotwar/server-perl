@@ -10,6 +10,10 @@ has 'log' => (
     default     => sub { sub {} },
 );
 
+has 'app' => (
+    is          => 'rw',
+);
+
 has 'clients' => (
     is          => 'rw',
     isa         => 'HashRef[SpaceBotWar::Client]',

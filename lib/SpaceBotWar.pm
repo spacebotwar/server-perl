@@ -5,6 +5,7 @@ our $VERSION = '0.030';
 $VERSION = eval $VERSION;
 
 use SpaceBotWar::WS::Root;
+use SpaceBotWar::WS::Script;
 
 use File::Basename 'dirname';
 use File::Spec::Functions qw'rel2abs catdir';
@@ -43,9 +44,19 @@ has rooms => sub {
 
     return SpaceBotWar::WS::Root->new({
         log     => $self->app->log,
+        app     => $self->app,
     });
 };
 
+# 'scripts' are where web socket running of script code is done
+#
+has scripts => sub {
+    my ($self) = @_;
+
+    return SpaceBotWar::WS::Script->new({
+        log     => $self->app->log,
+    });
+};
 
 sub load_config {
     my $app = shift;
@@ -150,7 +161,7 @@ sub startup {
     $r->get( '/remote/game' )->to('remote#game');
     $r->get( '/server/game' )->to('server#game');
     $r->get( '/server/start_game' )->to('server#start_game');
-    $r->websocket( '/server/ws_connect' )->to('server#ws');
+    $r->websocket( '/server/ws_connect' )->to('server#ws_connect');
    
     $r->post( '/login' )->to('user#login');
     $r->any( '/logout' )->to('user#logout');

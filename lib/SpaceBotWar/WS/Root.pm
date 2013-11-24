@@ -31,7 +31,7 @@ sub BUILD {
     Mojo::IOLoop->singleton->recurring(0.5 => sub {
         foreach my $room_id (keys %{$self->rooms}) {
             my $room = $self->rooms->{$room_id};
-            $self->log->debug("ROOM - $room_id [$room]");
+            #$self->log->debug("ROOM - $room_id [$room]");
 
             # 5/10ths of a second
             $room->tick(5);
@@ -42,7 +42,7 @@ sub BUILD {
                 type    => 'room_data',
                 content => $room->to_hash,
             });
-            $self->log->debug("OUTPUT : $json");
+            #$self->log->debug("OUTPUT : $json");
 
             # Broadcast the room state to all clients.
             $room->for_all_subscribers( sub {
@@ -69,6 +69,7 @@ sub msg_start {
     my $arena = SpaceBotWar::Arena->new({
         duration    => 600,
         max_ships   => 6,
+        app         => $self->app,
     });
     # If we were to just create a new room, then
     # all the existing clients would be removed.
@@ -125,6 +126,7 @@ sub msg_room {
         my $arena = SpaceBotWar::Arena->new({
             duration    => 500,
             max_ships   => $room_number,
+            app         => $self->app,
         });
         $room = SpaceBotWar::Room->new({
             id          => $room_number,

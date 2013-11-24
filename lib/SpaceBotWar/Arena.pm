@@ -76,6 +76,10 @@ has 'status' => (
     default => 'starting',
 );
 
+has 'app' => (
+    is      => 'rw',
+);
+
 # Create an Arena with random ships
 #
 sub BUILD {
@@ -118,6 +122,13 @@ sub initiate {
     $self->start_time(-1);
     $self->end_time(-1);
 
+
+    my $ua_a = $self->app->ua;
+    $ua_a->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
+        my ($ua, $tx) = @_;
+
+        $self->player_a($tx);
+    });
 }
 
 before 'status' => sub {
@@ -143,7 +154,7 @@ sub accept_move {
 sub tick {
     my ($self, $duration) = @_;
 
-    print STDERR "DURATION: $duration\n";
+    #print STDERR "DURATION: $duration\n";
     my $duration_millisec = $duration * 100;
     if ($self->start_time < 0) {
         # then this is the first time.
@@ -279,9 +290,19 @@ sub tick {
             my $angle_rad = $ship->rotation * $duration_millisec / 1000;
             $ship->orientation($ship->orientation+$angle_rad);
         }
+        #
+        # Send the current position to the players
+        #
+        if ($self->player_a) {
+            my $json = {
+                type    => 'ship_update',
+                content => $self->to_hash,
+            };
+            $json =  Mojo::JSON->new->encode($json);
+            $self->player_a->send($json);
+        }
     }
 }
-
 
 # Create a hash representation of the object
 #
