@@ -21,6 +21,8 @@ sub msg_ship_update {
     my $ship_ref        = $data->{ships};
     my $arena_width     = $data->{width};
     my $arena_height    = $data->{height};
+    my $player_id       = $data->{player_id};
+    my $script          = $data->{script};
     my $duration_millisec   = 500;
 
     my $commands;
@@ -29,7 +31,7 @@ sub msg_ship_update {
     # 
     SHIP:
     foreach my $ship (@{$ship_ref}) {
-        next SHIP if $ship->{owner_id} != 1;
+        next SHIP if $ship->{owner_id} != $player_id;
 
         my ($rotation, $thrust_forward, $thrust_sideway, $thrust_reverse) = (0,0,0,0);
 

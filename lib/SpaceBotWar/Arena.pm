@@ -123,8 +123,8 @@ sub initiate {
     $self->end_time(-1);
 
 
-    my $ua_a = $self->app->ua;
-    $ua_a->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
+    my $ua = $self->app->ua;
+    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_a($tx);
@@ -157,6 +157,42 @@ sub initiate {
 
         $self->player_a->on(finish => sub {
             $self->app->log->debug("FINISH: player a");
+        });
+    });
+
+    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
+        my ($ua, $tx) = @_;
+
+        $self->player_b($tx);
+
+        $self->player_b->on(message => sub {
+            my ($this, $json_msg) = @_;
+
+            $self->app->log->debug("MESSAGE: to player B");
+            my $json = Mojo::JSON->new;
+            my $msg = $json->decode($json_msg);
+            if ($json->error) {
+                $self->app->log->debug("JSON Error [".$json->error."]");
+                return;
+            }
+            return unless $msg;
+            my $type = $msg->{type};
+
+            if (not $type) {
+                $self->app->log->debug("JSON Error [No type]");
+                return;
+            }
+            if (not $self->can("msg_$type")) {
+                $self->app->log->debug("No method for type [$type]");
+                return;
+            }
+            $type = "msg_$type";
+            # Call the 'method' specifed in the 'type'
+            $self->$type($msg->{content});
+        });
+
+        $self->player_b->on(finish => sub {
+            $self->app->log->debug("FINISH: player b");
         });
     });
 }
@@ -341,8 +377,20 @@ sub tick {
                 type    => 'ship_update',
                 content => $self->to_hash,
             };
+            $json->{content}{script} = 'A';
+            $json->{content}{player_id} = 1;
             $json =  Mojo::JSON->new->encode($json);
             $self->player_a->send($json);
+        }
+        if ($self->player_b) {
+            my $json = {
+                type    => 'ship_update',
+                content => $self->to_hash,
+            };
+            $json->{content}{script} = 'B';
+            $json->{content}{player_id} = 2;
+            $json =  Mojo::JSON->new->encode($json);
+            $self->player_b->send($json);
         }
     }
 }
