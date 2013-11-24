@@ -124,7 +124,7 @@ sub initiate {
 
 
     my $ua = $self->app->ua;
-    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
+    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect?player=A' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_a($tx);
@@ -160,7 +160,7 @@ sub initiate {
         });
     });
 
-    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect' => sub {
+    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect?player=B' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_b($tx);
@@ -280,60 +280,6 @@ sub tick {
         $self->status('init');
     }
     else {
-        foreach my $ship (@{$self->ships}) {
-            my ($rotation, $thrust_forward, $thrust_sideway, $thrust_reverse) = (0,0,0,0);
-
-            my $start_x = $ship->x;
-            my $start_y = $ship->y;
-            my $end_x = $start_x;
-            my $end_y = $start_y;
-        
-            my $start_orientation = $ship->orientation;
-
-            # Move the required distance
-            my $distance = $ship->speed * $duration_millisec / 1000;
-            my $delta_x = $distance * cos($ship->direction);
-            my $delta_y = $distance * sin($ship->direction);
-            $end_x = int($start_x + $delta_x);
-            $end_y = int($start_y + $delta_y);
-
-            my $on_edge = 0;
-            if ($start_x > $self->width - 50 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
-                $on_edge = 1;
-            }
-            if ($start_x < 50 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
-                $on_edge = 1;
-            }
-            if ($start_y > $self->height - 50 and $ship->orientation < PI) {
-                $on_edge = 1;
-            }
-            if ($start_y < 50 and $ship->orientation > PI) {
-                $on_edge = 1;
-            }
-            if ($on_edge) {
-                $thrust_forward = 0;
-            }
-            else {
-                $thrust_forward = $ship->max_thrust_forward;
-            }
-
-            my $delta_rotation;
-            if ($on_edge) {
-                $delta_rotation = $ship->id % 2 ? PI/8 : 0 - PI/8;
-            }
-            else {
-                $delta_rotation = rand(PI/2) - PI/4;
-            }
-            my $end_orientation = $ship->orientation + $delta_rotation;
-    
-            $rotation = ($end_orientation - $start_orientation) / ($duration_millisec / 1000);
-
-            # Set the values
-#            $ship->rotation($rotation);
-#           $ship->thrust_forward($thrust_forward);
-#            $ship->thrust_reverse($thrust_reverse);
-#            $ship->thrust_sideway($thrust_sideway);
-        }
         # This is where the server interprets these player request and adjusts them
         # to ensure they do not break game rules
         #
@@ -378,7 +324,7 @@ sub tick {
                 content => $self->to_hash,
             };
             $json->{content}{script} = 'A';
-            $json->{content}{player_id} = 1;
+            $json->{content}{owner_id} = 1;
             $json =  Mojo::JSON->new->encode($json);
             $self->player_a->send($json);
         }
@@ -388,7 +334,7 @@ sub tick {
                 content => $self->to_hash,
             };
             $json->{content}{script} = 'B';
-            $json->{content}{player_id} = 2;
+            $json->{content}{owner_id} = 2;
             $json =  Mojo::JSON->new->encode($json);
             $self->player_b->send($json);
         }

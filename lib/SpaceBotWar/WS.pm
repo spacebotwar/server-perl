@@ -64,11 +64,11 @@ sub add_client {
 
     $self->log->debug('Added a new client. Notify all other clients');
 
-    $self->broadcast({
-        type    => 'new_client',
-        content => $client->as_hash,
-        exclude => $client,
-    });
+#    $self->broadcast({
+#        type    => 'new_client',
+#        content => $client->as_hash,
+#        exclude => $client,
+#    });
 
     # In the event of a message
     $connection->on(message => 
