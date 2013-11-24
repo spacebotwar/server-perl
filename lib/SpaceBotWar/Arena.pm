@@ -128,6 +128,36 @@ sub initiate {
         my ($ua, $tx) = @_;
 
         $self->player_a($tx);
+
+        $self->player_a->on(message => sub {
+            my ($this, $json_msg) = @_;
+
+            $self->app->log->debug("MESSAGE: to player A");
+            my $json = Mojo::JSON->new;
+            my $msg = $json->decode($json_msg);
+            if ($json->error) {
+                $self->app->log->debug("JSON Error [".$json->error."]");
+                return;
+            }
+            return unless $msg;
+            my $type = $msg->{type};
+
+            if (not $type) {
+                $self->app->log->debug("JSON Error [No type]");
+                return;
+            }
+            if (not $self->can("msg_$type")) {
+                $self->app->log->debug("No method for type [$type]");
+                return;
+            }
+            $type = "msg_$type";
+            # Call the 'method' specifed in the 'type'
+            $self->$type($msg->{content});
+        });
+
+        $self->player_a->on(finish => sub {
+            $self->app->log->debug("FINISH: player a");
+        });
     });
 }
 
@@ -142,12 +172,25 @@ before 'status' => sub {
 };
 
 
-# Accept players move
+# Accept a players move
 #
-sub accept_move {
-    my ($self, $message) = @_;
+sub msg_ships_command {
+    my ($self, $content) = @_;
+
+    $self->app->log->debug("MSG_SHIPS_COMMAND");
+
+    foreach my $ship_ref (@{$content->{ships}}) {
+        my $id = $ship_ref->{id};
+        my ($ship) = grep {$_->id == $id} @{$self->ships};
+        if ($ship) {
+            $ship->thrust_forward($ship_ref->{thrust_forward});
+            $ship->thrust_sideway($ship_ref->{thrust_sideway});
+            $ship->thrust_reverse($ship_ref->{thrust_reverse});
+            $ship->rotation($ship_ref->{rotation});
+        }
+    }
 }
-    
+
 
 # Update the arena by $duration (10ths of a second)
 #
@@ -250,10 +293,10 @@ sub tick {
             $rotation = ($end_orientation - $start_orientation) / ($duration_millisec / 1000);
 
             # Set the values
-            $ship->rotation($rotation);
-            $ship->thrust_forward($thrust_forward);
-            $ship->thrust_reverse($thrust_reverse);
-            $ship->thrust_sideway($thrust_sideway);
+#            $ship->rotation($rotation);
+#           $ship->thrust_forward($thrust_forward);
+#            $ship->thrust_reverse($thrust_reverse);
+#            $ship->thrust_sideway($thrust_sideway);
         }
         # This is where the server interprets these player request and adjusts them
         # to ensure they do not break game rules
