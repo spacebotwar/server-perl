@@ -124,7 +124,7 @@ sub initiate {
 
 
     my $ua = $self->app->ua;
-    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect?player=A' => sub {
+    $ua->websocket('ws://localhost:3000/server/ws_connect?player=A' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_a($tx);
@@ -160,7 +160,7 @@ sub initiate {
         });
     });
 
-    $ua->websocket('ws://spacebotwar.com:3000/server/ws_connect?player=B' => sub {
+    $ua->websocket('ws://localhost:3000/server/ws_connect?player=B' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_b($tx);

@@ -9,7 +9,6 @@ use SpaceBotWar::WS::Script;
 
 use File::Basename 'dirname';
 use File::Spec::Functions qw'rel2abs catdir';
-use File::ShareDir 'dist_dir';
 use Cwd;
 
 has db => sub {
@@ -25,7 +24,7 @@ has db => sub {
 };
 
 has home_path => sub {
-    my $path = $ENV{GALILEO_HOME} || getcwd;
+    my $path = $ENV{SBW_HOME} || getcwd;
     return File::Spec->rel2abs($path);
 };
 
@@ -59,22 +58,10 @@ has scripts => sub {
 };
 
 sub load_config {
-    my $app = shift;
+    my ($app) = @_;
 
     $app->plugin( Config => { 
         file => $app->config_file,
-        default => {
-            db_schema       => 'SpaceBotWar:DB::Schema',
-            db_dsn          => 'dbi:SQLite:dbname=' . $app->home->rel_file( 'spacebotwar.db' ),
-            db_username     => undef,
-            db_password     => undef,
-            db_options      => { sqlite_unicode => 1 },
-            extra_css       => [ '/themes/standard.css' ],
-            extra_js        => [],
-            extra_static_paths  => ['static'],
-            sanitize        => 1,
-            secret          => '', # default to null (unset) in case I implement an iterative config helper
-        },
     });
 
     if ( my $secret = $app->config->{secret} ) {
@@ -83,7 +70,7 @@ sub load_config {
 }
 
 sub startup {
-    my $app = shift;
+    my ($app) = @_;
 
     # set home folder
     $app->home->parse( $app->home_path );
@@ -92,9 +79,9 @@ sub startup {
         # setup logging path
         # code stolen from Mojolicious.pm
         my $mode = $app->mode;
-
-        $app->log->path($app->home->rel_file("log/$mode.log"))
-            if -w $app->home->rel_file('log');
+        if (-w $app->home->rel_file('log')) {
+            $app->log->path($app->home->rel_file("log/$mode.log"));
+        }
     }
 
     $app->load_config;
@@ -112,9 +99,9 @@ sub startup {
 
     $app->helper( schema => sub { shift->app->db } );
 
-    $app->helper( 'home_page' => sub{ '/page/home' } );
+    $app->helper( home_page => sub{ '/page/home' } );
 
-    $app->helper( 'auth_fail' => sub {
+    $app->helper( auth_fail => sub {
         my $self = shift;
         my $message = shift || "Not Authorized";
         $self->humane_flash( $message );
@@ -122,22 +109,16 @@ sub startup {
         return 0;
     });
 
-    $app->helper( 'get_user' => sub {
+    $app->helper( get_user => sub {
         my ($self, $name) = @_;
-        unless ($name) {
+        if (not $name) {
             $name = $self->session->{username};
         }
-        return undef unless $name;
+        return undef if not $name;
         return $self->schema->resultset('User')->single({name => $name});
     });
 
-    $app->helper( 'is_author' => sub {
-        my $self = shift;
-        my $user = $self->get_user(@_);
-        return undef unless $user;
-        return $user->is_author;
-    });
-    $app->helper( 'is_admin' => sub {
+    $app->helper( is_admin => sub {
         my $self = shift;
         my $user = $self->get_user(@_);
         return undef unless $user;
@@ -166,20 +147,6 @@ sub startup {
     $r->post( '/login' )->to('user#login');
     $r->any( '/logout' )->to('user#logout');
 
-    my $if_author = $r->under( sub {
-        my $self = shift;
-
-        return $self->auth_fail unless $self->is_author;
-
-        return 1;
-    });
-
-    $if_author->any( '/admin/menu' )->to('menu#edit');
-    $if_author->any( '/edit/:name' )->to('web#page#edit');
-    $if_author->websocket( '/store/page' )->to('web#page#store');
-    $if_author->websocket( '/store/menu' )->to('menu#store');
-    $if_author->websocket( '/files/list' )->to('file#list');
-
     my $if_admin = $r->under( sub {
         my $self = shift;
 
@@ -200,7 +167,4 @@ sub startup {
 }
 
 1;
-
-
-
 

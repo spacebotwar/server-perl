@@ -1,0 +1,12 @@
+{
+    db      => {
+        dsn         => 'dbi:SQLite:dbname=/data/now/space-bot-war/spacebotwar.db',
+        options     => {
+            sqlite_unicode      => 1,
+        },
+        password    => 'secret',
+        username    => 'me',
+        schema      => 'Galileo::DB::Schema',
+    },
+    secret  => 'nthntheurchrthntheugeuthjqkthaoe',
+}
