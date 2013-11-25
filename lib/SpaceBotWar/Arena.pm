@@ -16,13 +16,6 @@ has 'ships' => (
     isa     => 'ArrayRef[SpaceBotWar::Ship]',
     default => sub { [] },
 );
-# Number of ships in the Arena (temp)
-#
-has 'max_ships' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => 4,
-);
 # The width of the arena (in pixels)
 #
 has 'width' => (
@@ -124,7 +117,7 @@ sub initiate {
 
 
     my $ua = $self->app->ua;
-    $ua->websocket('ws://localhost:3000/server/ws_connect?player=A' => sub {
+    $ua->websocket($self->app->config->{ws_server}.'?player=A' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_a($tx);
@@ -160,7 +153,7 @@ sub initiate {
         });
     });
 
-    $ua->websocket('ws://localhost:3000/server/ws_connect?player=B' => sub {
+    $ua->websocket($self->app->config->{ws_server}.'?player=B' => sub {
         my ($ua, $tx) = @_;
 
         $self->player_b($tx);
@@ -244,15 +237,10 @@ sub tick {
         $self->start_time($self->start_time + $duration_millisec);
         $self->end_time($self->end_time + $duration_millisec);
     }
-    # this is only temporary until we have some 'external' control programs.
-    # 'drukards walk'
-    # This is equivalent to what the players program will request
-    # Which means only the thrust and rotation can be set here
-    #
     # In practice, on each tick, we give the current actual position of all
     # ships and the thrust and rotation (as we currently know it)
     #
-    # During the next tick, each ship's new thrust and rotation will be received
+    # Up until the next tick, each ship's new thrust and rotation will be received
     # from each player and this will be used to compute the actual position for
     # the next tick.
     #
@@ -280,7 +268,7 @@ sub tick {
         $self->status('init');
     }
     else {
-        # This is where the server interprets these player request and adjusts them
+        # This is where the server interprets the player requests and adjusts them
         # to ensure they do not break game rules
         #
         foreach my $ship (@{$self->ships}) {

@@ -48,20 +48,8 @@ has 'x' => (
     isa         => 'Int',
     default     => 0,
 );
-# target X co-ordinate (at end of tick)
-has 'target_x' => (
-    is          => 'rw',
-    isa         => 'Int',
-    default     => 0,
-);
 # Current Y co-ordinate
 has 'y' => (
-    is          => 'rw',
-    isa         => 'Int',
-    default     => 0,
-);
-# target Y co-ordinate (at end of tick)
-has 'target_y' => (
     is          => 'rw',
     isa         => 'Int',
     default     => 0,
@@ -74,12 +62,6 @@ has 'rotation' => (
 );
 # Current orientation of travel (in radians)
 has 'orientation' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
-# Target orientation of travel (in radians) (at end of tick)
-has 'target_orientation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,

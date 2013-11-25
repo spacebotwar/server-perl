@@ -34,8 +34,6 @@ has 'age' => (
     default     => 0,
 );
 
-
-
 # Update the state of the room for a further $duration period
 # (10ths of a second)
 #

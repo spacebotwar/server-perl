@@ -30,5 +30,4 @@ sub as_hash {
     };
 }
 
-
 __PACKAGE__->meta->make_immutable;
