@@ -6,6 +6,7 @@ $VERSION = eval $VERSION;
 
 use SpaceBotWar::WS::Root;
 use SpaceBotWar::WS::Script;
+use SpaceBotWar::DB;
 
 use File::Basename 'dirname';
 use File::Spec::Functions qw'rel2abs catdir';
@@ -13,12 +14,13 @@ use Cwd;
 
 has db => sub {
     my $self = shift;
-    my $schema_class = $self->config->{db_schema} or die "Unknown DB Schema Class";
-    eval "require $schema_class" or die "Could not load Schema Class ($schema_class). $@\n";
 
-    my $schema = $schema_class->connect( 
-        @{ $self->config }{ qw/db_dsn db_username db_password db_options/ }
-    ) or die "Could not connect to $schema_class using DSN " . $self->config->{db_dsn};
+    my $schema = SpaceBotWar::DB->connect(
+        $self->config->{db}{dsn},
+        $self->config->{db}{username},
+        $self->config->{db}{password},
+        $self->config->{db}{options},
+    ) or die "Could not connect to database using DSN " . $self->config->{db}{dsn};
 
     return $schema;
 };
