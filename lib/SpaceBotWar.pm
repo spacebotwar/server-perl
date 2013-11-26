@@ -165,6 +165,7 @@ sub startup {
 
     ## Additional Plugins ##
     $app->plugin('Humane', auto => 0);
+    $app->humane->theme('jackedup');
     $app->plugin('ConsoleLogger') if $ENV{GALILEO_CONSOLE_LOGGER};
 }
 

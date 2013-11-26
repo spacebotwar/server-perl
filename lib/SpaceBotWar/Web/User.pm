@@ -5,18 +5,20 @@ sub login {
     my $self = shift;
     my $name = $self->param('username');
     my $pass = $self->param('password');
-    my $from = $self->param('from');
+    my $from = $self->param('from_url');
 
     my $schema = $self->schema;
 
     my $user = $schema->resultset('User')->single({name => $name});
+    print STDERR "############### [$name][$pass][$user] ######################################################\n";
     if ($user and $user->check_password($pass)) {
         $self->humane_flash( 'Welcome Back!' );
-        $self->session->{id} = $user->user_id;
+        $self->session->{id} = $user->id;
         $self->session->{username} = $name;
     } else {
-        $self->humane_flash( 'Sorry try again' );
+        $self->humane_flash( 'Sorry unknown username/password combination. Please try again.' );
     }
+    $self->app->log->debug("REDIRECT to: $from");
     $self->redirect_to( $from );
 }
 
