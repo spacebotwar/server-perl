@@ -71,8 +71,6 @@ $(document).ready(function() {
         };
 }())
 
-
-
 var context;
 var arena;
 var imageObj;
@@ -156,6 +154,9 @@ function Arena(args) {
           <a class="navbar-brand" href="#">Space Bot War</a>
         </div>
         <div class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right"  method="post" action="/register" id="register">
+            <button type="submit" class="btn btn-success">Register</button>
+          </form>
           <form class="navbar-form navbar-right"  method="post" action="/login" id="login">
             <input type="hidden" name="from_url" id="from_url" value="<%= $url %>">
             <div class="form-group">
@@ -210,6 +211,7 @@ function Arena(args) {
     </div>
   </div>
 </div>
+
 </body>
 
 

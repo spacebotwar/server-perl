@@ -147,6 +147,8 @@ sub startup {
     $r->websocket( '/server/ws_connect' )->to('server#ws_connect');
    
     $r->post( '/login' )->to('user#login');
+    $r->post( '/register' )->to('user#register');
+
     $r->any( '/logout' )->to('user#logout');
 
     my $if_admin = $r->under( sub {

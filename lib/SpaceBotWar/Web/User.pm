@@ -10,7 +10,6 @@ sub login {
     my $schema = $self->schema;
 
     my $user = $schema->resultset('User')->single({name => $name});
-    print STDERR "############### [$name][$pass][$user] ######################################################\n";
     if ($user and $user->check_password($pass)) {
         $self->humane_flash( 'Welcome Back!' );
         $self->session->{id} = $user->id;
