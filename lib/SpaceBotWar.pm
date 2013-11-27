@@ -139,7 +139,7 @@ sub startup {
     $r->websocket( '/ws' )->to(controller => 'page', action => 'ws_home');
 
     $r->get( '/foo' )->to(controller => 'page', action => 'foo');
-
+    $r->get( '/register' )->to(controller => 'page', action => 'register');
 
     $r->get( '/remote/game' )->to('remote#game');
     $r->get( '/server/game' )->to('server#game');
@@ -147,7 +147,6 @@ sub startup {
     $r->websocket( '/server/ws_connect' )->to('server#ws_connect');
    
     $r->post( '/login' )->to('user#login');
-    $r->post( '/register' )->to('user#register');
 
     $r->any( '/logout' )->to('user#logout');
 

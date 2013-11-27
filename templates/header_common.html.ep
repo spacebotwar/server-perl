@@ -7,9 +7,3 @@
 
 %= content_for 'header'
 
-%= stylesheet $_ for @{config->{extra_css}}
-%= javascript $_ for @{config->{extra_js}}
-
-% if (exists $page_extra_js ) {
-%= javascript $page_extra_js
-% }

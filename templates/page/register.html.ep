@@ -1,0 +1,70 @@
+% layout 'standard';
+% title "Register";
+% content_for banner => "Register";
+% my $page_extra_js = {};
+
+% my $user = get_user( $name );
+% my $full = $user ? $user->full : '';
+% my $email = $user ? $user->email : '';
+% my $is_admin  = ($user and $user->is_admin ) ? "checked" : "";
+
+%= javascript begin
+  function saveButton () {
+    var data = {
+      name: "<%= $name %>",
+      full: $('input#full').val(),
+      pass1: $('input#pass1').val() || 0,
+      pass2: $('input#pass2').val() || 0,
+      is_admin: $('input#is_admin').is(':checked')
+    };
+    sendViaWS("<%= url_for('storeuser')->to_abs %>", data);
+  }
+%= end
+
+<form class="form-horizontal">
+  <legend>Names</legend>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="name">User Name</label>
+      <div class="controls">
+        <input class="input-xlarge disabled" id="name" 
+               type="text" placeholder="<%= $name %>" disabled>
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="full">Full Name</label>
+      <div class="controls">
+        <input type="text" class="input-xlarge" id="full" value="<%= $full %>">
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="email">Email Address</label>
+      <div class="controls">
+        <input type="text" class="inpui-xlarge" id="email" value="<%= $email %>">
+      </div>
+    </div>
+  </fieldset>
+  <legend>Set a Password</legend>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="pass1">Password</label>
+      <div class="controls">
+        <input type="password" class="input-xlarge" id="pass1">
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="pass2">Repeat Password</label>
+      <div class="controls">
+        <input type="password" class="input-xlarge" id="pass2">
+        <p>Only fill these boxes to set a new password (required for new account).</p>
+      </div>
+    </div>
+  </fieldset>
+</form>
+<button class="btn" onClick="saveButton()">Save</button>

@@ -4,6 +4,13 @@ use Mojo::Base 'Mojolicious::Controller';
 use SpaceBotWar::Client;
 use SpaceBotWar::WS::Root;
 
+sub register {
+    my ($self) = @_;
+
+    $self->render;
+}
+
+
 sub home {
     my ($self) = @_;
 
