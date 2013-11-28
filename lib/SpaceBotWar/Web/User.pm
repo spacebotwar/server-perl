@@ -1,6 +1,13 @@
 package SpaceBotWar::Web::User;
 use Mojo::Base 'Mojolicious::Controller';
 
+# Web service
+sub user {
+
+}
+
+
+
 sub login {
     my $self = shift;
     my $name = $self->param('username');

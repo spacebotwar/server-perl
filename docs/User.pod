@@ -1,0 +1,74 @@
+=head2 User Methods
+
+The following methods are available from C</user>
+
+The User API provides several methods that allow you to create a new account, log in 
+log out and change your account details.
+
+=head2 get_session
+
+Obtain a session key. The session key identifies you and allows the server to 
+provide persistent information to you. (For example it identifies you in chat or
+your player name once you have logged in).
+
+This should be the first call you make to the API.
+
+  {
+    "api_key" : "9999-1234-abcd-ef01",
+  }
+
+
+
+=head3 api_key (required)
+
+Your client's unique API key, identifying it from all other clients. See L<ApiKeys> for
+more details.
+
+=head3 RETURNS (session)
+
+  {
+    "session_id"    : "1234-dead-face-4567",
+  }
+
+The B<session_id> should be used in all subsequent calls. (the example session_id given is
+only for demonstration purposes, the API will return a new and unique session_id each
+time it is called).
+
+
+=head2 register
+
+  {
+    "session_id"    : "1234-dead-face-4567",
+    "username"      : "joebloggs",
+    "password"      : "t0pS3cr3t",
+    "email"         : "joe_bloggs@example.com',
+  }
+
+=head3 session_id (required)
+
+As provided by the user/get_session API
+
+=head3 username (required)
+
+This is the name you will use to log in. At least 3 characters.
+
+=head3 password (required)
+
+Your account password, at least 5 characters including lower-case, upper-case
+and numeric characters.
+
+=head3 email (required)
+
+Your email address. This will be used to validate your account
+
+=head3 RETURNS
+
+  {
+    
+
+
+
+=head2 login
+
+Log into your account
+

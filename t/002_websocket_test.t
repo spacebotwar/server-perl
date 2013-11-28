@@ -3,7 +3,7 @@ use AnyEvent::WebSocket::Client;
 my $client = AnyEvent::WebSocket::Client->new;
 
 {
-$client->connect("ws://spacebotwar.com:3000/ws")->cb(sub {
+$client->connect("ws://spacebotwar.com:5000/ws")->cb(sub {
     my $connection = eval { shift->recv };
     if ($@) {
         die "Got an error $@";

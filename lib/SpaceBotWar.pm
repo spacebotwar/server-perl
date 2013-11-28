@@ -137,6 +137,8 @@ sub startup {
 
     $r->get( '/' )->to(controller => 'page', action => 'home');
     $r->websocket( '/ws' )->to(controller => 'page', action => 'ws_home');
+    $r->websocket( '/user' )->to(controller => 'user', action => 'ws');
+
 
     $r->get( '/foo' )->to(controller => 'page', action => 'foo');
     $r->get( '/register' )->to(controller => 'page', action => 'register');

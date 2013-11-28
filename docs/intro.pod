@@ -1,0 +1,76 @@
+=head1 Introduction
+
+This document will introduce you to the SpaceBotWar server and the open API that will
+allow you to interact with the server.
+
+The API is also used by the SpaceBotWar User Interface (SBW UI)
+
+=head2 SERVER
+
+The playable servers are as follows:
+
+  spacebotwar.com
+
+If more servers are introduced they will be published here.
+
+=head1 Web-Sockets
+
+The API uses (to a large extent) Web Socket technology. Web Sockets offer significant
+advantages over the use of HTTP requests, even AJAX calls.
+
+=over
+
+=item *
+
+The overhead for each request is much smaller (typical savings of 100:1) making for a
+faster response.
+
+=item *
+
+It is asynchronous and full-duplex. This means that the server can 'push' data to
+all the clients at any time there is something to say. The client no longer has to
+resort to constant polling or Long Polling methods.
+
+=back
+
+The consequence however is that your client code needs to be a little bit more
+sophisticated, but the Perl framework Mojolicious comes to the rescue here. Look
+in the examples directory for simple client programs.
+
+=head1 Examples
+
+A web-socket call is simply a JSON encoded string.
+
+  '{ "type" : "get_session", "content" : { "api_key" : "9999-1234-abcd-ef01" } }'
+
+Where B<type> is the type of call and the B<content> is the message payload. We would
+normally describe this coll as follows.
+
+=head2 get_session
+
+Description about this call
+
+  {
+    "api_key" : "9999-1234-abcd-ef01",
+  }
+
+=head3 api_key (required)
+
+Description about the api_key. (Note some attributes will be required, others optional).
+
+=head3 RETURNS (session)
+
+  {
+    "session_id"    : "1234-dead-face-4567",
+  }
+
+The RETURNS section describes the message being returned. In this example it will
+return the JSON string
+
+  '{ "type" : "session", "content" : { "session_id" : "9999-1234-abcd-ef01" } }'
+
+For all the APIs described, we will use the above scheme.
+
+
+
+

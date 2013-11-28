@@ -11,11 +11,10 @@
 %= javascript begin
   function saveButton () {
     var data = {
-      name: "<%= $name %>",
-      full: $('input#full').val(),
-      pass1: $('input#pass1').val() || 0,
-      pass2: $('input#pass2').val() || 0,
-      is_admin: $('input#is_admin').is(':checked')
+      name:     $('#name').val(),
+      email:    $('#email').val() || 0,
+      pass1:    $('#pass1').val() || 0,
+      pass2:    $('#pass2').is(':checked')
     };
     sendViaWS("<%= url_for('storeuser')->to_abs %>", data);
   }
@@ -25,44 +24,30 @@
   <legend>Names</legend>
   <fieldset>
     <div class="control-group">
-      <label class="control-label" for="name">User Name</label>
       <div class="controls">
-        <input class="input-xlarge disabled" id="name" 
-               type="text" placeholder="<%= $name %>" disabled>
+        <p><input class="input-xlarge" id="name" type="text" placeholder="User name"> (used log into your account)</p>
       </div>
     </div>
   </fieldset>
   <fieldset>
     <div class="control-group">
-      <label class="control-label" for="full">Full Name</label>
       <div class="controls">
-        <input type="text" class="input-xlarge" id="full" value="<%= $full %>">
-      </div>
-    </div>
-  </fieldset>
-  <fieldset>
-    <div class="control-group">
-      <label class="control-label" for="email">Email Address</label>
-      <div class="controls">
-        <input type="text" class="inpui-xlarge" id="email" value="<%= $email %>">
+        <p><input type="text" class="inpui-xlarge" id="email" placeholder="Email Address"> (in case you forget your password)</p>
       </div>
     </div>
   </fieldset>
   <legend>Set a Password</legend>
   <fieldset>
     <div class="control-group">
-      <label class="control-label" for="pass1">Password</label>
       <div class="controls">
-        <input type="password" class="input-xlarge" id="pass1">
+        <p><input type="password" class="input-xlarge" id="pass1" placeholder="Password"> (what it says on the tin)</p>
       </div>
     </div>
   </fieldset>
   <fieldset>
     <div class="control-group">
-      <label class="control-label" for="pass2">Repeat Password</label>
       <div class="controls">
-        <input type="password" class="input-xlarge" id="pass2">
-        <p>Only fill these boxes to set a new password (required for new account).</p>
+        <p><input type="password" class="input-xlarge" id="pass2" placeholder="Password (again)"></p>
       </div>
     </div>
   </fieldset>
