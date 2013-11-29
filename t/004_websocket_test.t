@@ -10,7 +10,7 @@ my $cv = AnyEvent->condvar;
 my $connection;
 
 #$client->connect("ws://spacebotwar.com:5000/ws/user/register")->cb(sub {
-$client->connect("ws://localhost:5000/ws/user/foo/bar/bam/register")->cb(sub {
+$client->connect("ws://localhost:5000/ws/game/room_1")->cb(sub {
     $connection = eval { shift->recv };
     if ($@) {
         print STDERR "Cannot connect\n";

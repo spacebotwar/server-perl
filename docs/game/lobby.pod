@@ -125,5 +125,7 @@ The Server will respond with a B<Server : login_status> message
 
 =head2 Server : login_status
 
-A Servers response to the
+A Servers response to the B<Client : login> command.
+
+
 
