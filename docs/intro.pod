@@ -15,8 +15,8 @@ If more servers are introduced they will be published here.
 
 =head1 Web-Sockets
 
-The API uses (to a large extent) Web Socket technology. Web Sockets offer significant
-advantages over the use of HTTP requests, even AJAX calls.
+The Web Servers use predominatly Web Socket technology. Web Sockets offer significant
+advantages over HTTP requests, even AJAX calls.
 
 =over
 
@@ -31,45 +31,119 @@ It is asynchronous and full-duplex. This means that the server can 'push' data t
 all the clients at any time there is something to say. The client no longer has to
 resort to constant polling or Long Polling methods.
 
+=item *
+
+By only supporting Web Sockets we can offer a significantly trimmed down Web
+Server which is both faster and cheaper. We can then scale out horizontally to
+provide more web servers for the same cost.
+
 =back
 
 The consequence however is that your client code needs to be a little bit more
-sophisticated, but the Perl framework Mojolicious comes to the rescue here. Look
-in the examples directory for simple client programs.
+sophisticated, however we have provided several examples of simple web servers
+that you can build upon if you wish.
 
-=head1 Examples
+=head1 Example Calls
+
+Here is an example connection to a Web Socket (in Perl)
+
+    use AnyEvent::WebSocket::Client;
+    my $client = AnyEvent::WebSocket::Client->new;
+
+    my $connection;
+
+    $client->connect("ws://spacebotwar.com:5000/ws/user/register")->cb(sub {
+        ....
+    });
+
+You can find a more complete example in the B<t> directory.
+
+Once you have a connection you can B<send> a message (a string)
 
 A web-socket call is simply a JSON encoded string.
 
-  '{ "type" : "get_session", "content" : { "api_key" : "9999-1234-abcd-ef01" } }'
+  '{ "route" : "game/lobby", "method" : "register", "content" : { "username" : "james_bond", "password" : "topsecret" } }'
 
-Where B<type> is the type of call and the B<content> is the message payload. We would
-normally describe this coll as follows.
+The B<route> is the path to a location. Once you have made a route to a location you
+can continue to use the same connection for subsequent calls. Unlike HTTP you don't need
+to make a new connection for each call.
 
-=head2 get_session
+Different B<route>s however require different connections. Examples of B<route>s are 'game/lobby', 'chat/lobby', 'chat/room1' 
+etc.
 
-Description about this call
+The B<method> defines the content of the payload. the B<register> method for example allows
+you to create a new account.
 
-  {
-    "api_key" : "9999-1234-abcd-ef01",
-  }
+The B<content> is the actual payload of the message. In this example it defines the B<username> and the B<password>
+required to register a new account.
 
-=head3 api_key (required)
+We will use the same message format when sending messages from a route, back to the client.
 
-Description about the api_key. (Note some attributes will be required, others optional).
+To help to distinguish between client or server messages, we will document the route as either.
 
-=head3 RETURNS (session)
+  Client : register
 
-  {
-    "session_id"    : "1234-dead-face-4567",
-  }
+To show that this is a message sent B<from> the Client.
 
-The RETURNS section describes the message being returned. In this example it will
-return the JSON string
+or
 
-  '{ "type" : "session", "content" : { "session_id" : "9999-1234-abcd-ef01" } }'
+  Server : register_confirm
 
-For all the APIs described, we will use the above scheme.
+For messages sent B<from> the Server.
+
+It would get quite cumbersome to define all the calls in a string, instead we will define them using the JSON
+specification.
+
+The following is an example taken from the B<game/lobby> route.
+
+=head2 Server : connection_status
+
+A B<connection_status> will be sent by the Game Lobby shortly after the user has
+made a connection.
+
+    {
+        "lobby_status"  : "ok",
+        "code"          : 0,
+        "message"       : "Welcome to the Game Lobby",
+    }
+
+=head3 lobby_status
+
+This gives the status of the room. B<ok> for success. Other statuses may include
+B<offline> if the game server is offline due to maintenence.
+
+=head3 code
+
+The numeric code representing the B<lobby_status>
+
+=head3 message
+
+A message from the server, for example the time at which the server is expected
+to be available again.
+
+=head3 RESPONSE
+
+No response is necessary from the Client.
+
+=head2 Final points.
+
+Many of the B<Server> messages are simple status messages (e.g. the B<lobby_status> message above).
+
+When we document such methods we will use a shortcut as follows.
+
+=head3 Server : register_status
+
+A B<
+
+
+Note that Web Sockets is inheriently asynchronous. This means that you make the call, it is accepted (or rejected)
+but you do not get a response immediately (unlike HTTP) other than a status to say that the Web Socket request
+has been received.
+
+Instead, the server may choose to just accept the data and send no response, send a single message, or continue
+to send data until told to stop. This is a big advantage of Web Sockets, although it may take time to fully
+understand the consequences.
+
 
 
 

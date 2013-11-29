@@ -1,0 +1,129 @@
+=head1 Game Lobby
+
+All methods in this section can be carried out by a connection to the B<game/lobby>
+route.
+
+=head2 Server : connection_status
+
+A B<connection_status> will be sent by the Game Lobby shortly after the user has
+made a connection.
+
+    {
+        "lobby_status"  : "ok",
+        "code"          : 0,
+        "message"       : "Welcome to the Game Lobby",
+    }
+
+=head3 lobby_status
+
+This gives the status of the room. B<ok> for success. Other statuses may include
+B<offline> if the game server is offline due to maintenence.
+
+=head3 code
+
+The numeric code representing the B<lobby_status>
+
+=head3 message
+
+A message from the server, for example the time at which the server is expected
+to be available again.
+
+=head3 RESPONSE
+
+No response is necessary from the Client.
+
+
+=head2 Client : register
+
+Send a registration message from the Client to the server.
+
+    {
+        "username"  : "james_bond",
+        "password"  : "tops3cret",
+        "email"     : "agent007@mi5.gov.co.uk",
+    }
+
+=head3 username (required)
+
+The name you will use to log into the site. This must be at least 3 charaters long
+and may consist of letters, numbers or punctuation.
+
+=head3 password (required)
+
+The password to authenticate you to the server. At least one upper-case character,
+one lower-case character and either a numeric or punctuation character. The password
+must also be at least 5 characters long.
+
+=head3 email (required)
+
+Your email address. You will not be able to log onto the server until your email
+address has been verified. We will send a message with instructions on how to log
+in to this email address, so make sure it is correct.
+
+=head3 RESPONSE
+
+The server will send a B<Server : register_confirm> message with the success or failure
+of this call.
+
+
+=head2 Server : register_status
+
+A response to a B<Client : register> message.
+
+    {
+        "status"    : "Failure",
+        "code"      : "1000",
+        "message"   : "That username already taken"
+    }
+
+or
+
+    {
+        "status"    : "Success",
+        "code"      : "0",
+        "message"   : "Account created"
+    }
+
+=head3 status
+
+The B<Success> or B<Failure> of the B<Client : register> call.
+
+=head3 code
+
+A numeric value representing the status. B<0> is success, any other value is failure.
+
+=head3 message
+
+A human readable description of the status.
+
+=head3 RESPONSE
+
+No Client response is nessesary.
+
+
+=head2 Client : login
+
+A client request to authenticate and to log into the server
+
+    {
+        "username"  : "james_bond",
+        "password"  : "tops3cret"
+    }
+
+=head3 username (required)
+
+The username you used during registration.
+
+=head3 password (required)
+
+The password you use to access your account.
+
+=head3 RESPONSE
+
+The Server will respond with a B<Server : login_status> message
+
+
+=head2 Server : login_status
+
+A Servers response to the
+

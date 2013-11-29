@@ -62,25 +62,29 @@ sub on_establish {
     $path_info =~ s/^\///;
     $path_info =~ s/([\w']+)/\u\L$1/g;
     print STDERR "on_establish: path_info = [$path_info] method=[$method]\n";
-    my $json = JSON->new;
 
     $connection->on(
         message => sub {
+            my $json = JSON->new;
             my ($connection, $msg) = @_;
-            print STDERR "SEND: $msg\n";
-            my $json = eval {$json->decode($msg)};
+            print STDERR "RCVD: $msg\n";
+            my $json_msg = eval {$json->decode($msg)};
             if ($@) {
+                print STDERR "ERROR: $@\n";
                 $connection->send(' { "error" : '.$@.' } ');
             }
             else {
+                print STDERR "got here!\n";
                 my $send = {
-                    route   => $json->{route},
-                    method  => $json->{method},
-                    content => { foo => 'bar' },
+                    route   => $path_info,
+                    method  => $method,
+                    content => { foo => 'bar-boom' },
                 };
-                $connection->send(encode_json($send));
-                }
-            #$connection->send($msg);
+                print STDERR "got here 2!\n";
+                my $sent = $json->encode($send);
+                print STDERR "SEND: $sent\n";
+                $connection->send($sent);
+            }
        }
    );
    $connection->on(
