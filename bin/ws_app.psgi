@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use lib "../lib";
 
 use SpaceBotWar::WebSocket;
 use Plack::Builder;
