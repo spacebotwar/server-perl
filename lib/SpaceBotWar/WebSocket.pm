@@ -72,26 +72,28 @@ sub fatal {
     $connection->send(qw( { "ERROR" : "$@" } ) );
 }
 
-sub send_status {
-    my ($connection, $status, $code, $message) = @_;
-
-    my $msg = {
-        route       => '/lobby_status',
-        room        => 'goo',
-        content     => {
-            status      => $status,
-            code        => $code,
-            message     => $message,
-        },
-    };
-    $connection->send(JSON->new->encode($msg));
-}
+#sub send_status {
+#    my ($connection, $status, $code, $message) = @_;
+#
+#    my $msg = {
+#        route       => '/lobby_status',
+#        room        => 'goo',
+#        content     => {
+#            status      => $status,
+#            code        => $code,
+#            message     => $message,
+#        },
+#    };
+#    $connection->send(JSON->new->encode($msg));
+#}
 
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-    send_status($connection, 'ok', 0, 'Welcome');
+    my $room = $self->{room};
+    
+    $self->on_connect($room, $connection);
 
     $connection->on(
         message => sub {
@@ -122,7 +124,7 @@ sub on_establish {
                 eval {
                     # We may change this to pass in a '$content' object if it requires
                     # more than a couple of parameters.
-                    $obj->$method($self->{room}, $connection);
+                    $obj->$method($room, $connection, $content);
                 };
                 if ($@) {
                     print STDERR "METHOD ERROR: $@\n";
@@ -143,7 +145,6 @@ sub on_establish {
 sub call {
     my ($self, $env) = @_;
 
-    #print STDERR "DUMPER: ".Dumper(\$env);
     if (!$env->{"psgi.streaming"} || !$env->{"psgi.nonblocking"} || !$env->{"psgix.io"}) {
         $env->{$ERROR_ENV} = "not supported by the PSGI server";
         return $self->on_error($env);

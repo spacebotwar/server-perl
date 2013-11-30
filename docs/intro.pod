@@ -162,6 +162,7 @@ Send a registration message from the Client to the server.
         "username"  : "james_bond",
         "password"  : "tops3cret",
         "email"     : "agent007@mi5.gov.co.uk",
+        "id"        : "james_bond",
     }
 
 =head3 username (required)
@@ -181,6 +182,13 @@ Your email address. You will not be able to log onto the server until your email
 address has been verified. We will send a message with instructions on how to log
 in to this email address, so make sure it is correct.
 
+=head3 id (optional)
+
+This allows you to give a unique ID to the message. For example if you were sending
+many such requests. The server will add the id to any response so you can match them
+up. An B<id> can be any string which can be unique, in this case the B<username>
+makes a good B<id>. In other cases an incrementing number could be used.
+
 =head3 RESPONSE
 
 The server will send a B<Server : register_confirm> message with the success or failure
@@ -196,7 +204,8 @@ A response to a B<Client : register> message.
     {
         "status"    : "Failure",
         "code"      : "1000",
-        "message"   : "That username already taken"
+        "message"   : "That username already taken",
+        "id"        : "james_bond",
     }
 
 or
@@ -204,7 +213,8 @@ or
     {
         "status"    : "Success",
         "code"      : "0",
-        "message"   : "Account created"
+        "message"   : "Account created",
+        "id"        : "james_bond",
     }
 
 

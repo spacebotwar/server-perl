@@ -41,7 +41,8 @@ Send a registration message from the Client to the server.
     {
         "username"  : "james_bond",
         "password"  : "tops3cret",
-        "email"     : "agent007@mi5.gov.co.uk",
+        "email"     : "agent007@mi6.gov.co.uk",
+        "id"        : "james_bond",
     }
 
 =head3 username (required)
@@ -61,6 +62,10 @@ Your email address. You will not be able to log onto the server until your email
 address has been verified. We will send a message with instructions on how to log
 in to this email address, so make sure it is correct.
 
+=head3 id (optional)
+
+An ID to identify this message so you can tie up the server response to this request.
+
 =head3 RESPONSE
 
 The server will send a B<Server : register_confirm> message with the success or failure
@@ -71,7 +76,8 @@ of this call.
 
 =head2 Server : register_status
 
-Returns B<status> B<code> and B<message> (see L<intro.pod>)
+Returns B<status> B<code> B<id> and B<message> (see L<intro.pod>)
+
 
 
 

@@ -21,9 +21,10 @@ sub render_json {
 # A User attempting to 'register' a new username and password
 #
 sub ws_register {
-    my ($self, $room, $connection) = @_;
+    my ($self, $room, $connection, $content) = @_;
 
     my $send = {
+        room    => $room,
         route   => "/register_status",
         content => { 
             status  => 'ok',
@@ -31,6 +32,9 @@ sub ws_register {
             message => 'Welcome back!',
         },
     };
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
     $self->render_json($room, $connection, $send);
 }
 
@@ -40,6 +44,7 @@ sub on_connect {
     my ($self, $room, $connection) = @_;
 
     my $send = {
+        room    => $room,
         route   => "/lobby_status",
         content => {
             status      => 'ok',
