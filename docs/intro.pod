@@ -5,6 +5,9 @@ allow you to interact with the server.
 
 The API is also used by the SpaceBotWar User Interface (SBW UI)
 
+
+
+
 =head2 SERVER
 
 The playable servers are as follows:
@@ -12,6 +15,11 @@ The playable servers are as follows:
   spacebotwar.com
 
 If more servers are introduced they will be published here.
+
+
+
+
+
 
 =head1 Web-Sockets
 
@@ -22,7 +30,7 @@ advantages over HTTP requests, even AJAX calls.
 
 =item *
 
-The overhead for each request is much smaller (typical savings of 100:1) making for a
+The overhead for each request is much smaller making for a
 faster response.
 
 =item *
@@ -43,6 +51,10 @@ The consequence however is that your client code needs to be a little bit more
 sophisticated, however we have provided several examples of simple web servers
 that you can build upon if you wish.
 
+
+
+
+
 =head1 Example Calls
 
 Here is an example connection to a Web Socket (in Perl)
@@ -58,9 +70,13 @@ Here is an example connection to a Web Socket (in Perl)
 
 You can find a more complete example in the B<t> directory.
 
+
+
+
+
 =head1 API hierarchy
 
-The API is split into separate components.
+The API call is split into separate components.
 
 =over
 
@@ -72,7 +88,7 @@ Web Socket connection into more than one of these at the same time.
 
 =item Room
 
-Each Connection can connect to rooms. First you should join the B<Lobby> which will have 
+Each Connection can connect to one room. First you should join the B<Lobby> which will have 
 limited functionality, but from which you may be allocated (or perhaps choose) which room to go
 into. For example, if you go into the chat lobby, you may be able to choose from a list of 
 available rooms (e.g. game_chat, help, alliance_chat etc.). Some Connections may only allow you
@@ -80,13 +96,9 @@ to go into one room at a time (e.g. arena).
 
 =item Route
 
-Rooms of the same type will have the same set of commands. Commands for similar functionality are
-collected into B<Route>s. E.g. the game lobby will have commands to interact with the users account
-(login, logout, register) and these will be collected into the B<user> route.
-
-=item Method
-
-Methods are the end-point, they are typically the actions to perform. For example B<login> or B<logout>
+Every command has a unique B<route> using a path-like hierarchy to group commands with similar
+functionality together. e.g. user account commands are B</user/register> B</user/login> and
+B</user/logout>
 
 =back
 
@@ -97,29 +109,30 @@ Putting all these together we have the following hierarchy.
     ws://spacebotwar.com/ws/game    => Connection
     zone1                           => Room
 
-The Route and Method are included in the JSON message which is sent to the Server (and sent back from it)
+The Route is included in the JSON message which is sent to the Server (and sent back from it)
 (see below)
+
+
+
 
 
 =head1 Web Socket Message structure.
 
 A web-socket call is simply a JSON encoded string.
 
-  '{ "route" : "User", "method" : "register", "content" : { "username" : "james_bond", "password" : "topsecret" } }'
+  '{ "route" : "/user/register", "content" : { "username" : "james_bond", "password" : "topsecret" } }'
 
-The B<route> is the organisational grouping of commands of the same type (in this case related to the B<User> commands)
-
-The B<method> defines the content of the payload. the B<register> method for example allows
-you to create a new account.
+The B<route> describes the full path to the command to carry out. (in this case the B<User> command B<register>
+API documentation will follow the same organization of the B<route>. e.g. this will be documented in the L<User.pod>
 
 The B<content> is the actual payload of the message. In this example it defines the B<username> and the B<password>
-required to register a new account. Each  B<method> is documented together with the structure of the B<content>
+required to register a new account.
 
 We will use the same message format when sending messages from a route, back to the client.
 
 A typical server response could be (as a string).
 
-  '{ "room" : "zone_1", "route" : "User", "method" : "register_status", "content" : { "status" : "ok", "code" : "0", "message" : "Registered!" } }'
+  '{ "room" : "zone_1", "route" : "/user/register_status", "content" : { "status" : "ok", "code" : "0", "message" : "Registered!" } }'
 
 (Note the inclusion of the B<room>. It is not necessary to specify this in the Client call since it is implicit
 as part of the conection.)
@@ -137,6 +150,9 @@ or
 For messages sent B<from> the Server.
 
 e.g. for the above.
+
+
+
 
 =head2 Client : register
 
@@ -169,6 +185,9 @@ in to this email address, so make sure it is correct.
 
 The server will send a B<Server : register_confirm> message with the success or failure
 of this call.
+
+
+
 
 =head2 Server : register_status
 
@@ -205,13 +224,21 @@ A human readable description of the status.
 
 No Client response is nessesary.
 
+
+
+
+
 =head1 Generic Server Status.
 
 The 'formula' for the Server Status shown above is sufficiently common, and verbose
 that we will create a shorthand for it.
 
+
+
+
 =head2 Server : register_status
 
 Returns B<status> B<code> and B<message> (see L<intro.pod>)
 
-
+If you see this in any of the other documententaton you know it will have the same
+structure as above.

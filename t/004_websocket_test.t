@@ -18,7 +18,7 @@ $client->connect("ws://localhost:5000/ws/game/room_1")->cb(sub {
     }
     print STDERR "CONNECTED!\n";
 
-    $connection->send('{ "route" : "user", "method" : "register", "content" : { "foo" : "bar" } }');
+    $connection->send('{ "route" : "user/register", "content" : { "foo" : "bar" } }');
 
     $connection->on(each_message => sub {
         my ($connection, $message) = @_;

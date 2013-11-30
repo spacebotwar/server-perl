@@ -12,6 +12,14 @@ use Plack::App::WebSocket::Connection;
 use JSON qw(decode_json);
 use Data::Dumper;
 
+# It's not ideal to load everything here, but it will do for now.
+# Perhaps we need to use 'pluggable'?
+#
+use SpaceBotWar::WebSocket::Game::Room::User;
+
+
+
+
 my $ERROR_ENV = "plack.app.websocket.error";
 
 sub new {
@@ -56,6 +64,14 @@ sub _respond_via {
     }
 }
 
+
+sub fatal {
+    my ($connection, $msg) = @_;
+
+    print STDERR $msg;
+    $connection->send(qw( { "ERROR" : "$@" } ) );
+}
+
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
@@ -66,26 +82,40 @@ sub on_establish {
 
     $connection->on(
         message => sub {
-            my $json = JSON->new;
             my ($connection, $msg) = @_;
+
             print STDERR "RCVD: $msg\n";
+            my $json = JSON->new;
             my $json_msg = eval {$json->decode($msg)};
             if ($@) {
                 print STDERR "ERROR: $@\n";
-                $connection->send(' { "error" : '.$@.' } ');
+                $self->fatal($connection, $@);
             }
             else {
-                print STDERR "got here!\n";
-                my $send = {
-                    route   => 'route goes here',
-                    self    => "$self",
-                    method  => 'method goes here',
-                    content => { foo => 'bar-boom' },
-                };
-                print STDERR "got here 2!\n";
-                my $sent = $json->encode($send);
-                print STDERR "SEND: $sent\n";
-                $connection->send($sent);
+                my $path    = $json_msg->{route};
+                my $content = $json_msg->{content} || {};
+                my ($route, $method) = $path =~ m{(.*)/([^/]*)};
+                $route =~ s{/}{::};
+                $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
+
+                $route = ref($self)."::".$route;
+                my $class;
+#                eval "require $route";
+                if ($@) {
+                    print STDERR "EVAL ERROR: $@\n";
+                    $self->fatal($connection, $@);
+                }
+                else {
+                    my $obj = $route->new({});
+                    eval {
+                        $obj->$method($connection);
+                    };
+                    if ($@) {
+                        print STDERR "METHOD ERROR: $@\n";
+                    }
+
+                    print STDERR "got here route[$route] method [$method] obj[$obj]\n";
+                }
             }
        }
    );

@@ -3,10 +3,13 @@
 All methods in this section can be carried out by a connection to the B<game/lobby>
 route.
 
-=head2 Server : connection_status
+
+
+
+=head2 Server : lobby_status
 
 A B<connection_status> will be sent by the Game Lobby shortly after the user has
-made a connection.
+made a connection or in the case where the lobby status changes.
 
     {
         "lobby_status"  : "ok",
@@ -28,9 +31,7 @@ The numeric code representing the B<lobby_status>
 A message from the server, for example the time at which the server is expected
 to be available again.
 
-=head3 RESPONSE
 
-No response is necessary from the Client.
 
 
 =head2 Client : register
@@ -66,39 +67,13 @@ The server will send a B<Server : register_confirm> message with the success or 
 of this call.
 
 
+
+
 =head2 Server : register_status
 
-A response to a B<Client : register> message.
+Returns B<status> B<code> and B<message> (see L<intro.pod>)
 
-    {
-        "status"    : "Failure",
-        "code"      : "1000",
-        "message"   : "That username already taken"
-    }
 
-or
-
-    {
-        "status"    : "Success",
-        "code"      : "0",
-        "message"   : "Account created"
-    }
-
-=head3 status
-
-The B<Success> or B<Failure> of the B<Client : register> call.
-
-=head3 code
-
-A numeric value representing the status. B<0> is success, any other value is failure.
-
-=head3 message
-
-A human readable description of the status.
-
-=head3 RESPONSE
-
-No Client response is nessesary.
 
 
 =head2 Client : login
@@ -123,9 +98,58 @@ The password you use to access your account.
 The Server will respond with a B<Server : login_status> message
 
 
+
+
 =head2 Server : login_status
 
-A Servers response to the B<Client : login> command.
+Returns B<status> B<code> and B<message> (see L<intro.pod>)
+
+
+
+
+=head2 Client : rooms
+
+A client request to obtain the rooms which are available to join.
+
+    {}
+
+Note. No message content is required for this call.
+
+=head3 RESPONSE
+
+The server will respond with a B<Server : rooms_status> message
+
+
+
+
+=head2 Server : rooms_status
+
+A B<Server : rooms_status> will be sent after a B<Client : rooms> request.
+
+    {
+        "rooms" : [
+            {
+            "room"      : "//spacebotwar.com/ws/game/zone1",
+            "users"     : 113,
+            "status"    : "open",
+            },
+            {
+            "room"      : "//spacebotwar.com/ws/game/zone1",
+            "users"     : 32,
+            "status"    : "closed",
+            },
+        ]
+    }
+
+=head3 rooms
+
+A list of all rooms. For each room the B<room> (the Web Socket connection URL),
+the number of B<users> and the B<status> is given. You may choose to enter any
+of the rooms with B<status> 'open' by making a new connection to that room.
+
+Note. The rooms which are B<open> may change depending upon your login status.
+For example, if you are a 'guest' if you are logged in and if your account is an
+admin account will all affect the rooms which are made available to you.
 
 
 
