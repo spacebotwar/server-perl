@@ -52,19 +52,18 @@ $client->connect("ws://localhost:5000/ws/game/lobby")->cb(sub {
         BAIL_OUT("Cannot connect to server");
     }
 
-    $connection->send('{ "route" : "/register", "content" : { "username" : "james_bond", "password" : "tops3cr3t", "email" : "jb@mi5.gov.org.uk" } }');
+    $connection->send('{ "route" : "/register", "content" : { "username" : "james_bond", "password" : "tops3cr3t", "email" : "agent007@mi6.gov.org.uk" } }');
 
     $connection->on(each_message => sub {
         my ($connection, $message) = @_;
 
         test_message($message);
-        $connection->close;
     });
 
     $connection->on(finish => sub {
         my ($connection) = @_;
-
-        $cv->send;
+        diag "FINISH: received";
+    #    $cv->send;
     });
 });
 
