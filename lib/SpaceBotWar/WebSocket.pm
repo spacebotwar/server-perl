@@ -9,7 +9,7 @@ use Plack::Response;
 use AnyEvent::WebSocket::Server;
 use Try::Tiny;
 use Plack::App::WebSocket::Connection;
-use JSON qw(decode_json);
+use JSON;
 use Data::Dumper;
 
 # It's not ideal to load everything here, but it will do for now.
@@ -72,13 +72,26 @@ sub fatal {
     $connection->send(qw( { "ERROR" : "$@" } ) );
 }
 
+sub send_status {
+    my ($connection, $status, $code, $message) = @_;
+
+    my $msg = {
+        route       => '/lobby_status',
+        room        => 'goo',
+        content     => {
+            status      => $status,
+            code        => $code,
+            message     => $message,
+        },
+    };
+    $connection->send(JSON->new->encode($msg));
+}
+
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-    # env->{PATH_INFO} = '/user/foo/register';
-    # Convert this to 'User::Foo'
-    #
+    send_status($connection, 'ok', 0, 'Welcome');
 
     $connection->on(
         message => sub {

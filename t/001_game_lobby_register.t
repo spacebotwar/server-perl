@@ -39,11 +39,21 @@ sub test_message {
 
     my $method = $json->{route};
     $method =~ s{^/}{};
-    $received_messages->{$method} = 1;
 
+    if (not exists $received_messages->{$method}) {
+        # unexpected method
+        fail("Unexpected method '$method'");
+    }
+
+    if (exists $received_messages->{$method}) {
+        $received_messages->{$method}++;
+    }
     # If all the messages have been received, we can terminate the test.
-    # if (tests_done) { $cv->send; }
-
+    my $valid_tests = grep {$received_messages->{$_} == 1} keys %$received_messages;
+    if ($valid_tests == keys %$received_messages) {
+        # then terminate the tests
+        $cv->send;
+    }
 }
 
 $client->connect("ws://localhost:5000/ws/game/lobby")->cb(sub {
