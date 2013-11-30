@@ -1,4 +1,4 @@
-package SpaceBotWar::WebSocket::Game::Room::User;
+package SpaceBotWar::WebSocket::Game::User;
 
 use Moose;
 use JSON;

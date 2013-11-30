@@ -15,7 +15,7 @@ use Data::Dumper;
 # It's not ideal to load everything here, but it will do for now.
 # Perhaps we need to use 'pluggable'?
 #
-use SpaceBotWar::WebSocket::Game::Room::User;
+use SpaceBotWar::WebSocket::Game::User;
 
 
 
@@ -95,27 +95,27 @@ sub on_establish {
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
                 my ($route, $method) = $path =~ m{(.*)/([^/]*)};
+                $method = "ws_".$method;
                 $route =~ s{/}{::};
                 $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-
-                $route = ref($self)."::".$route;
-                my $class;
-#                eval "require $route";
-                if ($@) {
-                    print STDERR "EVAL ERROR: $@\n";
-                    $self->fatal($connection, $@);
+                if ($route) {
+                    $route = ref($self)."::".$route;
                 }
                 else {
-                    my $obj = $route->new({});
-                    eval {
-                        $obj->$method($connection);
-                    };
-                    if ($@) {
-                        print STDERR "METHOD ERROR: $@\n";
-                    }
-
-                    print STDERR "got here route[$route] method [$method] obj[$obj]\n";
+                    $route = ref($self);
                 }
+                print STDERR "GOT HERE [$route][$method]\n";
+                my $obj = $route->new({});
+                eval {
+                    # We may change this to pass in a '$content' object if it requires
+                    # more than a couple of parameters.
+                    $obj->$method($self->{room}, $connection);
+                };
+                if ($@) {
+                    print STDERR "METHOD ERROR: $@\n";
+                }
+
+                print STDERR "got here route[$route] method [$method] obj[$obj]\n";
             }
        }
    );

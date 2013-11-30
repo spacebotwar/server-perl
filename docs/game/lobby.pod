@@ -12,12 +12,12 @@ A B<connection_status> will be sent by the Game Lobby shortly after the user has
 made a connection or in the case where the lobby status changes.
 
     {
-        "lobby_status"  : "ok",
-        "code"          : 0,
-        "message"       : "Welcome to the Game Lobby",
+        "status"    : "ok",
+        "code"      : 0,
+        "message"   : "Welcome to the Game Lobby",
     }
 
-=head3 lobby_status
+=head3 status
 
 This gives the status of the room. B<ok> for success. Other statuses may include
 B<offline> if the game server is offline due to maintenence.
