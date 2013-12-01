@@ -21,17 +21,21 @@ my $connection;
 
 # How many of each message type do we expect to see?
 my $received_messages = {
-    lobby_status    => 1,
-    register_status => 5,
+    lobby       => 1,
+    register    => 9,
 };
 
 # What test IDs should we see.
 my $test_ids = {
     reg_1_valid             => 0,
     reg_2_no_email          => 0,
-    reg_3_no_username       => 0,
-    reg_4_username_taken    => 0,
-    reg_5_password_error    => 0,
+    reg_3_bad_email         => 0,
+    reg_4_no_username       => 0,
+    reg_5_username_taken    => 0,
+    reg_6_password_length   => 0,
+    reg_7_password_number   => 0,
+    reg_8_password_lower    => 0,
+    reg_9_password_upper    => 0,
 };
 
 # We need to time-out if the connection fails to respond correctly.
@@ -47,7 +51,7 @@ sub test_message {
 
     my $json = JSON->new->decode($message->body);
     my $content = $json->{content};
-#    diag Dumper($json);
+    #diag "RECEIVED: ".Dumper($json);
 
     my $method = $json->{route};
     $method =~ s{^/}{};
@@ -61,40 +65,61 @@ sub test_message {
         
     }
 
-    my $id = $content->{id};
-    if ($id and $id eq 'reg_1_valid') {
+    my $id = $content->{id} || '';
+    #diag "##### [$id] ########";
+    if ($id eq 'reg_1_valid') {
         is($json->{content}{code},      0,                          'reg_1_valid    - Code is correct');
-        is($json->{content}{status},    'ok',                       'reg_1_valid    - status is correct');
-        is($json->{content}{message},   'Welcome back!',            'reg_1_valid    - Message is correct');
-        is($method,                     'register_status',          'reg_1_valid    - Method is correct');
+        is($json->{content}{message},   'Available',                'reg_1_valid    - Message is correct');
+        is($json->{content}{data},      'james_bond',               'reg_1_valid    - Data is correct');
+        is($method,                     'register',                 'reg_1_valid    - Method is correct');
     }
 
-    if ($id and $id eq 'reg_2_no_email') {
+    if ($id eq 'reg_2_no_email') {
         is($json->{content}{code},      1001,                       'reg_2_no_email - Code is correct');
-        is($json->{content}{status},    'failure',                  'reg_2_no_email - status is correct');
-        is($json->{content}{message},   'Missing email address',    'reg_2_no_email - Message is correct');
-        is($method,                     'register_status',          'reg_2_no_email - Method is correct');
+        is($json->{content}{message},   'Email is missing',         'reg_2_no_email - Message is correct');
+        is($method,                     'register',                 'reg_2_no_email - Method is correct');
     }
 
-    if ($id and $id eq 'reg_3_no_username') {
-        is($json->{content}{code},      1002,                       'reg_3_no_username - Code is correct');
-        is($json->{content}{status},    'failure',                  'reg_3_no_username - status is correct');
-        is($json->{content}{message},   'Missing email username',   'reg_3_no_username - Message is correct');
-        is($method,                     'register_status',          'reg_3_no_username - Method is correct');
+    if ($id eq 'reg_3_bad_email') {
+        is($json->{content}{code},      1001,                       'reg_3_bad_email - Code is correct');
+        is($json->{content}{message},   'Email is invalid',         'reg_3_bad_email - Message is correct');
+        is($method,                     'register',                 'reg_3_bad_email - Method is correct');
     }
 
-    if ($id and $id eq 'reg_4_username_taken') {
-        is($json->{content}{code},      1003,                       'reg_4_username_taken - Code is correct');
-        is($json->{content}{status},    'failure',                  'reg_4_username_taken - status is correct');
-        is($json->{content}{message},   'Username already taken',   'reg_4_username_taken - Message is correct');
-        is($method,                     'register_status',          'reg_4_username_taken - Method is correct');
+    if ($id eq 'reg_4_no_username') {
+        is($json->{content}{code},      1001,                       'reg_4_no_username - Code is correct');
+        is($json->{content}{message},   'Username must be at least 3 characters long',         'reg_4_no_username - Message is correct');
+        is($method,                     'register',                 'reg_4_no_username - Method is correct');
     }
 
-    if ($id and $id eq 'reg_5_password_error') {
-        is($json->{content}{code},      1004,                       'reg_5_password_error - Code is correct');
-        is($json->{content}{status},    'failure',                  'reg_5_password_error - status is correct');
-        is($json->{content}{message},   'Password is not strong',   'reg_5_password_error - Message is correct');
-        is($method,                     'register_status',          'reg_5_password_error - Method is correct');
+    if ($id eq 'reg_5_username_taken') {
+        is($json->{content}{code},      1001,                       'reg_5_username_taken - Code is correct');
+        is($json->{content}{message},   'Username not available',   'reg_5_username_taken - Message is correct');
+        is($method,                     'register',                 'reg_5_username_taken - Method is correct');
+    }
+
+    if ($id eq 'reg_6_password_length') {
+        is($json->{content}{code},      1001,                       'reg_6_password_length - Code is correct');
+        is($json->{content}{message},   'Password must be at least 5 characters long',   'reg_6_password_length - Message is correct');
+        is($method,                     'register',                 'reg_6_password_length - Method is correct');
+    }
+
+    if ($id eq 'reg_7_password_number') {
+        is($json->{content}{code},      1001,                       'reg_7_password_number - Code is correct');
+        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_7_password_number - Message is correct');
+        is($method,                     'register',                 'reg_7_password_number - Method is correct');
+    }
+
+    if ($id eq 'reg_8_password_lower') {
+        is($json->{content}{code},      1001,                       'reg_8_password_lower - Code is correct');
+        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_8_password_lower - Message is correct');
+        is($method,                     'register',                 'reg_8_password_lower - Method is correct');
+    }
+
+    if ($id eq 'reg_9_password_upper') {
+        is($json->{content}{code},      1001,                       'reg_9_password_upper - Code is correct');
+        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_9_password_upper - Message is correct');
+        is($method,                     'register',                 'reg_9_password_upper - Method is correct');
     }
 
     is($json->{room}, 'lobby', 'Room is correct');
@@ -113,6 +138,7 @@ sub send_json {
     my ($connection, $json) = @_;
 
     my $msg = JSON->new->encode($json);
+#    print STDERR "send_json: $msg\n";
 
     $connection->send($msg);
 }
@@ -125,18 +151,18 @@ $client->connect("ws://localhost:5000/ws/game/lobby")->cb(sub {
     }
 
 
-    # reg_test_1 - everything valid
+    # reg_1_valid - everything valid
     send_json($connection, {
         route   => '/register',
         content => {
-            id          => 'reg_test_1',
+            id          => 'reg_1_valid',
             username    => 'james_bond',
-            password    => 'tops3cr3t',
+            password    => 'Tops3cr3t',
             email       => 'agent007@example.com',
         }
     });
 
-    # reg_test_2 - no email address 
+    # reg_2_no_email - no email address 
     send_json($connection, {
         route   => '/register',
         content => {
@@ -146,34 +172,78 @@ $client->connect("ws://localhost:5000/ws/game/lobby")->cb(sub {
         }
     });
 
-    # reg_test_3 - no username
+    # reg_3_bad_email - invalid email address 
     send_json($connection, {
         route   => '/register',
         content => {
-            id          => 'reg_3_no_username',
+            id          => 'reg_3_bad_email',
+            username    => 'james_bond',
+            password    => 'tops3cr3t',
+            email       => 'foo',
+        }
+    });
+
+    # reg_4_no_username - no username
+    send_json($connection, {
+        route   => '/register',
+        content => {
+            id          => 'reg_4_no_username',
             password    => 'tops3cr3t',
             email       => 'agent007@example.com',
         }
     });
 
-    # reg_test_4 - username already taken
+    # reg_5_username_taken - username already taken
     send_json($connection, {
         route   => '/register',
         content => {
-            id          => 'reg_4_username_taken',
+            id          => 'reg_5_username_taken',
             username    => 'icydee',
             password    => 'tops3cr3t',
             email       => 'agent007@example.com',
         }
     });
 
-    # reg_test_5 - invalid password
+    # reg_6_password_error - invalid password
     send_json($connection, {
         route   => '/register',
         content => {
-            id          => 'reg_5_password_error',
+            id          => 'reg_6_password_length',
             username    => 'james_bond',
             password    => 'hi',
+            email       => 'agent007@example.com',
+        }
+    });
+
+    # reg_7_password_number - invalid password
+    send_json($connection, {
+        route   => '/register',
+        content => {
+            id          => 'reg_7_password_number',
+            username    => 'james_bond',
+            password    => 'hiHIhiHI',
+            email       => 'agent007@example.com',
+        }
+    });
+
+    # reg_8_password_lower - invalid password
+    send_json($connection, {
+        route   => '/register',
+        content => {
+            id          => 'reg_8_password_lower',
+            username    => 'james_bond',
+            password    => 'HI343HHT3',
+            email       => 'agent007@example.com',
+        }
+    });
+
+    # reg_9_password_higher - invalid password
+    send_json($connection, {
+        route   => '/register',
+        content => {
+            id          => 'reg_9_password_higher',
+            username    => 'james_bond',
+            password    => 'lower3th3',
             email       => 'agent007@example.com',
         }
     });

@@ -12,19 +12,14 @@ A B<connection_status> will be sent by the Game Lobby shortly after the user has
 made a connection or in the case where the lobby status changes.
 
     {
-        "status"    : "ok",
         "code"      : 0,
         "message"   : "Welcome to the Game Lobby",
     }
 
-=head3 status
-
-This gives the status of the room. B<ok> for success. Other statuses may include
-B<offline> if the game server is offline due to maintenence.
-
 =head3 code
 
-The numeric code representing the B<lobby_status>
+The numeric code representing the B<lobby_status> where B<0> represents success
+and any other value indicates a fault.
 
 =head3 message
 
@@ -68,15 +63,15 @@ An ID to identify this message so you can tie up the server response to this req
 
 =head3 RESPONSE
 
-The server will send a B<Server : register_confirm> message with the success or failure
+The server will send a B<Server : register> message with the success or failure
 of this call.
 
 
 
 
-=head2 Server : register_status
+=head2 Server : register
 
-Returns B<status> B<code> B<id> and B<message> (see L<intro.pod>)
+Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
 
 
@@ -88,7 +83,8 @@ A client request to authenticate and to log into the server
 
     {
         "username"  : "james_bond",
-        "password"  : "tops3cret"
+        "password"  : "tops3cret",
+        "id"        : "james_bond",
     }
 
 =head3 username (required)
@@ -99,16 +95,20 @@ The username you used during registration.
 
 The password you use to access your account.
 
+=head3 id (optional)
+
+Unique ID to identify the return message
+
 =head3 RESPONSE
 
-The Server will respond with a B<Server : login_status> message
+The Server will respond with a B<Server : login> message
 
 
 
 
-=head2 Server : login_status
+=head2 Server : login
 
-Returns B<status> B<code> and B<message> (see L<intro.pod>)
+Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
 
 
@@ -117,20 +117,34 @@ Returns B<status> B<code> and B<message> (see L<intro.pod>)
 
 A client request to obtain the rooms which are available to join.
 
-    {}
+    {
+        "id"            : "123",
+        "continuous"    : "1",
+    }
 
-Note. No message content is required for this call.
+=head3 id (optional)
+
+Unique ID to identify the return message;
+
+=head3 continuous (optional)
+
+If specified, and if set to B<1> will cause the server to send continuous
+updates whenever the rooms status changes.
+
+To stop continuous messages from the server send a B<Client : rooms> message
+with B<continuous> set to B<0> or omitted altogether.
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : rooms_status> message
+The server will respond with a B<Server : rooms> message
 
 
 
 
-=head2 Server : rooms_status
+=head2 Server : rooms
 
-A B<Server : rooms_status> will be sent after a B<Client : rooms> request.
+A B<Server : rooms> message will be sent after a B<Client : rooms> request or
+on a continuous basis (whenever there is a change) if selected by the client.
 
     {
         "rooms" : [
@@ -144,7 +158,8 @@ A B<Server : rooms_status> will be sent after a B<Client : rooms> request.
             "users"     : 32,
             "status"    : "closed",
             },
-        ]
+        ],
+        "id"    : "123",
     }
 
 =head3 rooms

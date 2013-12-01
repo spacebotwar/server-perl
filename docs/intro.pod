@@ -132,7 +132,7 @@ We will use the same message format when sending messages from a route, back to 
 
 A typical server response could be (as a string).
 
-  '{ "room" : "zone_1", "route" : "/user/register_status", "content" : { "status" : "ok", "code" : "0", "message" : "Registered!" } }'
+  '{ "room" : "zone_1", "route" : "/user/register_status", "content" : { "code" : "0", "message" : "Registered!" } }'
 
 (Note the inclusion of the B<room>. It is not necessary to specify this in the Client call since it is implicit
 as part of the conection.)
@@ -191,36 +191,32 @@ makes a good B<id>. In other cases an incrementing number could be used.
 
 =head3 RESPONSE
 
-The server will send a B<Server : register_confirm> message with the success or failure
+The server will send a B<Server : register> message with the success or failure
 of this call.
 
 
 
 
-=head2 Server : register_status
+=head2 Server : register
 
 A response to a B<Client : register> message.
 
     {
-        "status"    : "Failure",
         "code"      : "1000",
         "message"   : "That username already taken",
+        "data"      : "james_bond",
         "id"        : "james_bond",
     }
 
 or
 
     {
-        "status"    : "Success",
         "code"      : "0",
-        "message"   : "Account created",
+        "message"   : "Success.",
+        "data"      : "james_bond",
         "id"        : "james_bond",
     }
 
-
-=head3 status
-
-The B<Success> or B<Failure> of the B<Client : register> call.
 
 =head3 code
 
@@ -228,7 +224,16 @@ A numeric value representing the status. B<0> is success, any other value is fai
 
 =head3 message
 
-A human readable description of the status.
+A human readable description of the status. This field should not be used programatically
+since it may change. Use the B<code> field instead.
+
+=head3 data
+
+In some cases data will be returned
+
+=head3 id
+
+Where an B<id> was passed in the call, it is returned by the server.
 
 =head3 RESPONSE
 
@@ -248,7 +253,8 @@ that we will create a shorthand for it.
 
 =head2 Server : register_status
 
-Returns B<status> B<code> and B<message> (see L<intro.pod>)
+Returns B<code> B<message> B<data> and B<id>(see L<intro.pod>)
 
 If you see this in any of the other documententaton you know it will have the same
 structure as above.
+

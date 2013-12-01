@@ -72,21 +72,6 @@ sub fatal {
     $connection->send(qw( { "ERROR" : "$@" } ) );
 }
 
-#sub send_status {
-#    my ($connection, $status, $code, $message) = @_;
-#
-#    my $msg = {
-#        route       => '/lobby_status',
-#        room        => 'goo',
-#        content     => {
-#            status      => $status,
-#            code        => $code,
-#            message     => $message,
-#        },
-#    };
-#    $connection->send(JSON->new->encode($msg));
-#}
-
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
@@ -109,6 +94,7 @@ sub on_establish {
             else {
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
+                my $id      = $content->{id};
                 my ($route, $method) = $path =~ m{(.*)/([^/]*)};
                 $method = "ws_".$method;
                 $route =~ s{/}{::};
@@ -119,17 +105,41 @@ sub on_establish {
                 else {
                     $route = ref($self);
                 }
-                print STDERR "GOT HERE [$route][$method]\n";
                 my $obj = $route->new({});
+
+
                 eval {
                     # We may change this to pass in a '$content' object if it requires
                     # more than a couple of parameters.
                     $obj->$method($room, $connection, $content);
                 };
-                if ($@) {
-                    print STDERR "METHOD ERROR: $@\n";
-                }
 
+                my @error;
+                if ($@ and ref($@) eq 'ARRAY') {
+                    @error = @{$@};
+                }
+                elsif ($@) {
+                    @error = (
+                        1000,
+                        'unknown error',
+                        $@,
+                    );
+                }
+                if (@error) {
+                    my $msg = {
+                        route   => $path,
+                        room    => $room,
+                        content => {
+                            code        => $error[0],
+                            message     => $error[1],
+                            data        => $error[2],
+                            id          => $id,
+                        },
+                    };
+                    $msg = JSON->new->encode($msg);
+                    print STDERR "SEND: $msg\n";
+                    $connection->send($msg);
+                }
                 print STDERR "got here route[$route] method [$method] obj[$obj]\n";
             }
        }

@@ -1,12 +1,8 @@
+# config-file-type: JSON 1
 {
-    db      => {
-        dsn         => 'dbi:SQLite:dbname=/data/now/space-bot-war/spacebotwar.db',
-        options     => {
-            sqlite_unicode      => 1,
-        },
-        password    => 'secret',
-        username    => 'me',
-        schema      => 'Galileo::DB::Schema',
+    "db"    => {
+        "dsn"       => 'DBI:mysql:spacebotwar',
+        "password"  => 's3cr3t',
+        "username"  => 'me',
     },
-    secret  => 'nthntheurchrthntheugeuthjqkthaoe',
 }

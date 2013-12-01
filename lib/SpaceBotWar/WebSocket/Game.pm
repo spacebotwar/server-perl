@@ -2,6 +2,8 @@ package SpaceBotWar::WebSocket::Game;
 
 use strict;
 use warnings;
+use SpaceBotWar;
+use Carp;
 
 use parent qw(SpaceBotWar::WebSocket);
 
@@ -14,6 +16,9 @@ sub render_json {
     my ($self, $room, $connection, $json) = @_;
 
     my $sent = JSON->new->encode($json);
+    print STDERR "RENDER_JSON: [$sent]\n";
+
+
     $connection->send($sent);
 }
 
@@ -23,13 +28,19 @@ sub render_json {
 sub ws_register {
     my ($self, $room, $connection, $content) = @_;
 
+    my $db = SpaceBotWar->db;
+
+    $db->resultset('User')->assert_username_available($content->{username});
+    $db->resultset('User')->assert_email_valid($content->{email});
+    $db->resultset('User')->assert_password_valid($content->{password});
+
     my $send = {
         room    => $room,
-        route   => "/register_status",
-        content => { 
-            status  => 'ok',
+        route   => "/register",
+        content => {
             code    => 0,
-            message => 'Welcome back!',
+            message => 'Available',
+            data    => $content->{username},
         },
     };
     if ($content->{id}) {
@@ -38,6 +49,7 @@ sub ws_register {
     $self->render_json($room, $connection, $send);
 }
 
+
 # A user has joined the room
 #
 sub on_connect {
@@ -45,11 +57,11 @@ sub on_connect {
 
     my $send = {
         room    => $room,
-        route   => "/lobby_status",
+        route   => "/lobby",
         content => {
-            status      => 'ok',
             code        => 0,
-            message     => "Welcome to the game lobby",
+            message     => 'Welcome to the game lobby',
+            data        => 'lobby',
         },
     };
     $self->render_json($room, $connection, $send);
