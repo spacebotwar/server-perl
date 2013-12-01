@@ -34,6 +34,8 @@ sub ws_register {
     $db->resultset('User')->assert_email_valid($content->{email});
     $db->resultset('User')->assert_password_valid($content->{password});
 
+    my $user = $db->resultset('User')->assert_create({ %$content });
+
     my $send = {
         room    => $room,
         route   => "/register",

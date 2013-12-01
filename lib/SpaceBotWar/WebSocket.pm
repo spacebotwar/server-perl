@@ -140,7 +140,6 @@ sub on_establish {
                     print STDERR "SEND: $msg\n";
                     $connection->send($msg);
                 }
-                print STDERR "got here route[$route] method [$method] obj[$obj]\n";
             }
        }
    );

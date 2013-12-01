@@ -3,6 +3,7 @@ package SpaceBotWar::DB::ResultSet::User;
 use Moose;
 use namespace::autoclean;
 use Data::Validate::Email qw(is_email);
+use Crypt::SaltedHash;
 
 extends 'SpaceBotWar::DB::ResultSet';
 
@@ -12,6 +13,7 @@ extends 'SpaceBotWar::DB::ResultSet';
 sub assert_username_available {
     my ($self, $username) = @_;
 
+    confess [1001, 'Username must be at least 3 characters long' ] if not defined $username;
     confess [1001, 'Username must be at least 3 characters long', $username] if length($username) < 3;
 
     my ($row) = $self->search({
@@ -44,5 +46,28 @@ sub assert_password_valid {
     confess [1001, 'Password must contain numbers, lowercase and uppercase', $password ]    if not $password =~ m/[A-Z]/;
     return 1;
 }
+
+# Assert that everything is correct to create a new User
+#
+sub assert_create {
+    my ($self, $args) = @_;
+
+    $self->assert_username_available($args->{username});
+    $self->assert_email_valid($args->{email});
+    $self->assert_password_valid($args->{password});
+
+    my $csh = Crypt::SaltedHash->new->add($args->{password})->generate;
+
+    my $user = $self->create({
+        name        => $args->{username},
+        password    => $csh,
+        email       => $args->{email},
+    });
+
+    confess [1002, 'Could not create new user' ] if not $user;
+    
+    return $user;
+}
+
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);
