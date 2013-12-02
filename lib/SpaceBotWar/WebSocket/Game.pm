@@ -52,6 +52,32 @@ sub ws_register {
 }
 
 
+# A user sends an email 'validation code' to the server
+#
+sub ws_confirm_email {
+    my ($self, $room, $connection, $content) = @_;
+
+    my $db = SpaceBotWar->db;
+
+    my $user = $db->resultset('User')->assert_confirm_email($content->{code});
+
+    my $send = {
+        room    => $room,
+        route   => '/confirm_email',
+        content => {
+            username    => $user->name,
+            code        => 0,
+            message     => 'Logged on',
+            data        => $user->id,
+        },
+    };
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+}
+
+
 # A user has joined the room
 #
 sub on_connect {

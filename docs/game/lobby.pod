@@ -40,6 +40,10 @@ Send a registration message from the Client to the server.
         "id"        : "james_bond",
     }
 
+On registering you will be sent an email which allows you to confirm your email
+address. In the email will be a link which you need to follow. On clicking the
+link it will verify your email address and unlock your account.
+
 =head3 username (required)
 
 The name you will use to log into the site. This must be at least 3 charaters long
@@ -73,6 +77,34 @@ of this call.
 
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
+
+
+
+=head2 Client : confirm_email
+
+A validation code to confirm the users email address
+
+    {
+        "code"      : "1234-ABCD-5678-EF01"
+    }
+
+=head3 code (required)
+
+The validation code given to you in your email message.
+
+=head3 RESPONSE
+
+The server will send a B<Server : confirm_email> message with the success or
+failure of this call.
+
+
+
+
+=head2 Server : confirm_email
+
+Returns B<code> B<id> and B<message> (see L<intro.pod>)
+
+If the status is success, then the user will be logged on to the server.
 
 
 
@@ -110,6 +142,8 @@ The Server will respond with a B<Server : login> message
 
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
+If the status is success, then the user will be logged on to the server.
+
 
 
 
@@ -121,7 +155,7 @@ A client request to obtain the rooms which are available to join.
         "id"            : "123",
         "continuous"    : "1",
     }
-
+i
 =head3 id (optional)
 
 Unique ID to identify the return message;
@@ -154,23 +188,23 @@ on a continuous basis (whenever there is a change) if selected by the client.
             "status"    : "open",
             },
             {
-            "room"      : "//spacebotwar.com/ws/game/zone1",
-            "users"     : 32,
-            "status"    : "closed",
-            },
-        ],
-        "id"    : "123",
     }
+i
+=head3 id (optional)
 
-=head3 rooms
+Unique ID to identify the return message;
 
-A list of all rooms. For each room the B<room> (the Web Socket connection URL),
-the number of B<users> and the B<status> is given. You may choose to enter any
-of the rooms with B<status> 'open' by making a new connection to that room.
+=head3 continuous (optional)
 
-Note. The rooms which are B<open> may change depending upon your login status.
-For example, if you are a 'guest' if you are logged in and if your account is an
-admin account will all affect the rooms which are made available to you.
+If specified, and if set to B<1> will cause the server to send continuous
+updates whenever the rooms status changes.
+
+To stop continuous messages from the server send a B<Client : rooms> message
+with B<continuous> set to B<0> or omitted altogether.
+
+=head3 RESPONSE
+
+The server will respond with a B<Server : rooms> message
 
 
 
