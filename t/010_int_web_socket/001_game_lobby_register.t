@@ -4,17 +4,16 @@ use warnings;
 use FindBin;
 FindBin->again;
 use lib "$FindBin::Bin/../../lib";
+use lib "$FindBin::Bin/../lib";
 
 use AnyEvent::WebSocket::Client;
 use JSON;
 use Data::Dumper;
 use Test::More;
 use SpaceBotWar;
+use WSTester;
 
-
-my $cv = AnyEvent->condvar;
 my $db = SpaceBotWar->db;
-my $connection;
 
 # Test the connection to the game lobby
 # Testing ASYNC replies is tricky.
@@ -22,6 +21,10 @@ my $connection;
 #   We might not be able to guarantee the order they are received
 #   We dont want to wait forever for a message that may not arrive.
 #
+my $tester = WSTester->new({
+    route       => "/",
+    server      => "ws://git.icydee.com:5000/ws/game/lobby",
+});
 
 my $route = "/";
 my $tests = {
@@ -140,103 +143,6 @@ my $tests = {
     },
 };
 
-
-
-# Not ideal to make a connection for each test, but it's the easiest way
-# I have found so far!
-#
-for my $key (sort keys %$tests) {
-    my $test = $tests->{$key};
-
-    my $cv = AnyEvent->condvar;
-    #diag("test $key");
-    my $client = AnyEvent::WebSocket::Client->new;
-    $client->connect("ws://git.icydee.com:5000/ws/game/lobby")->cb(sub {
-
-        $connection = eval { shift->recv };
-        if ($@) {
-            BAIL_OUT("Cannot connect to server");
-        }
-
-        $connection->on(finish => sub {
-            my ($connection) = @_;
-            fail("FINISH signal received");
-        #    $cv->send;
-        });
-
-        # We need to time-out if the connection fails to respond correctly.
-        my $test_timer = AnyEvent->timer(
-            after   => 1,
-            cb      => sub {
-                $cv->send;
-                fail("Timer expired");
-            },
-        );
-
-
-        my $content = $test->{send};
-        $content->{id} = $key;
-
-        send_json($connection, {
-            route   => $route.$test->{method},
-            content => $content,
-        });
-
-        # We should get one reply for each message
-
-        $connection->on(each_message => sub {
-            my ($connection, $message) = @_;
-
-            my $json = JSON->new->decode($message->body);
-            my $content = $json->{content};
-            #diag "RECEIVED: ".Dumper($json);
-            my $method = $json->{route};
-            $method =~ s{^/}{};
-
-            if ($method eq 'lobby_status') {
-                # We can ignore these
-            }
-            elsif ($method ne $test->{method}) {
-#                fail("Unexpected method '$method'");
-            }
-            else {
-                my $id = $content->{id} || '';
-                if ($id eq $key) {
-                    for my $r_key (%{$test->{recv}}) {
-                        is($content->{$r_key}, $test->{recv}{$r_key}, "$id - $r_key - is correct");
-                    }
-                }
-                else {
-                    fail("Unexpected id '$id'");
-                }
-                $cv->send;
-                undef $test_timer; # cancel the timer
-            }
-        });
-    });
-    # Go into loop waiting for all responses
-    $cv->recv;
-
-    # Do any tidyup (if needed)
-    my $cb = $test->{callback};
-    if ($cb) {
-        &$cb();
-    }
-}
-
-
-
-
-sub send_json {
-    my ($connection, $json) = @_;
-
-    my $msg = JSON->new->encode($json);
-    #diag("send_json: $msg");
-
-    $connection->send($msg);
-}
-
-
+$tester->run_tests($tests);
 done_testing();
-
 
