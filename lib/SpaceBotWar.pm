@@ -8,6 +8,9 @@ use Config::JSON;
 
 use namespace::autoclean;
 use Module::Find qw(useall);
+use Redis;
+use SpaceBotWar::Cache;
+
 
 useall __PACKAGE__;
 
@@ -23,8 +26,25 @@ my $db      = SpaceBotWar::DB->connect(
     },
 );
 
+my $redis = Redis->new(server => $config->get('redis'));
+
+my $cache = SpaceBotWar::Cache->new({
+    redis   => $redis,
+});
+
+
+# These are all singletons.
+#
 sub db {
     return $db;
+}
+
+sub cache {
+    return $cache;
+}
+
+sub redis {
+    return $redis;
 }
 
 __PACKAGE__->meta->make_immutable;
