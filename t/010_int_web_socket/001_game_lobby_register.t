@@ -1,273 +1,241 @@
-
 use strict;
 use warnings;
+
+use FindBin;
+FindBin->again;
+use lib "$FindBin::Bin/../../lib";
 
 use AnyEvent::WebSocket::Client;
 use JSON;
 use Data::Dumper;
 use Test::More;
+use SpaceBotWar;
 
-my $client = AnyEvent::WebSocket::Client->new;
 
 my $cv = AnyEvent->condvar;
+my $db = SpaceBotWar->db;
 my $connection;
 
 # Test the connection to the game lobby
 # Testing ASYNC replies is tricky.
 #   We want to be able to ensure all the requested messages have been received
 #   We might not be able to guarantee the order they are received
-#   We don't want to wait forever for a message that may not arrive.
+#   We dont want to wait forever for a message that may not arrive.
 #
 
-# How many of each message type do we expect to see?
-my $received_messages = {
-    lobby       => 1,
-    register    => 9,
-};
-
-# What test IDs should we see.
-my $test_ids = {
-    reg_1_valid             => 0,
-    reg_2_no_email          => 0,
-    reg_3_bad_email         => 0,
-    reg_4_no_username       => 0,
-    reg_5_username_taken    => 0,
-    reg_6_password_length   => 0,
-    reg_7_password_number   => 0,
-    reg_8_password_lower    => 0,
-    reg_9_password_upper    => 0,
-};
-
-# We need to time-out if the connection fails to respond correctly.
-my $test_timer = AnyEvent->timer(
-    after   => 2,
-    cb      => sub {
-        $cv->send;
+my $route = "/";
+my $tests = {
+    "001_no_email"  => {
+        method  => 'register',
+        send    => {
+            username    => 'james_bond',
+            password    => 'tops3Cr3t',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Email is missing',
+        },
     },
-);
+    "002_bad_email"  => {
+        method  => 'register',
+        send    => {
+            username    => 'james_bond',
+            password    => 'tops3Cr3t',
+            email       => 'foo',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Email is invalid',
+        },
+    },
+    "003_no_username"  => {
+        method  => 'register',
+        send    => {
+            password    => 'tops3Cr3t',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Username must be at least 3 characters long',
+        },
+    },
+    "005_username_taken"  => {
+        method  => 'register',
+        send    => {
+            password    => 'tops3Cr3t',
+            username    => 'icydee',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Username not available',
+        },
+    },
+    "006_password_length"  => {
+        method  => 'register',
+        send    => {
+            password    => 'hi',
+            username    => 'james_bond',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Password must be at least 5 characters long',
+        },
+    },
+    "006_password_number"  => {
+        method  => 'register',
+        send    => {
+            password    => 'topSeCreT',
+            username    => 'james_bond',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Password must contain numbers, lowercase and uppercase',
+        },
+    },
+    "007_password_lower"  => {
+        method  => 'register',
+        send    => {
+            password    => 'TOPSECRET3',
+            username    => 'james_bond',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Password must contain numbers, lowercase and uppercase',
+        },
+    },
+    "008_password_upper"  => {
+        method  => 'register',
+        send    => {
+            password    => 'tops3cr3t',
+            username    => 'james_bond',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Password must contain numbers, lowercase and uppercase',
+        },
+    },
 
-sub test_message {
-    my ($message) = @_;
+    "009_all_correct"  => {
+        method  => 'register',
+        send    => {
+            password    => 'Tops3cr3T',
+            username    => 'james_bond',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Available',
+        },
+        callback    => sub {
+            my ($user) = $db->resultset('User')->search({
+                name    => 'james_bond',
+            });
+            $user->delete;
+        },
+    },
+};
 
-    my $json = JSON->new->decode($message->body);
-    my $content = $json->{content};
-    #diag "RECEIVED: ".Dumper($json);
 
-    my $method = $json->{route};
-    $method =~ s{^/}{};
 
-    if (not exists $received_messages->{$method}) {
-        # unexpected method
-        fail("Unexpected method '$method'");
-    }
+# Not ideal to make a connection for each test, but it's the easiest way
+# I have found so far!
+#
+for my $key (sort keys %$tests) {
+    my $test = $tests->{$key};
 
-    if ($method eq 'lobby_status') {
-        
-    }
+    my $cv = AnyEvent->condvar;
+    #diag("test $key");
+    my $client = AnyEvent::WebSocket::Client->new;
+    $client->connect("ws://git.icydee.com:5000/ws/game/lobby")->cb(sub {
 
-    my $id = $content->{id} || '';
-    #diag "##### [$id] ########";
-    if ($id eq 'reg_1_valid') {
-        is($json->{content}{code},      0,                          'reg_1_valid    - Code is correct');
-        is($json->{content}{message},   'Available',                'reg_1_valid    - Message is correct');
-        is($json->{content}{data},      'james_bond',               'reg_1_valid    - Data is correct');
-        is($method,                     'register',                 'reg_1_valid    - Method is correct');
-    }
+        $connection = eval { shift->recv };
+        if ($@) {
+            BAIL_OUT("Cannot connect to server");
+        }
 
-    if ($id eq 'reg_2_no_email') {
-        is($json->{content}{code},      1001,                       'reg_2_no_email - Code is correct');
-        is($json->{content}{message},   'Email is missing',         'reg_2_no_email - Message is correct');
-        is($method,                     'register',                 'reg_2_no_email - Method is correct');
-    }
+        $connection->on(finish => sub {
+            my ($connection) = @_;
+            fail("FINISH signal received");
+        #    $cv->send;
+        });
 
-    if ($id eq 'reg_3_bad_email') {
-        is($json->{content}{code},      1001,                       'reg_3_bad_email - Code is correct');
-        is($json->{content}{message},   'Email is invalid',         'reg_3_bad_email - Message is correct');
-        is($method,                     'register',                 'reg_3_bad_email - Method is correct');
-    }
+        # We need to time-out if the connection fails to respond correctly.
+        my $test_timer = AnyEvent->timer(
+            after   => 1,
+            cb      => sub {
+                $cv->send;
+                fail("Timer expired");
+            },
+        );
 
-    if ($id eq 'reg_4_no_username') {
-        is($json->{content}{code},      1001,                       'reg_4_no_username - Code is correct');
-        is($json->{content}{message},   'Username must be at least 3 characters long',         'reg_4_no_username - Message is correct');
-        is($method,                     'register',                 'reg_4_no_username - Method is correct');
-    }
 
-    if ($id eq 'reg_5_username_taken') {
-        is($json->{content}{code},      1001,                       'reg_5_username_taken - Code is correct');
-        is($json->{content}{message},   'Username not available',   'reg_5_username_taken - Message is correct');
-        is($method,                     'register',                 'reg_5_username_taken - Method is correct');
-    }
+        my $content = $test->{send};
+        $content->{id} = $key;
 
-    if ($id eq 'reg_6_password_length') {
-        is($json->{content}{code},      1001,                       'reg_6_password_length - Code is correct');
-        is($json->{content}{message},   'Password must be at least 5 characters long',   'reg_6_password_length - Message is correct');
-        is($method,                     'register',                 'reg_6_password_length - Method is correct');
-    }
+        send_json($connection, {
+            route   => $route.$test->{method},
+            content => $content,
+        });
 
-    if ($id eq 'reg_7_password_number') {
-        is($json->{content}{code},      1001,                       'reg_7_password_number - Code is correct');
-        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_7_password_number - Message is correct');
-        is($method,                     'register',                 'reg_7_password_number - Method is correct');
-    }
+        # We should get one reply for each message
 
-    if ($id eq 'reg_8_password_lower') {
-        is($json->{content}{code},      1001,                       'reg_8_password_lower - Code is correct');
-        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_8_password_lower - Message is correct');
-        is($method,                     'register',                 'reg_8_password_lower - Method is correct');
-    }
+        $connection->on(each_message => sub {
+            my ($connection, $message) = @_;
 
-    if ($id eq 'reg_9_password_upper') {
-        is($json->{content}{code},      1001,                       'reg_9_password_upper - Code is correct');
-        is($json->{content}{message},   'Password must contain numbers, lowercase and uppercase',   'reg_9_password_upper - Message is correct');
-        is($method,                     'register',                 'reg_9_password_upper - Method is correct');
-    }
+            my $json = JSON->new->decode($message->body);
+            my $content = $json->{content};
+            #diag "RECEIVED: ".Dumper($json);
+            my $method = $json->{route};
+            $method =~ s{^/}{};
 
-    is($json->{room}, 'lobby', 'Room is correct');
+            if ($method eq 'lobby_status') {
+                # We can ignore these
+            }
+            elsif ($method ne $test->{method}) {
+#                fail("Unexpected method '$method'");
+            }
+            else {
+                my $id = $content->{id} || '';
+                if ($id eq $key) {
+                    for my $r_key (%{$test->{recv}}) {
+                        is($content->{$r_key}, $test->{recv}{$r_key}, "$id - $r_key - is correct");
+                    }
+                }
+                else {
+                    fail("Unexpected id '$id'");
+                }
+                $cv->send;
+                undef $test_timer; # cancel the timer
+            }
+        });
+    });
+    # Go into loop waiting for all responses
+    $cv->recv;
 
-    $received_messages->{$method}--;
-
-    my $tests_run = grep {$received_messages->{$_} <= 0} keys %$received_messages;
-
-    if ($tests_run == keys %$received_messages) {
-        # then terminate the tests
-        $cv->send;
+    # Do any tidyup (if needed)
+    my $cb = $test->{callback};
+    if ($cb) {
+        &$cb();
     }
 }
+
+
+
 
 sub send_json {
     my ($connection, $json) = @_;
 
     my $msg = JSON->new->encode($json);
-#    print STDERR "send_json: $msg\n";
+    #diag("send_json: $msg");
 
     $connection->send($msg);
 }
 
-
-$client->connect("ws://localhost:5000/ws/game/lobby")->cb(sub {
-    $connection = eval { shift->recv };
-    if ($@) {
-        BAIL_OUT("Cannot connect to server");
-    }
-
-
-    # reg_1_valid - everything valid
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_1_valid',
-            username    => 'james_bond',
-            password    => 'Tops3cr3t',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_2_no_email - no email address 
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_2_no_email',
-            username    => 'james_bond',
-            password    => 'tops3cr3t',
-        }
-    });
-
-    # reg_3_bad_email - invalid email address 
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_3_bad_email',
-            username    => 'james_bond',
-            password    => 'tops3cr3t',
-            email       => 'foo',
-        }
-    });
-
-    # reg_4_no_username - no username
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_4_no_username',
-            password    => 'tops3cr3t',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_5_username_taken - username already taken
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_5_username_taken',
-            username    => 'icydee',
-            password    => 'tops3cr3t',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_6_password_error - invalid password
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_6_password_length',
-            username    => 'james_bond',
-            password    => 'hi',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_7_password_number - invalid password
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_7_password_number',
-            username    => 'james_bond',
-            password    => 'hiHIhiHI',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_8_password_lower - invalid password
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_8_password_lower',
-            username    => 'james_bond',
-            password    => 'HI343HHT3',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    # reg_9_password_higher - invalid password
-    send_json($connection, {
-        route   => '/register',
-        content => {
-            id          => 'reg_9_password_higher',
-            username    => 'james_bond',
-            password    => 'lower3th3',
-            email       => 'agent007@example.com',
-        }
-    });
-
-    $connection->on(each_message => sub {
-        my ($connection, $message) = @_;
-
-        test_message($message);
-    });
-
-    $connection->on(finish => sub {
-        my ($connection) = @_;
-        diag "FINISH: received";
-    #    $cv->send;
-    });
-});
-
-$cv->recv;
-
-# See if all the expected messages have been received.
-#
-foreach my $key (keys %$received_messages) {
-    is($received_messages->{$key}, 0, "message: $key");
-}
 
 done_testing();
 
