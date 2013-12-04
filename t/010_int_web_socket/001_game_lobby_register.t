@@ -13,7 +13,8 @@ use Test::More;
 use SpaceBotWar;
 use WSTester;
 
-my $db = SpaceBotWar->db;
+my $db      = SpaceBotWar->db;
+my $config  = SpaceBotWar->config;
 
 # Test the connection to the game lobby
 # Testing ASYNC replies is tricky.
@@ -23,7 +24,7 @@ my $db = SpaceBotWar->db;
 #
 my $tester = WSTester->new({
     route       => "/",
-    server      => "ws://git.icydee.com:5000/ws/game/lobby",
+    server      => $config->get('ws_server'),
 });
 
 my $route = "/";

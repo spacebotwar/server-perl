@@ -1,4 +1,3 @@
-
 use strict;
 use warnings;
 
@@ -14,16 +13,8 @@ use Test::More;
 use SpaceBotWar;
 use WSTester;
 
-my $client = AnyEvent::WebSocket::Client->new;
-
-my $cv = AnyEvent->condvar;
-my $connection;
-
-# Set up test account
-# (with a name with a leading space, something that would not normally be possible
-# since 'register' prevents it.
-#
-my $db = SpaceBotWar->db;
+my $db      = SpaceBotWar->db;
+my $config  = SpaceBotWar->config;
 
 my $user = $db->resultset('User')->create({
     name        => ' test_user_1',
@@ -33,7 +24,7 @@ my $user = $db->resultset('User')->create({
 
 my $tester = WSTester->new({
     route       => "/",
-    server      => "ws://git.icydee.com:5000/ws/game/lobby",
+    server      => $config->get('ws_server'),
 });
 
 my $route = "/";

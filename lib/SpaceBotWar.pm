@@ -26,7 +26,7 @@ my $db      = SpaceBotWar::DB->connect(
     },
 );
 
-my $redis = Redis->new(server => $config->get('redis'));
+my $redis = Redis->new(server => $config->get('redis_server'));
 
 my $cache = SpaceBotWar::Cache->new({
     redis   => $redis,
@@ -35,6 +35,10 @@ my $cache = SpaceBotWar::Cache->new({
 
 # These are all singletons.
 #
+sub config {
+    return $config;
+}
+
 sub db {
     return $db;
 }

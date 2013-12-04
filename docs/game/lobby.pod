@@ -3,6 +3,14 @@
 All methods in this section can be carried out by a connection to the B<game/lobby>
 route.
 
+=head2 Sessions
+
+A session ID is used to identify the client to the server. A session ID
+is initially provided by the server and this should be retained by the client and used in
+every subsequent Web Socket call to the server.
+
+
+
 
 
 
@@ -11,10 +19,10 @@ route.
 A B<connection_status> will be sent by the Game Lobby shortly after the user has
 made a connection or in the case where the lobby status changes.
 
-    {
-        "code"      : 0,
-        "message"   : "Welcome to the Game Lobby",
-    }
+{
+    "code"      : 0,
+    "message"   : "Welcome to the Game Lobby",
+}
 
 =head3 code
 
@@ -26,6 +34,29 @@ and any other value indicates a fault.
 A message from the server, for example the time at which the server is expected
 to be available again.
 
+
+
+
+
+=head3 session
+
+Session variables are used to link identify every message sent by the client with
+a particular user (or guest if the user has not yet logged in or registered.
+
+A new unique session ID is provided by the server every time a new connection is
+made from a client.
+
+The client should only use this
+
+A session variable is provided by the lobby. This session ID should be included
+in all subsequent messages to the server.
+
+
+=head2 Client : login_with_session
+
+In the event that a user has logged in previously, they will have been given a
+session ID. If this session ID is still current (within say 2 hours) then the
+user can log in with this session ID.
 
 
 
@@ -77,6 +108,8 @@ of this call.
 
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
+The B<data> returned is the username.
+
 
 
 
@@ -85,12 +118,17 @@ Returns B<code> B<id> and B<message> (see L<intro.pod>)
 A validation code to confirm the users email address
 
     {
-        "code"      : "1234-ABCD-5678-EF01"
+        "email_code"    : "1234-ABCD-5678-EF01",
+        "id"            : 345,
     }
 
 =head3 code (required)
 
 The validation code given to you in your email message.
+
+=head3 id (optional)
+
+An ID to identify this message so you can tie up the server response to this request.
 
 =head3 RESPONSE
 
@@ -102,6 +140,22 @@ failure of this call.
 
 =head2 Server : confirm_email
 
+    {
+        "code"          : 0,
+        "message"       : 'Logged in',
+        "name"          : 'james_bond',
+    }
+
+Returns B<code> B<id> and B<message> like any other server status message.
+
+=head3 name
+
+The users username.
+
+
+
+
+
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
 If the status is success, then the user will be logged on to the server.
@@ -109,9 +163,10 @@ If the status is success, then the user will be logged on to the server.
 
 
 
-=head2 Client : login
+=head2 Client : login_with_password
 
-A client request to authenticate and to log into the server
+A client request to authenticate and to log into the server by means of
+username and password
 
     {
         "username"  : "james_bond",
@@ -133,12 +188,12 @@ Unique ID to identify the return message
 
 =head3 RESPONSE
 
-The Server will respond with a B<Server : login> message
+The Server will respond with a B<Server : login_with_password> message
 
 
 
 
-=head2 Server : login
+=head2 Server : login_with_password
 
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 

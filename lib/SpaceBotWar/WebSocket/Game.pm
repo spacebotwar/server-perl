@@ -65,10 +65,9 @@ sub ws_confirm_email {
         room    => $room,
         route   => '/confirm_email',
         content => {
-            username    => $user->name,
             code        => 0,
-            message     => 'Logged on',
-            data        => $user->id,
+            message     => 'Logged in',
+            data        => $user->name,
         },
     };
     if ($content->{id}) {
@@ -77,6 +76,28 @@ sub ws_confirm_email {
     $self->render_json($room, $connection, $send);
 }
 
+
+# A user logs in with a username and password
+#
+sub ws_login_with_password {
+    my ($self, $room, $connection, $content) = @_;
+
+    my $db = SpaceBotWar->db;
+
+    my $user = $db->resultset('User')->assert_login_with_password($content);
+
+    my $send = {
+        room    => $room,
+        route   => '/login_with_password',
+        content => {
+            
+    };
+
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+}
 
 # A user has joined the room
 #
