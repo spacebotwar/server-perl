@@ -1,0 +1,193 @@
+=head1 INSTALLATION
+
+These are some notes I have put together to help set up a test environment. They are by
+no means complete, since things changed as I was building up the system and to give a 
+complete set of instructions would mean I would have to clean everything down and start
+again. Perhaps as people try this out they can add the detail?
+
+=head2 TECHNOLOGY.
+
+SpaceBotWar makes use of the following technologies.
+
+=over
+
+=item * Git
+
+The code repository is at https://github.com/icydee/space-bot-war for the server code.
+The Client code can be obtained from https://github.com/icydee/space-bot-war-client
+
+=item * Perl
+
+The server code is in Perl. Ideally you should be using a 'modern' version of Perl,
+certainly 5.16 or later.
+
+=item * perlbrew
+
+Instead of changing your system Perl it is recommended you use a system to allow you
+to have your own version of Perl, perlbrew is my recommendation. Or macport on the 
+Apple Mac.
+
+=item * jQuery
+
+This is just mentioned here, this is the main Javascript framework used to develop
+the client.
+
+=item * Web Sockets
+
+The web server is taking a departure from the 'normal' web frameworks which support
+full stack web applications. Instead we are creating a web site that just supports
+Web Sockets. This allows us to create a B<very> small footprint web server which is
+very fast. This server also makes use of Plack and Twiggy (check the docs on cpan).
+
+=item * Redis
+
+Redis is a very fast name-value pair database which we are using primarily to hold
+none critical data which is often used (e.g. session data) rather than hitting the
+database frequently.
+
+=item * MySQL
+
+For persistent data we are storing this in MySQL. We use DBIx::Class Perl modules
+as the ORM layer in the application.
+
+=item * beanstalk
+
+A number of message queues (or 'pipes' as beanstalk calls them) are set up for
+inter-process communications. This allows us to delegate jobs which do not need
+synchronous response (e.g. rather than various bits of code sending out email,
+we just put a job on the 'email' pipe and let another process deal with all the
+email sending). We will make a lot of use of pipes.
+
+=back
+
+=head3 Git
+
+Installation of the code just requires a clone of the repository into your
+local file system.
+
+The root directory is not critical, but here is what I have done, both on a Mac
+and in a Linux system.
+
+Create a directory into which you can clone the repository, you will need write
+access to this location. You may prefer to clone it into a directory in your
+home directory but for the purpose of this document I will assume you are
+installing into /data/space-bot-war
+
+    $ cd /data
+    $ git clone git@github.com:icydee/space-bot-war
+    $ git clone git@github.com:icydee/space-bot-war-client
+
+Preferably, you should 'fork' the repository on github and clone from there. In
+which case of course you should change the above commands to point to your own
+repo.
+
+=head3 Perl
+
+I will assume you are installing perlbrew. Instructions for this are at 
+http:://perlbrew.pl
+
+Once you have installed perlbrew, you can compile your own version of Perl and
+run a local copy of Perl and all the tools (e.g. cpan). The code has been
+developed on Perl 5.16
+
+=head3 Redis
+
+Download and install Redis from http://redis.io
+
+There were a couple of extra steps I did on a Mac, I don't have the exact
+details but something like copying the src/redis-server and src/redis-cli into
+the /usr/bin directory.
+
+=head3 MySQL
+
+You should already have MySQL installed on your system, one point to note, 
+when you build and deploy you need to make sure that you are using Innodb
+tables. If you don't then many of the tests will fail (basically because if the
+tables are created by the default MyISAM tables then transactions will fail
+silently) If you see this sort of problem (on earlier versions of MySQL) you
+should change the mysql config file to default to Innodb.
+
+=head3 beanstalkd
+
+You can obtain beanstalkd from http://kr.github.io/beanstalkd/download.html
+with simple instructions to install on various system.s
+
+=head2 DEVELOPMENT ENVIRONMENT
+
+=head3 screen
+
+I make my number one recommendation. Install and use the linux 'screen'
+utility. It is a windows manager, so it allows you to run multiple screens
+as if they were multiple SSH sessions into your server (or locally on a Mac).
+
+The most important thing is, the sessions are persistent, so if you are on
+a train (as I am now) or at work and you pack up for the day. You close your
+SSH session and when you get home you restart where you left off. 
+
+A good tutorial is at http://www.rackaid.com/resources/linux-screen-tutorial-and-how-to/
+
+When using screen I have multiple windows open (they are numbered so you can
+switch between them easily) I have the following setup.
+
+Screen 0. This is where I run my web server. I don't run as a daemon so I can see
+all the log and error messages output to the screen and I can start/stop the server
+as I wish.
+
+Screen 1. I run the Redis server here, again not as a daemon, so I can see all the 
+connections and log messages directly to the screen.
+
+Screen 2. Same again, but with beanstalk.
+
+Screen 3. Usually I have a MySQL client into the database. You may prefer to have
+a GUI client. This is just my preference.
+
+Screen 4. A vim session into the documentation (you *do* write your documentation first?)
+
+Screen 5. A vim session into the test directory (you *do* do test driven development?)
+
+Screen 6-n. Various vim sessions into source code files etc.
+
+You may prefer to run the server/redis/beanstalk as daemons, but in any case you will
+still need a terminal session open to tail the log files, so I don't see the point.
+
+=head3 coding standards
+
+I am not going to get into long arguments about coding standards. I have used many
+over the years and the one I use now seems to work for me (and many people). Based
+on Damian Conway's book 'Perl Best Practices'. I will make the following points.
+
+=over
+
+=item Do not use tab characters.
+
+No compromise on this one. Set your editor to replace tabs with spaces. There Must
+Be No Tab Characters. It screws up layout royally.
+
+=item Set a tab of 4 characters.
+
+Each level of indentation should be 4 space characters (not tabs). The only
+consession I will make is for HTML (B<not> Javascript which should still be 4 char)
+which can use a tab setting of 2 characters due to the larger number of indent levels,
+but even here tabs of 4 still make sense so I will review this again.
+
+=item Everything else.
+
+For everything else, look at existing code and try to follow the same style.
+
+=back
+
+=head3 Git branching.
+
+There are a number of minor issues with github, mostly to do with merging in pull
+requests. While there are a small number of developers it is not difficult to
+manage the project. When it gets bigger we may have to expand this section.
+
+The main points being.
+
+=over
+
+=item * Always pull --ff-only.
+
+
+=back
+

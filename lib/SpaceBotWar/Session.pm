@@ -1,7 +1,7 @@
 package SpaceBotWar::Session;
 
 use Moose;
-use namespace::autoclear;
+use namespace::autoclean;
 use UUID::Tiny ':std';
 use SpaceBotWar;
 
@@ -28,7 +28,7 @@ has cache => (
     default => sub {
         return SpaceBotWar->cache;
     },
-)
+);
 
 # How long until the session times out due to lack of activity
 #
