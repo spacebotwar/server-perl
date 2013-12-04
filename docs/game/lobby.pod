@@ -7,9 +7,15 @@ route.
 
 A session ID is used to identify the client to the server. A session ID
 is initially provided by the server and this should be retained by the client and used in
-every subsequent Web Socket call to the server.
+every subsequent Web Socket call to the server. Once you have a session you should
+continue to use it for all future sessions.
 
+A session may 'time-out' (after a few hours) but by keeping the same session ID
+the server will still be able to retain 'state' for you to improve your browsing
+experience.
 
+Any calls described below which require a B<session> will be mandatory. If you don't
+supply a B<session> then the call will be rejected.
 
 
 
@@ -19,10 +25,10 @@ every subsequent Web Socket call to the server.
 A B<connection_status> will be sent by the Game Lobby shortly after the user has
 made a connection or in the case where the lobby status changes.
 
-{
-    "code"      : 0,
-    "message"   : "Welcome to the Game Lobby",
-}
+    {
+        "code"      : 0,
+        "message"   : "Welcome to the Game Lobby",
+    }
 
 =head3 code
 
@@ -32,31 +38,135 @@ and any other value indicates a fault.
 =head3 message
 
 A message from the server, for example the time at which the server is expected
-to be available again.
+to be available again if the server is off-line for maintenance.
 
 
 
 
+=head2 Client : get_session
+
+Get a new session ID. Note, you should only do this if you don't already have a
+session ID, even one that has expired. You may need to log in if you have an
+expired session but it will enable the server to keep some 'state' information
+for you between sessions.
+
+    {
+        "id"        : "123",
+    }
+
+=head3 id (optional)
+
+An ID to identify this message so you can tie up the server response to this request.
+
+=head3 RESPONSE
+
+The server responds with a B<Server : get_session> message.
+
+
+
+
+=head2 Server : get_session
+
+Server response to a B<Client : get_session> request.
+
+    {
+        "code"      : 0,
+        "message"   : "new session",
+        "session"   : "1234-ABCD-5678-EF01-000000",
+        "id"        : "123"
+    }
+
+B<code> B<message> and B<id> as defined in server status.
 
 =head3 session
 
-Session variables are used to link identify every message sent by the client with
-a particular user (or guest if the user has not yet logged in or registered.
+A unique code for the client to use in all subsequent calls. Refer to the Session
+information above.
 
-A new unique session ID is provided by the server every time a new connection is
-made from a client.
+=head3 RESPONSE
 
-The client should only use this
+No response is required by the client.
 
-A session variable is provided by the lobby. This session ID should be included
-in all subsequent messages to the server.
+
 
 
 =head2 Client : login_with_session
 
-In the event that a user has logged in previously, they will have been given a
-session ID. If this session ID is still current (within say 2 hours) then the
-user can log in with this session ID.
+Attempt to log into the server with a B<session> provided earlier, if you don't
+have a B<session> then request one with B<Client: get_session>. if you don't make
+any server calls within 2 hours a session will time out.
+
+    {
+        "session"   : "1234-ABCD-5678-EF01-000000",
+        "id"        : "456",
+    }
+
+=head3 session (required)
+
+Your session variable.
+
+=head3 id (optional)
+
+An ID to identify this message so you can tie up the server response to this request.
+
+=head3 RESPONSE
+
+The server will respond with a B<Server : login> message.
+
+
+
+
+=head2 Server : login
+
+This is a response to several of the login methods. B<Client : login_with_session>, 
+B<Client : login_with_password> etc.
+
+    {
+        "username"  : "james_bond",
+        "id"        : "456",
+    }
+
+=head3 username
+
+The name of the account you have logged into.
+
+=head3 id
+
+An ID to identify this message so you can tie up the server response to this request.
+
+=head3 RESPONSE
+
+No response is necessary.
+
+
+
+
+=head2 Client : login_with_password
+
+Attempt to log in with a B<username> B<password> combination.
+
+    {
+        "session"   : "1234-ABCD-5678-EF01-000000",
+        "username"  : "james_bond",
+        "password"  : "Tops3cr3t"
+    }
+
+=head3 session (required)
+
+Your session variable.
+
+=head3 username (required)
+
+Your account user name
+
+=head3 password (required)
+
+Your account password
+
+=head3 RESPONSE
+
+The server will respond with a B<Server : login> message.
+
 
 
 
@@ -65,6 +175,7 @@ user can log in with this session ID.
 Send a registration message from the Client to the server.
 
     {
+        "session"   : "1234-ABCD-5678-EF01-000000",
         "username"  : "james_bond",
         "password"  : "tops3cret",
         "email"     : "agent007@mi6.gov.co.uk",
@@ -74,6 +185,10 @@ Send a registration message from the Client to the server.
 On registering you will be sent an email which allows you to confirm your email
 address. In the email will be a link which you need to follow. On clicking the
 link it will verify your email address and unlock your account.
+
+=head3 session (required)
+
+Your session variable.
 
 =head3 username (required)
 
@@ -115,12 +230,18 @@ The B<data> returned is the username.
 
 =head2 Client : confirm_email
 
-A validation code to confirm the users email address
+A validation code to confirm the users email address. This will generally be provided
+as an email to the users registered email address.
 
     {
+        "session"       : "1234-ABCD-5678-EF01-000000",
         "email_code"    : "1234-ABCD-5678-EF01",
         "id"            : 345,
     }
+
+=head3 session (required)
+
+Your session variable.
 
 =head3 code (required)
 
@@ -132,72 +253,8 @@ An ID to identify this message so you can tie up the server response to this req
 
 =head3 RESPONSE
 
-The server will send a B<Server : confirm_email> message with the success or
+The server will send a B<Server : login> message with the success or
 failure of this call.
-
-
-
-
-=head2 Server : confirm_email
-
-    {
-        "code"          : 0,
-        "message"       : 'Logged in',
-        "name"          : 'james_bond',
-    }
-
-Returns B<code> B<id> and B<message> like any other server status message.
-
-=head3 name
-
-The users username.
-
-
-
-
-
-Returns B<code> B<id> and B<message> (see L<intro.pod>)
-
-If the status is success, then the user will be logged on to the server.
-
-
-
-
-=head2 Client : login_with_password
-
-A client request to authenticate and to log into the server by means of
-username and password
-
-    {
-        "username"  : "james_bond",
-        "password"  : "tops3cret",
-        "id"        : "james_bond",
-    }
-
-=head3 username (required)
-
-The username you used during registration.
-
-=head3 password (required)
-
-The password you use to access your account.
-
-=head3 id (optional)
-
-Unique ID to identify the return message
-
-=head3 RESPONSE
-
-The Server will respond with a B<Server : login_with_password> message
-
-
-
-
-=head2 Server : login_with_password
-
-Returns B<code> B<id> and B<message> (see L<intro.pod>)
-
-If the status is success, then the user will be logged on to the server.
 
 
 
@@ -207,10 +264,15 @@ If the status is success, then the user will be logged on to the server.
 A client request to obtain the rooms which are available to join.
 
     {
+        "session"       : "1234-ABCD-5678-EF01-000000",
         "id"            : "123",
         "continuous"    : "1",
     }
-i
+
+=head3 session (required)
+
+Your session variable.
+
 =head3 id (optional)
 
 Unique ID to identify the return message;
@@ -225,7 +287,8 @@ with B<continuous> set to B<0> or omitted altogether.
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : rooms> message
+The server will respond with B<Server : rooms> message and will continue to do
+so whenever a rooms status changes (if B<continuous> is set to B<1>).
 
 
 
@@ -242,24 +305,31 @@ on a continuous basis (whenever there is a change) if selected by the client.
             "users"     : 113,
             "status"    : "open",
             },
+            ...
             {
     }
-i
-=head3 id (optional)
 
-Unique ID to identify the return message;
+=head3 rooms
 
-=head3 continuous (optional)
+A list of all rooms which are present. For each room the following information
+will be provided.
 
-If specified, and if set to B<1> will cause the server to send continuous
-updates whenever the rooms status changes.
+=head3 room
 
-To stop continuous messages from the server send a B<Client : rooms> message
-with B<continuous> set to B<0> or omitted altogether.
+The web socket URL for the room.
+
+=head3 users
+
+The number of users currently in that room
+
+=head3 status
+
+The current status of that room B<open> if the room is available for the user to
+enter. Any other value indicates that the room is not available (e.g. B<closed>,
+B<full> etc.).
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : rooms> message
-
+The client does not need to give a response.
 
 

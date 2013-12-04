@@ -27,8 +27,23 @@ my $tester = WSTester->new({
     server      => $config->get('ws_server'),
 });
 
+my $session;
 my $route = "/";
 my $tests = {
+    "000_get_session" => {
+        method  => 'get_session',
+        send    => {
+        },
+        recv    => {
+            code        => 0,
+            message     => 'new session',
+        },
+        callback    => sub {
+            my ($msg) = @_;
+            $session = $msg->{content}{session};
+            diag("SESSION : $session");
+        },
+    },
     "001_no_email"  => {
         method  => 'register',
         send    => {

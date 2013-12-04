@@ -3,7 +3,10 @@ package SpaceBotWar::WebSocket::Game;
 use strict;
 use warnings;
 use SpaceBotWar;
+use SpaceBotWar::Session;
+
 use Carp;
+use UUID::Tiny ':std';
 
 use parent qw(SpaceBotWar::WebSocket);
 
@@ -21,6 +24,29 @@ sub render_json {
 
     $connection->send($sent);
 }
+
+# Get a new session variable.
+#
+sub ws_get_session {
+    my ($self, $room, $connection, $content) = @_;
+
+    my $new_session = SpaceBotWar::Session->create_session;
+
+    my $send = {
+        room    => $room,
+        route   => "/get_session",
+        content => {
+            code    => 0,
+            message => "new session",
+            session => $new_session,
+        }
+    };
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+}
+
 
 
 # A User attempting to 'register' a new username and password
@@ -90,7 +116,7 @@ sub ws_login_with_password {
         room    => $room,
         route   => '/login_with_password',
         content => {
-            
+        }    
     };
 
     if ($content->{id}) {

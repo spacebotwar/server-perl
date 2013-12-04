@@ -4,6 +4,7 @@ use Moose;
 use namespace::autoclean;
 use UUID::Tiny ':std';
 use SpaceBotWar;
+use Digest::MD5 qw(md5_hex);
 
 # A unique ID for the session key
 # 
@@ -89,6 +90,37 @@ sub extend {
     $self->extended($self->extended + 1);
     $self->cache->set('session', $self->id, $self->to_hash, $self->timeout_sec);
 }
+
+# Class method. Create a new session variable
+#   A session is created from a UUID (E.G. '6ba7b810-9dad-11d1-80b4-00c04fd430c8' followed by a md5
+#   which we use to ensure the UUID is one created by us (and not invented by the client)
+#   making it look like '6ba7b810-9dad-11d1-80b4-00c04fd430c8-0123af'
+sub create_session {
+    my ($class) = @_;
+
+    my $secret  = SpaceBotWar->config->get('secret');
+    my $uuid    = create_uuid(UUID_V4);
+    my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
+    return $uuid."-".$digest;
+}
+
+# Validate a session variable
+#
+sub validate_session {
+    my ($class, $session) = @_;
+
+    my $secret  = SpaceBotWar->config->get('secret');
+    my $uuid    = substr($session, 0, 36);
+    my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
+    return $test eq $session;
+}
+
+
+
+
+
+
+
 
 __PACKAGE__->meta->make_immutable;
 

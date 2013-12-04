@@ -48,6 +48,8 @@ sub run_tests {
 
         my $client = AnyEvent::WebSocket::Client->new;
         my $connection;
+        my $json;
+        
         $client->connect($self->server)->cb(sub {
 
             $connection = eval { shift->recv };
@@ -77,7 +79,7 @@ sub run_tests {
             $connection->on(each_message => sub {
                 my ($connection, $message) = @_;
     
-                my $json = JSON->new->decode($message->body);
+                $json = JSON->new->decode($message->body);
                 my $content = $json->{content};
                 #diag "RECEIVED: ".Dumper($json);
                 my $method = $json->{route};
@@ -111,7 +113,7 @@ sub run_tests {
         # Do any tidyup (if needed)
         my $cb = $test->{callback};
         if ($cb) {
-            &$cb();
+            &$cb($json);
         }
     }
     #$cv->recv;
