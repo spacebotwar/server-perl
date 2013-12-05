@@ -16,16 +16,11 @@ use WSTester;
 my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
-my $user = $db->resultset('User')->create({
-    name        => ' test_user_1',
-    password    => 'Yop_s3cr3t',
-    email       => 'me@example.com',
-});
-
 my $tester = WSTester->new({
     route       => "/",
     server      => $config->get('ws_server'),
 });
+
 
 my $route = "/";
 my $tests = {
@@ -66,7 +61,7 @@ my $tests = {
         },
         recv    => {
             code        => 1001,
-            message     => 'Incorrect credentials',
+            message     => 'Incorrect credentials 2',
         },
     },
     "004_login_wrong_username"  => {
@@ -77,11 +72,73 @@ my $tests = {
         },
         recv    => {
             code        => 1001,
-            message     => 'Incorrect credentials',
+            message     => 'Incorrect credentials 1',
         },
     },
+    "005_login_success"  => {
+        method  => 'login_with_password',
+        send    => {
+            username    => ' test_user_1',
+            password    => 'Yop_s3cr3t',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Welcome',
+            username    => ' test_user_1',
+        },
+    },
+    "006_logout"  => {
+        method  => 'logout',
+        send    => {
+            username    => ' test_user_1',
+            password    => 'Yop_s3cr3t',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Good Bye',
+        },
+    },
+    "007_login_with_session_invalid"  => {
+        method  => 'login_with_session',
+        send    => {
+            session     => 'foo',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Session is invalid!',
+        },
+    },
+    "008_login_with_session"  => {
+        method  => 'login_with_session',
+        send    => {
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Welcome',
+            username    => ' test_user_1',
+        },
+    },
+
+
 };
 
+my $users = $db->resultset('User')->search({
+    name        => ' test_user_1',
+});
+while (my $user = $users->next) {
+    $user->delete;
+}
+
+
+my $user = $db->resultset('User')->create({
+    name        => ' test_user_1',
+    password    => 'Yop_s3cr3t',
+    email       => 'me@example.com',
+});
+
 $tester->run_tests($tests);
+
+
+
 done_testing();
 

@@ -111,19 +111,17 @@ An ID to identify this message so you can tie up the server response to this req
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : login> message.
+The server will respond with a B<Server : login_with_session> message.
 
 
 
 
-=head2 Server : login
+=head2 Server : login_with_session
 
-This is a response to several of the login methods. B<Client : login_with_session>, 
-B<Client : login_with_password> etc.
+This is a response to B<Client : login_with_session>, 
 
     {
         "username"  : "james_bond",
-        "id"        : "456",
     }
 
 =head3 username
@@ -165,7 +163,54 @@ Your account password
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : login> message.
+The server will respond with a B<Server : login_with_password> message.
+
+
+
+
+=head2 Server : login_with_password
+
+This is a response to B<Client : login_with_password>,
+
+    {
+        "username"  : "james_bond",
+    }
+
+=head3 username
+
+The name of the account you have logged into.
+
+=head3 RESPONSE
+
+No response is necessary.
+
+
+
+
+=head2 Client : logout
+
+Sent a logout message.
+
+    {
+        "session"   : "1234-ABCD-5678-EF01-000000",
+    }
+
+=head3 session (required)
+
+Your session variable.
+
+=head3 RESPONSE
+
+The server responds with a B<Server : logout> message.
+
+
+
+
+=head2 Server : logout
+
+This is a response to B<Client : logout>,
+
+It sends a standard status message.
 
 
 

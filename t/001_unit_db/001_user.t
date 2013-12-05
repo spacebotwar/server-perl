@@ -43,6 +43,12 @@ my $tests = {
     },
 };
 
+my $users = $db->resultset('User')->search({
+    name        => ' test_user_1',
+});
+while (my $user = $users->next) {
+    $user->delete;
+}
 
 for my $test (sort keys %$tests ) {
     try {

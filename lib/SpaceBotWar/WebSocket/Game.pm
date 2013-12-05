@@ -118,6 +118,9 @@ sub ws_login_with_password {
         room    => $room,
         route   => '/login_with_password',
         content => {
+            code        => 0,
+            message     => 'Welcome',
+            username    => $user->name,
         }    
     };
 
@@ -126,6 +129,58 @@ sub ws_login_with_password {
     }
     $self->render_json($room, $connection, $send);
 }
+
+# Log in with a Session ID
+#
+sub ws_login_with_session {
+    my ($self, $room, $connection, $content) = @_;
+
+    SpaceBotWar::Session->assert_validate_session($content->{session});
+
+    # session login? Just recover the session user_id?
+
+    my $send = {
+        room    => $room,
+        route   => '/login_with_session',
+        content => {
+            code        => 0,
+            message     => 'Welcome',
+            username    => 'james',
+        }
+    };
+
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+}
+
+
+
+# Log out of an account
+#
+sub ws_logout {
+    my ($self, $room, $connection, $content) = @_;
+
+    # What should a 'logout' do? Just set the cache value associated with
+    # the session ID?
+    #
+    my $send = {
+        room    => $room,
+        route   => '/logout',
+        content => {
+            code        => 0,
+            message     => 'Good Bye',
+        }
+    };
+
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+
+}
+
 
 # A user has joined the room
 #

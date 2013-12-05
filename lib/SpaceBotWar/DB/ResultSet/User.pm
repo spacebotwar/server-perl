@@ -72,6 +72,7 @@ sub assert_create {
 # Assert that a user can log in with a password
 #
 sub assert_login_with_password {
+
     my ($self, $args) = @_;
 
     confess [1001, 'username is missing' ]      if not defined $args->{username};
@@ -80,8 +81,8 @@ sub assert_login_with_password {
     my ($user) = $self->search({
         name    => $args->{username},
     });
-    confess [1001, 'Incorrect credentials']     if not defined $user;
-    confess [1001, 'Incorrect credentials']     if not $user->check_password($args->{password});
+    confess [1001, 'Incorrect credentials 1']     if not defined $user;
+    confess [1001, 'Incorrect credentials 2']     if not $user->check_password($args->{password});
 
     return $user;
 }

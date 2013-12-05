@@ -113,7 +113,6 @@ sub validate_session {
     my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = substr($session, 0, 36);
     my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
-    print STDERR "#######[$test] [$session]###########\n";
     return $test eq $session ? 1 : 0;
 }
 

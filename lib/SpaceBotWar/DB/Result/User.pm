@@ -29,7 +29,6 @@ sub check_password {
     my $csh = Crypt::SaltedHash->new;
     $csh->add($password);
     my $salted = $csh->generate;
-    print STDERR "########## PASSWORD [$salted] valid=[$valid] ###############\n";
     return $valid;
 }
 
@@ -47,6 +46,20 @@ around password => sub {
 
     return $self->$orig($password);
 };
+
+# Encrypt on insert
+#
+around insert => sub {
+    my ($orig, $self) = (shift,shift);
+
+    if ($self->password =~ m/^{SSHA}/) {
+        return $self->$orig(@_);
+    }
+
+    $self->password($self->password);
+    return $self->$orig(@_);
+};
+
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);
 

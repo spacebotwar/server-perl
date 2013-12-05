@@ -65,7 +65,7 @@ sub run_tests {
             });
 
             my $content = $test->{send};
-            if (defined $session) {
+            if (defined $session and not defined $content->{session}) {
                 $content->{session} = $session;
             }
             $content->{id} = $key;
@@ -87,7 +87,7 @@ sub run_tests {
                 #diag "RECEIVED: ".Dumper($json);
                 my $method = $json->{route};
                 $method =~ s{^/}{};
-                if (defined $content->{session}) {
+                if ($content->{session}) {
                     $session = $content->{session};
                 }
                 if ($method eq 'lobby_status') {
