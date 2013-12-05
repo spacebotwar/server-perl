@@ -90,35 +90,29 @@ No response is required by the client.
 
 
 
-=head2 Client : login_with_session
+=head2 Client : login_with_email_code
 
-Attempt to log into the server with a B<session> provided earlier, if you don't
-have a B<session> then request one with B<Client: get_session>. if you don't make
-any server calls within 2 hours a session will time out.
+Attempt to log in with an B<email_code> (as a result of either registering or
+requesting a forgotten password email).
 
     {
-        "session"   : "1234-ABCD-5678-EF01-000000",
-        "id"        : "456",
+        "email_code"   : "1234-ABCD-5678-EF01-000000",
     }
 
-=head3 session (required)
+=head3 email_code (required)
 
-Your session variable.
-
-=head3 id (optional)
-
-An ID to identify this message so you can tie up the server response to this request.
+The code provided in your email.
 
 =head3 RESPONSE
 
-The server will respond with a B<Server : login_with_session> message.
+The server will respond with a B<Server : login_with_email_code> message.
 
 
 
 
-=head2 Server : login_with_session
+=head2 Server : login_with_email_code
 
-This is a response to B<Client : login_with_session>, 
+This is a response to B<Client : login_with_email_code>,
 
     {
         "username"  : "james_bond",
@@ -127,10 +121,6 @@ This is a response to B<Client : login_with_session>,
 =head3 username
 
 The name of the account you have logged into.
-
-=head3 id
-
-An ID to identify this message so you can tie up the server response to this request.
 
 =head3 RESPONSE
 
@@ -141,7 +131,9 @@ No response is necessary.
 
 =head2 Client : login_with_password
 
-Attempt to log in with a B<username> B<password> combination.
+Attempt to log in with a B<username> B<password> combination. If you have a session
+variable from a previous session then please re-use it. This will allow the server
+to recover state from that session.
 
     {
         "session"   : "1234-ABCD-5678-EF01-000000",
@@ -189,7 +181,7 @@ No response is necessary.
 
 =head2 Client : logout
 
-Sent a logout message.
+Send a logout message.
 
     {
         "session"   : "1234-ABCD-5678-EF01-000000",
@@ -269,37 +261,6 @@ of this call.
 Returns B<code> B<id> and B<message> (see L<intro.pod>)
 
 The B<data> returned is the username.
-
-
-
-
-=head2 Client : confirm_email
-
-A validation code to confirm the users email address. This will generally be provided
-as an email to the users registered email address.
-
-    {
-        "session"       : "1234-ABCD-5678-EF01-000000",
-        "email_code"    : "1234-ABCD-5678-EF01",
-        "id"            : 345,
-    }
-
-=head3 session (required)
-
-Your session variable.
-
-=head3 code (required)
-
-The validation code given to you in your email message.
-
-=head3 id (optional)
-
-An ID to identify this message so you can tie up the server response to this request.
-
-=head3 RESPONSE
-
-The server will send a B<Server : login> message with the success or
-failure of this call.
 
 
 

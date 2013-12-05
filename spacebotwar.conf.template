@@ -8,4 +8,5 @@
     "redis_server"  : "localhost:6379",
     "ws_server"     : "ws://localhost:5000/ws/game/lobby",
     "secret"        : "a random code",
+    "email_secret"  : "another random code",
 }

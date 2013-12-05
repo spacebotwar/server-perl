@@ -98,28 +98,26 @@ my $tests = {
             message     => 'Good Bye',
         },
     },
-    "007_login_with_session_invalid"  => {
-        method  => 'login_with_session',
+    "007_login_with_email_code_invalid" => {
+        method  => 'login_with_email_code',
         send    => {
-            session     => 'foo',
+            email_code  => 'foo',
         },
         recv    => {
-            code        => 1001,
-            message     => 'Session is invalid!',
+            code        => 1000,
+            message     => 'Incorrect email code',
         },
     },
-    "008_login_with_session"  => {
-        method  => 'login_with_session',
+    "008_login_with_email_code" => {
+        method  => 'login_with_email_code',
         send    => {
+            email_code  => 'foo',
         },
         recv    => {
             code        => 0,
             message     => 'Welcome',
-            username    => ' test_user_1',
         },
     },
-
-
 };
 
 my $users = $db->resultset('User')->search({

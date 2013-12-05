@@ -130,18 +130,18 @@ sub ws_login_with_password {
     $self->render_json($room, $connection, $send);
 }
 
-# Log in with a Session ID
+# Log in with an email code
 #
-sub ws_login_with_session {
+sub ws_login_with_email_code {
     my ($self, $room, $connection, $content) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($content->{session});
+    SpaceBotWar::EmailCode->assert_validate_email_code($content->{email_code});
 
-    # session login? Just recover the session user_id?
+    # email code login? Just recover the session user_id?
 
     my $send = {
         room    => $room,
-        route   => '/login_with_session',
+        route   => '/login_with_email_code',
         content => {
             code        => 0,
             message     => 'Welcome',
