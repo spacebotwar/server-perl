@@ -69,5 +69,23 @@ sub assert_create {
     return $user;
 }
 
+# Assert that a user can log in with a password
+#
+sub assert_login_with_password {
+    my ($self, $args) = @_;
+
+    confess [1001, 'username is missing' ]      if not defined $args->{username};
+    confess [1001, 'password is missing' ]      if not defined $args->{password};
+
+    my ($user) = $self->search({
+        name    => $args->{username},
+    });
+    confess [1001, 'Incorrect credentials']     if not defined $user;
+    confess [1001, 'Incorrect credentials']     if not $user->check_password($args->{password});
+
+    return $user;
+}
+
+
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);

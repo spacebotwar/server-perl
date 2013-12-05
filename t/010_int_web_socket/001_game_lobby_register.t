@@ -16,21 +16,31 @@ use WSTester;
 my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
-# Test the connection to the game lobby
-# Testing ASYNC replies is tricky.
-#   We want to be able to ensure all the requested messages have been received
-#   We might not be able to guarantee the order they are received
-#   We dont want to wait forever for a message that may not arrive.
+# Testing async replies is tricky.
+# All the 'tricky' bits have been factored out into the WSTester library.
+#   Note that the 'session' and the 'id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
     route       => "/",
     server      => $config->get('ws_server'),
 });
 
-my $session;
 my $route = "/";
 my $tests = {
-    "000_get_session" => {
+    # Get a new session (to be used in subsequent calls)
+    "000_no_session"  => {
+        method  => 'register',
+        send    => {
+            username    => 'james_bond',
+            password    => 'tops3Cr3t',
+            email       => 'jb@mi6.gov.org.uk',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Session is missing',
+        },
+    },
+    "001_get_session" => {
         method  => 'get_session',
         send    => {
         },
@@ -38,13 +48,9 @@ my $tests = {
             code        => 0,
             message     => 'new session',
         },
-        callback    => sub {
-            my ($msg) = @_;
-            $session = $msg->{content}{session};
-            diag("SESSION : $session");
-        },
     },
-    "001_no_email"  => {
+    # After this point the WSTester will inject the session
+     "002_no_email"  => {
         method  => 'register',
         send    => {
             username    => 'james_bond',
@@ -55,7 +61,7 @@ my $tests = {
             message     => 'Email is missing',
         },
     },
-    "002_bad_email"  => {
+    "003_bad_email"  => {
         method  => 'register',
         send    => {
             username    => 'james_bond',
@@ -67,7 +73,7 @@ my $tests = {
             message     => 'Email is invalid',
         },
     },
-    "003_no_username"  => {
+    "004_no_username"  => {
         method  => 'register',
         send    => {
             password    => 'tops3Cr3t',
@@ -102,7 +108,7 @@ my $tests = {
             message     => 'Password must be at least 5 characters long',
         },
     },
-    "006_password_number"  => {
+    "007_password_number"  => {
         method  => 'register',
         send    => {
             password    => 'topSeCreT',
@@ -114,7 +120,7 @@ my $tests = {
             message     => 'Password must contain numbers, lowercase and uppercase',
         },
     },
-    "007_password_lower"  => {
+    "008_password_lower"  => {
         method  => 'register',
         send    => {
             password    => 'TOPSECRET3',
@@ -126,7 +132,7 @@ my $tests = {
             message     => 'Password must contain numbers, lowercase and uppercase',
         },
     },
-    "008_password_upper"  => {
+    "009_password_upper"  => {
         method  => 'register',
         send    => {
             password    => 'tops3cr3t',
@@ -139,7 +145,7 @@ my $tests = {
         },
     },
 
-    "009_all_correct"  => {
+    "010_all_correct"  => {
         method  => 'register',
         send    => {
             password    => 'Tops3cr3T',

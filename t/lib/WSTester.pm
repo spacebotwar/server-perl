@@ -32,6 +32,7 @@ sub run_tests {
     # Not ideal to make a connection for each test, but it's the easiest way
     # I have found so far!
     #
+    my $session;
     for my $key (sort keys %$tests) {
         my $test = $tests->{$key};
     
@@ -63,8 +64,10 @@ sub run_tests {
             #    $cv->send;
             });
 
-
             my $content = $test->{send};
+            if (defined $session) {
+                $content->{session} = $session;
+            }
             $content->{id} = $key;
 
             my $msg = JSON->new->encode({
@@ -84,7 +87,9 @@ sub run_tests {
                 #diag "RECEIVED: ".Dumper($json);
                 my $method = $json->{route};
                 $method =~ s{^/}{};
-    
+                if (defined $content->{session}) {
+                    $session = $content->{session};
+                }
                 if ($method eq 'lobby_status') {
                     # We can ignore these
                 }

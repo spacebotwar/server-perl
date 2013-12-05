@@ -16,13 +16,17 @@ ok($db, 'Database Connection Made');
 
 my $tests = {
     create_valid_user   => sub {
+
+        my $open_password = 'Yop_s3cr3t';
         my $user = $db->resultset('User')->assert_create({
-            username    => 'nthnsth3E',
-            password    => 'Yop_s3cr3t',
+            username    => ' test_user_1',
+            password    => $open_password,
             email       => 'me@example.com',
         });
 
         ok($user, 'created new user');
+        isnt($user->password, $open_password, 'Password encrypted');
+        #diag("password: ".$user->password);
         $db->txn_rollback;
     },
     cant_create_duplicate_user => sub {

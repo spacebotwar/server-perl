@@ -33,7 +33,20 @@ sub check_password {
     return $valid;
 }
 
+# Encrypt the password
+#
+around password => sub {
+    my ($orig, $self) = (shift,shift);
 
+    return $self->$orig() unless @_;
+
+    my $password = shift;
+    my $csh = Crypt::SaltedHash->new;
+    $csh->add($password);
+    $password = $csh->generate;
+
+    return $self->$orig($password);
+};
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);
 

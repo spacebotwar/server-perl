@@ -29,7 +29,16 @@ my $tester = WSTester->new({
 
 my $route = "/";
 my $tests = {
-    "001_login_no username"  => {
+    "000_get_session" => {
+        method  => 'get_session',
+        send    => {
+        },
+        recv    => {
+            code        => 0,
+            message     => 'new session',
+        },
+    },
+    "001_login_no_username"  => {
         method  => 'login_with_password',
         send    => {
             password    => 'Yop_s3cr3t',
@@ -37,6 +46,38 @@ my $tests = {
         recv    => {
             code        => 1001,
             message     => 'username is missing',
+        },
+    },
+    "002_login_no_password"  => {
+        method  => 'login_with_password',
+        send    => {
+            username    => ' test_user_1',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'password is missing',
+        },
+    },
+    "003_login_wrong_password"  => {
+        method  => 'login_with_password',
+        send    => {
+            username    => ' test_user_1',
+            password    => 'foo',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Incorrect credentials',
+        },
+    },
+    "004_login_wrong_username"  => {
+        method  => 'login_with_password',
+        send    => {
+            username    => ' test_user_2',
+            password    => 'Yop_s3cr3t',
+        },
+        recv    => {
+            code        => 1001,
+            message     => 'Incorrect credentials',
         },
     },
 };

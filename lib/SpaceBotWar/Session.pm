@@ -99,7 +99,7 @@ sub create_session {
     my ($class) = @_;
 
     my $secret  = SpaceBotWar->config->get('secret');
-    my $uuid    = create_uuid(UUID_V4);
+    my $uuid    = create_uuid_as_string(UUID_V4);
     my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
     return $uuid."-".$digest;
 }
@@ -109,13 +109,25 @@ sub create_session {
 sub validate_session {
     my ($class, $session) = @_;
 
+    return if not defined $session;
     my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = substr($session, 0, 36);
     my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
-    return $test eq $session;
+    print STDERR "#######[$test] [$session]###########\n";
+    return $test eq $session ? 1 : 0;
 }
 
+# Validate a session variable with confess
+#
+sub assert_validate_session {
+    my ($class, $session) = @_;
 
+    confess [1001, "Session is missing"] if not defined $session;
+    if (not $class->validate_session($session)) {
+        confess [1001, "Session is invalid!", "[$session]"];
+    }
+    return 1;
+}
 
 
 

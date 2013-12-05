@@ -54,8 +54,8 @@ sub ws_get_session {
 sub ws_register {
     my ($self, $room, $connection, $content) = @_;
 
+    SpaceBotWar::Session->assert_validate_session($content->{session});
     my $db = SpaceBotWar->db;
-
     $db->resultset('User')->assert_username_available($content->{username});
     $db->resultset('User')->assert_email_valid($content->{email});
     $db->resultset('User')->assert_password_valid($content->{password});
@@ -83,6 +83,7 @@ sub ws_register {
 sub ws_confirm_email {
     my ($self, $room, $connection, $content) = @_;
 
+    SpaceBotWar::Session->assert_validate_session($content->{session});
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_confirm_email($content->{code});
@@ -108,6 +109,7 @@ sub ws_confirm_email {
 sub ws_login_with_password {
     my ($self, $room, $connection, $content) = @_;
 
+    SpaceBotWar::Session->assert_validate_session($content->{session});
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_login_with_password($content);
