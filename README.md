@@ -32,6 +32,44 @@ A tournament will be run each week, competing each fleet/program against others 
 of three' set of matches. Each match will last five minutes during which the programs will determine the speed
 direction and missile firing for each of their ships. Each program will be informed of the latest known speed
 and direction of all other ships every 500 ms and will need to use this information to determine their actions
-over the next 500ms.
+over the next 500ms. Each of the matches in tournament can either be watched in real time (by any number of
+observers) or played back by anyone at a later time.
+
+Version 1 will enable the basic principles to be tested, HTML5, Web Sockets, running users own programs (in a
+'sandbox' mode).
+
+Version 2.0
+===========
+
+In version 2, each user will be able to create a base of operations, manually create buildings to support 
+their operations (ship yards, mines, storage) etc. They will be able to send their fleets out to attack
+other players ships (piracy) or bases (war) or Artifical Intelligence players (AI) in order to obtain 
+resources to help them progress in the game.
+
+In this the game is similar to other games of the same genre. The difference however is that the fleets 
+will be able to be pre-programmed so that players can experiment with different tactics and these tactics
+will be carried out automatically.
+
+The game API will be 'open' so that all aspects of the game can be automated if the player so wishes. We
+will add the ability for users without the skill to run external programs to run their scripts within
+the servers 'sandbox'.
+
+Game Scenario
+=============
+
+The art and graphics will be based on Steam Punk. i.e. how Jules Verne might have imagined space travel.
+
+The scenario is a space based economy where space trael is dangerous (due to aliens, piracy etc.), so they are
+controlled by computers (Babbage Engines?) and called SpaceBots.
+
+The people who program these SpaceBots are held in high esteem, rather like rock stars or reality TV
+guests are today!
+
+The economy is based around the availability of computing power (BU, or Babbage Units) which give each
+owner the ability to perform a certain number of computations per day. Every program you run (ship attack,
+ship defence, building, exploring) will consume these units. Your progress in the game will be determined
+by how quickly you can accumulate these BU (by piracy, war, discovery etc.) and by how efficiently you
+can devise your programs.
+
 
 

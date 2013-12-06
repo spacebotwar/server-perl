@@ -188,6 +188,27 @@ The main points being.
 
 =item * Always pull --ff-only.
 
+github has a habit of doing a merge when you merge from the site by clicking the
+button on a pull request, even when a fast-forward merge would have worked. This
+is the number one reason for a messy history. Ideally the history should show a
+totally linear merge history.
+
+=item * Rebase
+
+If other changes have been made in the repository since you checked out, then you
+may have to do a pull from the repository before you can merge your changes back
+in. You should always do a pull --ff-only to check if there are any conflicts.
+
+If you find a conflict, then you should rebase your own changes on top of the
+changes in the repo to maintain the linear history.
+
+=item * Development branch
+
+Once we are in the state where we are making releases, then we should create a
+B<develop> branch upon which all development takes place. The master branch 
+should then just reflect the latest stable release. We will implement this as
+and when necessary.
 
 =back
+
 
