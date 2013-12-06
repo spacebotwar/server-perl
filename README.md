@@ -71,5 +71,29 @@ ship defence, building, exploring) will consume these units. Your progress in th
 by how quickly you can accumulate these BU (by piracy, war, discovery etc.) and by how efficiently you
 can devise your programs.
 
+Technology Used
+===============
 
+The front end will be written using jQuery and taking advantages of HTML5 and Web Sockets, it will provide
+a user experience which will rival that of current Flash games enabling us to show in real-time the conflict
+between two fleets.
+
+The front end communicates with the game server through a Web Socket API. Written in Perl using a fast and 
+small footprint server, (Twiggy) it will offer a fast and responsive interface.
+
+The API will be 'open' so that people may, if they wish, write code on their own systems to further enhance
+their game experience.
+
+The interface to the Tournament system will again rely on Web Socket connections. A 'game server' will moderate
+each match between two fleets. Every 500 ms (a tick) the game server will push the current position of each fleet to
+a 'game client' and each fleet will respond with the instructions for the next game tick (based on the users
+program). The game servers and game clients can be expanded horizontally as demand increases.
+
+Since the game API is open, including the tournament system, there is no reason why people could not host their
+own game client and run their programs privately in whatever language they chose. Indeed it is expected that we
+would provide a few simple examples of such servers based around (for example Mojo lite with Web Sockets).
+
+The server back-end will use MySQL database for persistant data (account details etc.). It will use Redis as
+a short term persistant store (e.g. session data) and will use inter-process communication using the Beanstalkd
+message queue.
 
