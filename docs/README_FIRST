@@ -1,0 +1,130 @@
+These are some notes to help you install from scratch.
+
+# Install perlbrew.
+$ curl -L http://install.perlbrew.pl | bash
+# Follow the instructions at the end of the installation on creating a shell environment.
+# log out
+# log back in.
+
+# Run 'screen'
+$ screen
+# Clone a separate window with Ctrl-A C
+
+# In one window install the latest release of Perl
+$ perlbrew install perl-5.18.1
+
+# In another window
+$ tail -f ~/perl5/perlbrew/build.perl-5.18.1.log
+
+# (this will take a while)
+
+# now you can switch to that version of Perl.
+
+$ perlbrew switch perl-5.18.1
+
+# you may need to install mysql and mysql-devel I use the following
+
+$ yum install mysql-devel
+
+# (if you don't install mysql-devel then the perl module DBD::mysql will not install)
+
+# Check out the code, I will assume it is going into /data/space-bot-war, but feel free to put it anywhere
+
+$ cd /data
+$ git clone git@github.com:icydee/space-bot-war.git
+$ cd space-bot-war
+$ cp spacebotwar.conf.template spacebotwar.conf
+
+# Now use an editor to change the conf file.
+# the database setting will (eventually) need to be changed. More on this later.
+# change the 'secret' to a random string, likewise the 'email_secret'.
+# That's it for now, save and exit.
+
+# set the env variable. (to the directory you checked the code out in)
+
+$ export SPACEBOTWAR_DIR=/data/space-bot-war
+
+# Now install the following CPAN modules.
+# Note, if you accepted all the defaults when cpan installed, then any dependencies will be auto loaded.
+# install cpanm
+
+$ cpan App::cpanminus
+
+Which will allow you do do
+
+cpanm Plack
+
+# (note, cpanm is less verbose than cpan)
+# install all the following...
+{{{
+  Plack
+  Plack::App::WebSocket::Connection
+  JSON
+  AnyEvent::WebSocket::Server
+  Server::Starter
+  Moose
+  namespace::autoclean
+  Config::JSON
+  Module::Find
+  Redis
+  UUID::Tiny
+  DBIx::Class
+  Crypt::SaltedHash
+  DBIx::Class::TimeStamp
+  DBIx::Class::InflateColumn::Serializer
+  Data::Validate::Email
+  Mojo::JSON
+  File::Next
+  Plack::Handler::Twiggy
+  Try
+  DBD::mysql  (if this fails it might be because you did not install mysql-devel)
+}}}
+
+# install Redis and run a redis server, instructions are at http://redis.io/download
+# Note, you may want to run this in a separate 'screen' window
+#
+{{{
+$ cd /data
+$ wget http://download.redis.io/releases/redis-2.8.3.tar.gz
+$ tar xzf redis-2.8.3.tar.gz
+$ cd redis-2.8.3
+$ make
+
+$ ./src/redis-server
+}}}
+
+{{{
+
+# Create a service account in mysql (so you don't put your root password into the config file!)
+$ mysql -u root -p
+
+mysql> create database space_bot_war;
+mysql> create user 'sbw'@'localhost' identified by 'sbw';
+mysql> grant all on space_bot_war.* to 'sbw'@'localhost';
+
+# log out of mysql and log in with the new user
+
+mysql> exit;
+$ mysql -u sbw -p space_bot_war
+
+# you should be able to do what you need in the database 'space_bot_war' with this service account.
+# e.g. to create an initial database
+
+$ cd /data/space_bot_war/var/sql
+$ mysql -u sbw -p space_bot_war
+enter password
+
+mysql> source deploy.sql
+mysql> exit
+
+}}}
+
+You should now restart the web app (screen 0, ctrl-c to stop then restart it, as above) and run the tests.
+
+{{{
+$ cd t
+$ prove -v *
+}}}
+
+(Note, as of writing this, the tests do not all work, but they *should* before we commit back to github!)
+
