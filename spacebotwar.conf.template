@@ -1,12 +1,12 @@
 # config-file-type: JSON 1
 {
     "db"    : {
-        "dsn"       : "DBI:mysql:space_bot_war",
+        "dsn"       : "DBI:mysql:sbw_icydee",
         "password"  : "sbw",
-        "username"  : "sbw",
+        "username"  : "sbw_icydee",
     },
-    "redis_server"  : "localhost:6379",
-    "ws_server"     : "ws://localhost:5000/ws/game/lobby",
+    "redis_server"  : "localhost:7000",
+    "ws_server"     : "ws://spacebotwar.co.uk:5000/ws/game/lobby",
     "secret"        : "a random code",
     "email_secret"  : "another random code",
 }

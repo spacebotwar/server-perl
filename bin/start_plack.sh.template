@@ -1,3 +1,3 @@
-export SPACEBOTWAR_DIR
+export SPACEBOTWAR_DIR=/home/icydee/space-bot-war
 start_server --port 5000 -- plackup --server Twiggy ws_app.psgi
 
