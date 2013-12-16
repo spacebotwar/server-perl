@@ -129,26 +129,100 @@ A good tutorial is at http://www.rackaid.com/resources/linux-screen-tutorial-and
 When using screen I have multiple windows open (they are numbered so you can
 switch between them easily) I have the following setup.
 
-Screen 0. This is where I run my web server. I don't run as a daemon so I can see
-all the log and error messages output to the screen and I can start/stop the server
-as I wish.
+Note that for development it is easier to run the various components from the
+command line since this makes debugging easier. In production these would all be run
+as system daemons.
 
-Screen 1. I run the Redis server here, again not as a daemon, so I can see all the 
-connections and log messages directly to the screen.
+Screen 0
+========
 
-Screen 2. Same again, but with beanstalk.
+This runs the web server for the Web Socket application.
 
-Screen 3. Usually I have a MySQL client into the database. You may prefer to have
-a GUI client. This is just my preference.
+  $ cd ~/space-bot-war/bin
+  $ cp start_plack.sh.template start_plack.sh
 
-Screen 4. A vim session into the documentation (you *do* write your documentation first?)
+Now edit the start_plack.sh file to change the port number. Each developer has their
+own port. Currently.
 
-Screen 5. A vim session into the test directory (you *do* do test driven development?)
+  icydee 5001
+  vasari 5002
 
-Screen 6-n. Various vim sessions into source code files etc.
+You can start the web server with
 
-You may prefer to run the server/redis/beanstalk as daemons, but in any case you will
-still need a terminal session open to tail the log files, so I don't see the point.
+  $ ./start_plack.sh
+
+It will continue to show debug and connection details until you terminate it with
+B<ctrl-c>
+
+Note. Other services (such as redis or beanstalk may need to be run first)
+
+This will produce a Web Socket API for each developer which can be found at
+
+  ws://spacebotwar.co.uk:5001
+  ws://spacebotwar.co.uk:5002
+
+
+Screen 1
+========
+
+Reserved for beanstalk (not required yet)
+
+
+Screen 2
+========
+
+The Redis server runs in this screen.
+
+  $ cd ~/space-bot-war/bin
+  $ cp start_redis.sh.template start_redis.sh
+
+Edit start_redis.sh to change the port number. Each developer has their own port.
+Currently
+
+  icydee 7001
+  vasari 7002
+
+Screen 3
+========
+
+Node JS. This provides a web server that can be used to test, build and run the
+SpaceBotWar web client. It is not strictly necessary to run this in NodeJS, for
+example if you have your own web server, but it will be useful when we come to
+build the final javascript code.
+
+  $ cd ~/space-bot-war-client
+  $ cp start_node.sh.template start_node.sh
+
+Edit start_node.sh to change the port number. Each developer has their own port.
+Currently.
+
+  icydee 8001
+  vasari 8002
+
+The web server can be found for each developer at
+
+  http://spacebotwar.co.uk:8001/index.html
+  http://spacebotwar.co.uk:8002/index.html
+
+Screen 4
+========
+
+It is useful to have the mysql client open to view the database.
+
+  $ mysql -u sbw_icydee -p sbw_icydee
+  password> sbw
+
+Screen 5,6,7,8 etc.
+==================
+
+From now on it is down to personal preference. It can be useful to have screens open
+to different directories depending upon what you are doing. If you do so consistently
+it makes navigating between them much easier. Here are my preferences.
+
+  5 a session open in the docs directory
+  6 the t directory
+  7 the lib directory.
+
 
 =head3 coding standards
 
