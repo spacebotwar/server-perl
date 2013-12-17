@@ -104,20 +104,20 @@ my $tests = {
             email_code  => 'foo',
         },
         recv    => {
-            code        => 1000,
-            message     => 'Incorrect email code',
+            code        => 1001,
+            message     => 'Invalid Email Code',
         },
     },
-    "008_login_with_email_code" => {
-        method  => 'login_with_email_code',
-        send    => {
-            email_code  => 'foo',
-        },
-        recv    => {
-            code        => 0,
-            message     => 'Welcome',
-        },
-    },
+#    "008_login_with_email_code" => {
+#        method  => 'login_with_email_code',
+#        send    => {
+#            email_code  => 'foo',
+#        },
+#        recv    => {
+#            code        => 0,
+#            message     => 'Welcome',
+#        },
+#    },
 };
 
 my $users = $db->resultset('User')->search({

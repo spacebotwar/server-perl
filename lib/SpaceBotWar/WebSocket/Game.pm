@@ -48,6 +48,26 @@ sub ws_get_session {
 }
 
 
+# Get the LoginRadius settings
+#
+sub ws_get_radius {
+    my ($self, $room, $connection, $content) = @_;
+
+    my $send = {
+        room    => $room,
+        route   => "/get_radius",
+        content => {
+            code            => 0,
+            message         => "radius api key",
+            radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
+        },
+    };
+    if ($content->{id}) {
+        $send->{content}{id} = $content->{id};
+    }
+    $self->render_json($room, $connection, $send);
+}
+
 
 # A User attempting to 'register' a new username and password
 #

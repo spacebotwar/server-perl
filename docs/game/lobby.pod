@@ -90,6 +90,49 @@ No response is required by the client.
 
 
 
+=head2 Client : get_radius
+
+Get the API Key for the LoginRadius social login.
+
+    {
+        "id"        : "123",
+    }
+
+=head3 id (optional)
+
+An ID to identify this message so you can tie up the server response to this request.
+
+=head3 RESPONSE
+
+The server responds with a B<Server : get_radius> message.
+
+
+
+
+=head2 Server : get_radius
+
+Server response to a B<Client : get_radius> request.
+
+    {
+        "code"              : 0,
+        "message"           : "new session",
+        "radius_api_key"    : "78855680-671c-4c70-b194-2e392a0a7c81",
+        "id"                : "123"
+    }
+
+B<code> B<message> and B<id> as defined in server status.
+
+=head3 radius_api_key
+
+The site specific API Key to use with Radius Social Login.
+
+=head3 RESPONSE
+
+No response is required by the client.
+
+
+
+
 =head2 Client : login_with_email_code
 
 Attempt to log in with an B<email_code> (as a result of either registering or

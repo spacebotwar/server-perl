@@ -9,4 +9,8 @@
     "ws_server"     : "ws://spacebotwar.co.uk:5000/ws/game/lobby",
     "secret"        : "a random code",
     "email_secret"  : "another random code",
+    "radius"   : {
+        "api_key"   : "78855680-671c-4c70-b194-2e392a0a7c81",
+        "secret"    : "api secret goes here!"
+    }
 }

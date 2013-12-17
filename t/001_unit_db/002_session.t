@@ -19,7 +19,7 @@ diag("session = [$session]");
 my $valid = SpaceBotWar::Session->validate_session($session);
 is($valid, 1, "Session is valid");
 
-$valid = SpaceBotWar::Session->validate_session('cd30ab06-ee02-4a57-9b79-f0da23aad5e5-b65f7e');
+$valid = SpaceBotWar::Session->validate_session('1660686c-8b5d-4b7c-825d-1d818db8f9ca-2f9285');
 is($valid, 1, "Session is valid 2");
 
 done_testing();
