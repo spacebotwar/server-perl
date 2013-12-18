@@ -1,0 +1,70 @@
+Combat System and ranking methods
+=================================
+
+Program ranking
+---------------
+
+  * Combat is between individual 'programs'.
+  * Combat takes place within a 'league' of similar ranked programs,
+    leagues have a limit of (say 30) programs.
+  * Doing well in a league results in promotion to the next highest
+    league.
+  * Doing badly in a league results in demotion to a lower league.
+  * Programs are identified by their programmer, their unique name
+    and their version.
+  * Once entered into a tournament system the program is 'fixed'
+    which means it cannot be modified or adapted.
+  * If the player wishes to modify their program they will need to
+    clone the program, make the modification, and enter the new
+    version at the lowest league.
+  * There may be a maximum number of programs an individual may enter
+    into the league system (say 4?)
+  * Each week a tournament is run which competes all programs in a
+    league against all others. (probably in a 'best-of-three' match).
+  * Programs get 3 points for total defeat of the opponent, 1 point
+    for a win when they have the least damage at the end of the timer
+    and 0 points for a loss.
+  * At the end of the tournament the programs are ranked, first by
+    the number of points, second by their aggregate game time (lower
+    game time ranking higher).
+  * The top 2 players of each league rise in rank to the next league.
+  * The bottom (up to 8) players drop down into the (up to 4) leagues
+    immediately below.
+
+(note to self, if a program is defeated before the game timer runs
+out, their aggregate game time should be the total of the game time 
+(e.g. 5 min) plus the time left to the end of the game. e.g. if 
+defeated in 4 minutes their aggregate game time should be 5+1=6 min.)
+The winner will have an aggregate of just 4 minutes.
+
+Programmer ranking
+------------------
+There needs to be an incentive for players to publish their programs.
+It would mean nothing if their best program is cloned by another
+player, unchanged, and put into the leagues. The incentive is the
+rewards system for programmers, the 'Q' or 'Qudos' ranking system.
+
+  * All programs are owned by a programmer. This may either be a unique
+    program, or a modification of another players program.
+  * The game system keeps track of who owns a program, and importantly,
+    it keeps track of versions of a program and any cloning that takes
+    place.
+  * At the end of every tournament the programs are ranked and awarded
+    points, e.g. if there are 1000 programs entered into tournaments,
+    the highest ranking program gets 1000 points, the lowest gets zero.
+    These points do not go to the program, they go to the programmer 
+    who owns the program.
+  * There are an equal number of points which are distributed to the
+    programmers of the ancestors of each program (remember we keep 
+    track of where each program was cloned from). Ancestors are eligible
+    to receive these points only if they are still active in a
+    tournament.
+
+  
+  In addition, the parent of each program (the program or version
+    from which it was cloned) will get 10% of those points. The grand-
+    parent will get 1% of those points.
+
+
+  * The player who wrote a program get 'qudos' whenever their program
+    wins a tournament
