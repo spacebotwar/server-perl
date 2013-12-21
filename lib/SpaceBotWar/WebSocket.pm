@@ -72,6 +72,16 @@ sub fatal {
     $connection->send(qw( { "ERROR" : "$@" } ) );
 }
 
+sub render_json {
+    my ($self, $context, $json) = @_;
+
+    my $sent = JSON->new->encode($json);
+    print STDERR "SEND: [$sent]\n";
+
+    $context->connection->send($sent);
+}
+
+
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
@@ -113,9 +123,14 @@ sub on_establish {
                 });
 
                 eval {
-                    # We may change this to pass in a '$content' object if it requires
-                    # more than a couple of parameters.
-                    $obj->$method($context);
+                    my $reply = $obj->$method($context);
+                    if ($reply) {
+                        # Send back the message ID
+                        if ($content->{id}) {
+                            $reply->{content}{id} = $content->{id}
+                        }
+                        $self->render_json($context, $reply);
+                    }
                 };
 
                 my @error;

@@ -7,6 +7,7 @@ use SpaceBotWar::Session;
 
 use Carp;
 use UUID::Tiny ':std';
+use JSON;
 
 use parent qw(SpaceBotWar::WebSocket);
 
@@ -14,16 +15,6 @@ use parent qw(SpaceBotWar::WebSocket);
 # (server) they need to connect to
 #
 
-
-sub render_json {
-    my ($self, $room, $connection, $json) = @_;
-
-    my $sent = JSON->new->encode($json);
-    print STDERR "SEND: [$sent]\n";
-
-
-    $connection->send($sent);
-}
 
 # Get a new session variable.
 #
@@ -41,10 +32,7 @@ sub ws_get_session {
             session => $new_session,
         }
     };
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 
@@ -62,10 +50,7 @@ sub ws_get_radius {
             radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
         },
     };
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 
@@ -91,10 +76,7 @@ sub ws_register {
             data    => $context->content->{username},
         },
     };
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 
@@ -117,10 +99,7 @@ sub ws_confirm_email {
             data        => $user->name,
         },
     };
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 
@@ -143,11 +122,7 @@ sub ws_login_with_password {
             username    => $user->name,
         }    
     };
-
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 # Log in with an email code
@@ -168,11 +143,7 @@ sub ws_login_with_email_code {
             username    => 'james',
         }
     };
-
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
+    return $send;
 }
 
 
@@ -193,12 +164,7 @@ sub ws_logout {
             message     => 'Good Bye',
         }
     };
-
-    if ($context->content->{id}) {
-        $send->{content}{id} = $context->content->{id};
-    }
-    $self->render_json($context->room, $context->connection, $send);
-
+    return $send;
 }
 
 
@@ -216,7 +182,9 @@ sub on_connect {
             data        => 'lobby',
         },
     };
-    $self->render_json($room, $connection, $send);
+
+    my $sent = JSON->new->encode($send);
+    $connection->send($sent);
 }
 
 
