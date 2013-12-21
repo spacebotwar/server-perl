@@ -18,7 +18,7 @@ my $config  = SpaceBotWar->config;
 
 # Testing async replies is tricky.
 # All the 'tricky' bits have been factored out into the WSTester library.
-#   Note that the 'session' and the 'id' message fields are handled by WSTester
+#   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
     route       => "/",

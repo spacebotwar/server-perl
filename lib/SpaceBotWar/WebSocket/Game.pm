@@ -23,16 +23,11 @@ sub ws_get_session {
 
     my $new_session = SpaceBotWar::Session->create_session;
 
-    my $send = {
-        room    => $context->room,
-        route   => "/get_session",
-        content => {
-            code    => 0,
-            message => "new session",
-            session => $new_session,
-        }
+    return {
+        code    => 0,
+        message => "new session",
+        session => $new_session,
     };
-    return $send;
 }
 
 
@@ -41,16 +36,11 @@ sub ws_get_session {
 sub ws_get_radius {
     my ($self, $context) = @_;
 
-    my $send = {
-        room    => $context->room,
-        route   => "/get_radius",
-        content => {
-            code            => 0,
-            message         => "radius api key",
-            radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
-        },
+    return {
+        code            => 0,
+        message         => "radius api key",
+        radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
     };
-    return $send;
 }
 
 
@@ -67,16 +57,11 @@ sub ws_register {
 
     my $user = $db->resultset('User')->assert_create({ %{$context->content} });
 
-    my $send = {
-        room    => $context->room,
-        route   => "/register",
-        content => {
-            code    => 0,
-            message => 'Available',
-            data    => $context->content->{username},
-        },
+    return {
+        code    => 0,
+        message => 'Available',
+        data    => $context->content->{username},
     };
-    return $send;
 }
 
 
@@ -90,16 +75,11 @@ sub ws_confirm_email {
 
     my $user = $db->resultset('User')->assert_confirm_email($context->content->{code});
 
-    my $send = {
-        room    => $context->room,
-        route   => '/confirm_email',
-        content => {
-            code        => 0,
-            message     => 'Logged in',
-            data        => $user->name,
-        },
+    return {
+        code        => 0,
+        message     => 'Logged in',
+        data        => $user->name,
     };
-    return $send;
 }
 
 
@@ -113,16 +93,11 @@ sub ws_login_with_password {
 
     my $user = $db->resultset('User')->assert_login_with_password($context->content);
 
-    my $send = {
-        room    => $context->room,
-        route   => '/login_with_password',
-        content => {
-            code        => 0,
-            message     => 'Welcome',
-            username    => $user->name,
-        }    
+    return {
+        code        => 0,
+        message     => 'Welcome',
+        username    => $user->name,
     };
-    return $send;
 }
 
 # Log in with an email code
@@ -134,16 +109,11 @@ sub ws_login_with_email_code {
 
     # email code login? Just recover the session user_id?
 
-    my $send = {
-        room    => $context->room,
-        route   => '/login_with_email_code',
-        content => {
-            code        => 0,
-            message     => 'Welcome',
-            username    => 'james',
-        }
+    return {
+        code        => 0,
+        message     => 'Welcome',
+        username    => 'james',
     };
-    return $send;
 }
 
 
@@ -156,35 +126,23 @@ sub ws_logout {
     # What should a 'logout' do? Just set the cache value associated with
     # the session ID?
     #
-    my $send = {
-        room    => $context->room,
-        route   => '/logout',
-        content => {
-            code        => 0,
-            message     => 'Good Bye',
-        }
+    return {
+        code        => 0,
+        message     => 'Good Bye',
     };
-    return $send;
 }
 
 
 # A user has joined the room
 #
 sub on_connect {
-    my ($self, $room, $connection) = @_;
+    my ($self, $context) = @_;
 
-    my $send = {
-        room    => $room,
-        route   => "/lobby",
-        content => {
-            code        => 0,
-            message     => 'Welcome to the game lobby',
-            data        => 'lobby',
-        },
+    return {
+        code        => 0,
+        message     => 'Welcome to the game lobby',
+        data        => 'lobby',
     };
-
-    my $sent = JSON->new->encode($send);
-    $connection->send($sent);
 }
 
 

@@ -88,7 +88,19 @@ sub on_establish {
 
     my $room = $self->{room};
     
-    $self->on_connect($room, $connection);
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        room            => $room,
+        connection      => $connection,
+        content         => {},
+    });
+    my $reply = {
+        room    => $room,
+        route   => '/',
+        content => $self->on_connect($context),
+    };
+    if ($reply) {
+        $self->render_json($context, $reply);
+    }
 
     $connection->on(
         message => sub {
@@ -104,7 +116,7 @@ sub on_establish {
             else {
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
-                my $id      = $content->{id};
+                my $msg_id  = $content->{msg_id};
                 my ($route, $method) = $path =~ m{(.*)/([^/]*)};
                 $method = "ws_".$method;
                 $route =~ s{/}{::};
@@ -126,9 +138,15 @@ sub on_establish {
                     my $reply = $obj->$method($context);
                     if ($reply) {
                         # Send back the message ID
-                        if ($content->{id}) {
-                            $reply->{content}{id} = $content->{id}
+                        if ($content->{msg_id}) {
+                            $reply->{msg_id} = $content->{msg_id}
                         }
+                        $reply = {
+                            room    => $room,
+                            route   => $path,
+                            content => $reply,
+                        };
+
                         $self->render_json($context, $reply);
                     }
                 };
@@ -152,7 +170,7 @@ sub on_establish {
                             code        => $error[0],
                             message     => $error[1],
                             data        => $error[2],
-                            id          => $id,
+                            msg_id      => $msg_id,
                         },
                     };
                     $msg = JSON->new->encode($msg);

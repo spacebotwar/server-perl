@@ -68,7 +68,7 @@ sub run_tests {
             if (defined $session and not defined $content->{session}) {
                 $content->{session} = $session;
             }
-            $content->{id} = $key;
+            $content->{msg_id} = $key;
 
             my $msg = JSON->new->encode({
                 route   => $self->route.$test->{method},
@@ -97,14 +97,14 @@ sub run_tests {
     #                fail("Unexpected method '$method'");
                 }
                 else {
-                    my $id = $content->{id} || '';
-                    if ($id eq $key) {
+                    my $msg_id = $content->{msg_id} || '';
+                    if ($msg_id eq $key) {
                         for my $r_key (%{$test->{recv}}) {
-                            is($content->{$r_key}, $test->{recv}{$r_key}, "$id - $r_key - is correct");
+                            is($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
                         }
                     }
                     else {
-                        fail("Unexpected id '$id'");
+                        fail("Unexpected msg_id '$msg_id'");
                     }
                     $cv->send;
                     undef $test_timer; # cancel the timer
