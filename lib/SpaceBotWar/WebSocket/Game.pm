@@ -19,7 +19,7 @@ sub render_json {
     my ($self, $room, $connection, $json) = @_;
 
     my $sent = JSON->new->encode($json);
-    print STDERR "RENDER_JSON: [$sent]\n";
+    print STDERR "SEND: [$sent]\n";
 
 
     $connection->send($sent);
@@ -28,12 +28,12 @@ sub render_json {
 # Get a new session variable.
 #
 sub ws_get_session {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
     my $new_session = SpaceBotWar::Session->create_session;
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => "/get_session",
         content => {
             code    => 0,
@@ -41,20 +41,20 @@ sub ws_get_session {
             session => $new_session,
         }
     };
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 
 # Get the LoginRadius settings
 #
 sub ws_get_radius {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => "/get_radius",
         content => {
             code            => 0,
@@ -62,54 +62,54 @@ sub ws_get_radius {
             radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
         },
     };
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 
 # A User attempting to 'register' a new username and password
 #
 sub ws_register {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($content->{session});
+    SpaceBotWar::Session->assert_validate_session($context->content->{session});
     my $db = SpaceBotWar->db;
-    $db->resultset('User')->assert_username_available($content->{username});
-    $db->resultset('User')->assert_email_valid($content->{email});
-    $db->resultset('User')->assert_password_valid($content->{password});
+    $db->resultset('User')->assert_username_available($context->content->{username});
+    $db->resultset('User')->assert_email_valid($context->content->{email});
+    $db->resultset('User')->assert_password_valid($context->content->{password});
 
-    my $user = $db->resultset('User')->assert_create({ %$content });
+    my $user = $db->resultset('User')->assert_create({ %{$context->content} });
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => "/register",
         content => {
             code    => 0,
             message => 'Available',
-            data    => $content->{username},
+            data    => $context->content->{username},
         },
     };
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 
 # A user sends an email 'validation code' to the server
 #
 sub ws_confirm_email {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($content->{session});
+    SpaceBotWar::Session->assert_validate_session($context->content->{session});
     my $db = SpaceBotWar->db;
 
-    my $user = $db->resultset('User')->assert_confirm_email($content->{code});
+    my $user = $db->resultset('User')->assert_confirm_email($context->content->{code});
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => '/confirm_email',
         content => {
             code        => 0,
@@ -117,25 +117,25 @@ sub ws_confirm_email {
             data        => $user->name,
         },
     };
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 
 # A user logs in with a username and password
 #
 sub ws_login_with_password {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($content->{session});
+    SpaceBotWar::Session->assert_validate_session($context->content->{session});
     my $db = SpaceBotWar->db;
 
-    my $user = $db->resultset('User')->assert_login_with_password($content);
+    my $user = $db->resultset('User')->assert_login_with_password($context->content);
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => '/login_with_password',
         content => {
             code        => 0,
@@ -144,23 +144,23 @@ sub ws_login_with_password {
         }    
     };
 
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 # Log in with an email code
 #
 sub ws_login_with_email_code {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
-    SpaceBotWar::EmailCode->assert_validate_email_code($content->{email_code});
+    SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
 
     # email code login? Just recover the session user_id?
 
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => '/login_with_email_code',
         content => {
             code        => 0,
@@ -169,10 +169,10 @@ sub ws_login_with_email_code {
         }
     };
 
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 }
 
 
@@ -180,13 +180,13 @@ sub ws_login_with_email_code {
 # Log out of an account
 #
 sub ws_logout {
-    my ($self, $room, $connection, $content) = @_;
+    my ($self, $context) = @_;
 
     # What should a 'logout' do? Just set the cache value associated with
     # the session ID?
     #
     my $send = {
-        room    => $room,
+        room    => $context->room,
         route   => '/logout',
         content => {
             code        => 0,
@@ -194,10 +194,10 @@ sub ws_logout {
         }
     };
 
-    if ($content->{id}) {
-        $send->{content}{id} = $content->{id};
+    if ($context->content->{id}) {
+        $send->{content}{id} = $context->content->{id};
     }
-    $self->render_json($room, $connection, $send);
+    $self->render_json($context->room, $context->connection, $send);
 
 }
 

@@ -16,7 +16,7 @@ use Data::Dumper;
 # Perhaps we need to use 'pluggable'?
 #
 use SpaceBotWar::WebSocket::Game::User;
-
+use SpaceBotWar::WebSocket::Context;
 
 
 
@@ -106,12 +106,16 @@ sub on_establish {
                     $route = ref($self);
                 }
                 my $obj = $route->new({});
-
+                my $context = SpaceBotWar::WebSocket::Context->new({
+                    room            => $room,
+                    connection      => $connection,
+                    content         => $content,
+                });
 
                 eval {
                     # We may change this to pass in a '$content' object if it requires
                     # more than a couple of parameters.
-                    $obj->$method($room, $connection, $content);
+                    $obj->$method($context);
                 };
 
                 my @error;
