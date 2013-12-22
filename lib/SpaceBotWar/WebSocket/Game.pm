@@ -1,7 +1,9 @@
 package SpaceBotWar::WebSocket::Game;
 
-use strict;
-use warnings;
+use Moose;
+use MooseX::NonMoose;
+extends 'SpaceBotWar::WebSocket';
+
 use SpaceBotWar;
 use SpaceBotWar::Session;
 
@@ -9,10 +11,10 @@ use Carp;
 use UUID::Tiny ':std';
 use JSON;
 
-use parent qw(SpaceBotWar::WebSocket);
-
-# This is the Game Lobby where people connect to to obtain the room
-# (server) they need to connect to
+# This is the common point into which everyone connects to. In the
+# lobby it is possible to do the necessary commands to log in, or
+# register, to connect to public chat rooms etc. Once logged in
+# the user will be directed to other rooms.
 #
 
 
@@ -65,7 +67,7 @@ sub ws_register {
 }
 
 
-# A user sends an email 'validation code' to the server
+# A user requests to be sent an email code due to forgotten password
 #
 sub ws_confirm_email {
     my ($self, $context) = @_;
@@ -77,7 +79,7 @@ sub ws_confirm_email {
 
     return {
         code        => 0,
-        message     => 'Logged in',
+        message     => 'Email code sent.',
         data        => $user->name,
     };
 }
@@ -144,9 +146,5 @@ sub on_connect {
         data        => 'lobby',
     };
 }
-
-
-
-
 
 1;

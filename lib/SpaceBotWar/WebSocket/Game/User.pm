@@ -1,24 +1,31 @@
 package SpaceBotWar::WebSocket::Game::User;
 
 use Moose;
-use JSON;
+use MooseX::NonMoose;
+extends 'SpaceBotWar::WebSocket';
 
-use namespace::autoclean;
+# This API supports the /user route
+
+# This is the route to the methods that interact with the user
+# data, e.g. profile, password changes, etc.
+
+# Get the users profile
+#
+sub ws_get_profile {
+    my ($self, $context) = @_;
 
 
-sub register {
-    my ($self, $connection) = @_;
-
-    my $send = {
-        route   => "anything",
-        self    => "$self",
-        method  => "register",
-        content => { foo => 'bar-boom', bubble => 'squeak'},
+    return {
+        code    => 0,
+        message => "Success",
+        profile => {
+            username    => 'test_user_1',
+            email       => 'me@example.com',
+        },
     };
-    print STDERR "got here 2!\n";
-    my $sent = JSON->new->encode($send);
-    $connection->send($sent);
 }
+
+
 
 __PACKAGE__->meta->make_immutable;
 

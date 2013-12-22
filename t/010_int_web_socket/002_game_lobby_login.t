@@ -87,7 +87,7 @@ my $tests = {
             username    => ' test_user_1',
         },
     },
-    "006_logout"  => {
+    "007_logout"  => {
         method  => 'logout',
         send    => {
             username    => ' test_user_1',
@@ -98,7 +98,7 @@ my $tests = {
             message     => 'Good Bye',
         },
     },
-    "007_login_with_email_code_invalid" => {
+    "008_login_with_email_code_invalid" => {
         method  => 'login_with_email_code',
         send    => {
             email_code  => 'foo',
@@ -108,7 +108,7 @@ my $tests = {
             message     => 'Invalid Email Code',
         },
     },
-#    "008_login_with_email_code" => {
+#    "009_login_with_email_code" => {
 #        method  => 'login_with_email_code',
 #        send    => {
 #            email_code  => 'foo',

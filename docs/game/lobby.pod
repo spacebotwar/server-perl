@@ -20,13 +20,14 @@ supply a B<session> then the call will be rejected.
 
 
 
-=head2 Server : lobby_status
+=head2 Server : lobby
 
-A B<connection_status> will be sent by the Game Lobby shortly after the user has
+A B<lobby> status will be sent by the Game Lobby shortly after the user has
 made a connection or in the case where the lobby status changes.
 
     {
         "code"      : 0,
+        "data"      : "lobby",
         "message"   : "Welcome to the Game Lobby",
     }
 

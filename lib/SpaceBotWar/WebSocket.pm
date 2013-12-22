@@ -114,27 +114,35 @@ sub on_establish {
                 $self->fatal($connection, $@);
             }
             else {
+#print STDERR "GOT HERE!\n";
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
                 my $msg_id  = $content->{msg_id};
-                my ($route, $method) = $path =~ m{(.*)/([^/]*)};
-                $method = "ws_".$method;
-                $route =~ s{/}{::};
-                $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-                if ($route) {
-                    $route = ref($self)."::".$route;
-                }
-                else {
-                    $route = ref($self);
-                }
-                my $obj = $route->new({});
-                my $context = SpaceBotWar::WebSocket::Context->new({
-                    room            => $room,
-                    connection      => $connection,
-                    content         => $content,
-                });
-
                 eval {
+                    my ($route, $method) = $path =~ m{(.*)/([^/]*)};
+                    $method = "ws_".$method;
+#print STDERR "ROUTE 1[$route]\n";
+                    $route =~ s{/$}{};
+                    $route =~ s{^/}{};
+#print STDERR "ROUTE 2[$route]\n";
+                    $route =~ s{/}{::};
+#print STDERR "ROUTE 3[$route]\n";
+                    $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
+#print STDERR "ROUTE 4[$route]\n";
+                    if ($route) {
+                        $route = ref($self)."::".$route;
+                    }
+                    else {
+                        $route = ref($self);
+                    }
+#print STDERR "ROUTE 5[$route]\n";
+                    my $obj = $route->new({});
+                    my $context = SpaceBotWar::WebSocket::Context->new({
+                        room            => $room,
+                        connection      => $connection,
+                        content         => $content,
+                    });
+#print STDERR "ROUTE [$obj][$method]\n";
                     my $reply = $obj->$method($context);
                     if ($reply) {
                         # Send back the message ID

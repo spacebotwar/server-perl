@@ -26,13 +26,17 @@ has 'server' => (
     required    => 1,
 );
 
+has 'session' => (
+    is      => 'rw',
+    isa     => 'Str',
+);
+
 sub run_tests {
     my ($self, $tests) = @_;
 
     # Not ideal to make a connection for each test, but it's the easiest way
     # I have found so far!
     #
-    my $session;
     for my $key (sort keys %$tests) {
         my $test = $tests->{$key};
     
@@ -40,7 +44,7 @@ sub run_tests {
         #diag("test $key");
         # We need to time-out if the connection fails to respond correctly.
         my $test_timer = AnyEvent->timer(
-            after   => 0.3,
+            after   => 0.5,
             cb      => sub {
                 $cv->send;
                 fail("Timer expired");
@@ -60,13 +64,14 @@ sub run_tests {
 
             $connection->on(finish => sub {
                 my ($connection) = @_;
-                fail("FINISH signal received");
+                diag("FINISH signal received");
+#                fail("FINISH signal received");
             #    $cv->send;
             });
 
             my $content = $test->{send};
-            if (defined $session and not defined $content->{session}) {
-                $content->{session} = $session;
+            if (defined $self->session and not defined $content->{session}) {
+                $content->{session} = $self->session;
             }
             $content->{msg_id} = $key;
 
@@ -74,7 +79,7 @@ sub run_tests {
                 route   => $self->route.$test->{method},
                 content => $content,
             });
-            #diag("SEND: $msg");
+            diag("SEND: $msg");
             $connection->send($msg);
 
             # We should get one reply for each message
@@ -85,41 +90,47 @@ sub run_tests {
                 $json = JSON->new->decode($message->body);
                 my $content = $json->{content};
                 #diag "RECEIVED: ".Dumper($json);
-                my $method = $json->{route};
-                $method =~ s{^/}{};
+                my ($method) = $json->{route} =~ m{/([^/]*)$};;
                 if ($content->{session}) {
-                    $session = $content->{session};
+                    $self->session($content->{session});
                 }
                 if ($method eq 'lobby_status') {
                     # We can ignore these
                 }
                 elsif ($method ne $test->{method}) {
+                    diag("Unexpected method '$method'");
     #                fail("Unexpected method '$method'");
                 }
                 else {
                     my $msg_id = $content->{msg_id} || '';
                     if ($msg_id eq $key) {
                         for my $r_key (%{$test->{recv}}) {
-                            is($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
+
+                            is_deeply($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
                         }
                     }
                     else {
                         fail("Unexpected msg_id '$msg_id'");
                     }
-                    $cv->send;
+                    #diag("undef timer");
                     undef $test_timer; # cancel the timer
+                    $connection->close;
+                    $cv->send;
                 }
             });
         });
         # Go into event loop waiting for all responses
         #diag("GOT HERE!");
         $cv->recv;
-
+        #diag("CLOSED!");
+        $connection->close;
+        undef $test_timer;
         # Do any tidyup (if needed)
         my $cb = $test->{callback};
         if ($cb) {
             &$cb($json);
         }
+        #diag("EXIT");
     }
     #$cv->recv;
 }
