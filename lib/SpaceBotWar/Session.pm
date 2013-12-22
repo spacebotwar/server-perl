@@ -6,13 +6,14 @@ use namespace::autoclean;
 use UUID::Tiny ':std';
 use SpaceBotWar;
 use Digest::MD5 qw(md5_hex);
+use Data::Dumper;
 
 # A unique ID for the session key
 # 
 has id => (
     is      => 'ro',
     default => sub {
-        return create_uuid_as_string(UUID_V4);
+        return _create_session_id();
     },
 );
 
@@ -46,29 +47,53 @@ has extended => (
     default => 0,
 );
 
-# The ID of the user who is logged in
+# The ID of the user who is logged in (or previously logged in)
 #
 has user_id => (
     is          => 'rw',
     predicate   => 'has_user_id',
+    default     => 0,
+);
+
+# A flag showing if the user is logged in or not
+#
+has logged_in => (
+    is          => 'rw',
+    isa         => 'Int',
+    default     => 0,
 );
 
 # Automatically extend the session if we update any values
 #
-around [qw(user_id)] => sub {
-    my $orig = shift;
-    my $self = shift;
-    return $self->$orig() if not @_;
+for my $func (qw(user_id logged_in)) {
+    around $func => sub {
+        my $orig = shift;
+        my $self = shift;
 
-    my $ret = $self->$orig(@_);
-    $self->extend;
-    return $ret;
-};
+        return $self->$orig() if not @_;
+
+        #print STDERR "IN $func [$orig][$self]\n";
+        #print STDERR Dumper(\@_);    
+        my $ret = $self->$orig(@_);
+        $self->extend;
+        return $ret;
+    };
+}
 
 sub BUILD {
-    my ($self) = @_;
+    my ($self,$args) = @_;
 
+    #print STDERR "IN BUILD 1: user_id=[".$self->user_id."] logged_in=[".$self->logged_in."]\n";
     $self->from_hash($self->cache->get_and_deserialize($self->namespace, $self->id));
+    if (defined $args->{user_id}) {
+        #print STDERR "IN BUILD user_id [".$args->{logged_in}."]\n";
+        $self->user_id($args->{user_id});
+    }
+    if (defined $args->{logged_in}) {
+        #print STDERR "IN BUILD logged_in [".$args->{logged_in}."]\n";
+        $self->logged_in($args->{logged_in});
+    }
+    #print STDERR "IN BUILD 2: user_id=[".$self->user_id."] logged_in=[".$self->logged_in."]\n";
 }
 
 
@@ -79,6 +104,7 @@ sub to_hash {
 
     return {
         user_id     => $self->user_id,
+        logged_in   => $self->logged_in,
         extended    => $self->extended,
     };
 }
@@ -88,9 +114,11 @@ sub to_hash {
 sub from_hash {
     my ($self, $hash) = @_;
 
+    #print STDERR "FROM_HASH: ".Dumper($hash)."\n";
     if (defined $hash and ref $hash eq 'HASH') {
         $self->user_id($hash->{user_id});
         $self->extended($hash->{extended});
+        $self->logged_in($hash->{logged_in});
     }
 }
 
@@ -104,41 +132,66 @@ sub extend {
     $self->cache->set('session', $self->id, $self->to_hash, $self->timeout_sec);
 }
 
-# Class method. Create a new session variable
-#   A session is created from a UUID (E.G. '6ba7b810-9dad-11d1-80b4-00c04fd430c8' followed by a md5
-#   which we use to ensure the UUID is one created by us (and not invented by the client)
-#   making it look like '6ba7b810-9dad-11d1-80b4-00c04fd430c8-0123af'
-sub create_session {
-    my ($class) = @_;
 
+# Class method. Create a new random session_id
+#   Add a 'secret' so that people can't invent their own session
+#   
+sub _create_session_id {
     my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = create_uuid_as_string(UUID_V4);
     my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
     return $uuid."-".$digest;
 }
 
+
+# Class method. Create a new session object
+#   If an existing session_id is specified, then see if there is a cached object
+#   Otherwise create it.
+#   If no session_id is supplied, create one
+#   
+sub create_session {
+    my ($class, $session_id) = @_;
+
+    if (not ($session_id and $class->validate_session($session_id))) {
+        $session_id = _create_session_id();
+    }
+
+    my $session = $class->new({
+        id      => $session_id,
+    });
+    $session->extend;
+
+    return $session;
+}
+
 # Validate a session variable
 #
 sub validate_session {
-    my ($class, $session) = @_;
+    my ($class, $session_id) = @_;
 
-    return if not defined $session;
+    return if not defined $session_id;
     my $secret  = SpaceBotWar->config->get('secret');
-    my $uuid    = substr($session, 0, 36);
+    my $uuid    = substr($session_id, 0, 36);
     my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
-    return $test eq $session ? 1 : 0;
+    if ($test eq $session_id) {
+        return $class->new({
+            id      => $session_id,
+        });
+    }
+    return;
 }
 
 # Validate a session variable with confess
 #
 sub assert_validate_session {
-    my ($class, $session) = @_;
+    my ($class, $session_id) = @_;
 
-    confess [1001, "Session is missing"] if not defined $session;
-    if (not $class->validate_session($session)) {
-        confess [1001, "Session is invalid!", "[$session]"];
+    confess [1001, "Session is missing"] if not defined $session_id;
+    my $session = $class->validate_session($session_id);
+    if (not $session) {
+        confess [1001, "Session is invalid!", "[$session_id]"];
     }
-    return 1;
+    return $session;
 }
 
 __PACKAGE__->meta->make_immutable;

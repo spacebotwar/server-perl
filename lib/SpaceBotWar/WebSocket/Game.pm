@@ -23,12 +23,12 @@ use JSON;
 sub ws_get_session {
     my ($self, $context) = @_;
 
-    my $new_session = SpaceBotWar::Session->create_session;
+    my $session = SpaceBotWar::Session->create_session;
 
     return {
         code    => 0,
         message => "new session",
-        session => $new_session,
+        session => $session->id,
     };
 }
 
@@ -90,10 +90,12 @@ sub ws_confirm_email {
 sub ws_login_with_password {
     my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($context->content->{session});
+    my $session = SpaceBotWar::Session->assert_validate_session($context->content->{session});
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_login_with_password($context->content);
+    $session->user_id($user->id);
+    $session->logged_in(1);
 
     return {
         code        => 0,
