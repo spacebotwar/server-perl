@@ -78,14 +78,9 @@ my $user = $db->resultset('User')->create({
 });
 
 $tester->route('/');
-#$tester->run_tests($test_setup);
+$tester->run_tests($test_setup);
 
-$tester = WSTester->new({
-    route       => "/user/",
-    server      => $config->get('ws_server'),
-    session     => "d3296283-a952-4f25-a608-d05905ac02e0-a1cad2",
-});
-
+$tester->route('/user/');
 $tester->run_tests($tests);
 
 done_testing();

@@ -64,7 +64,7 @@ sub run_tests {
 
             $connection->on(finish => sub {
                 my ($connection) = @_;
-                diag("FINISH signal received");
+                #diag("FINISH signal received");
 #                fail("FINISH signal received");
             #    $cv->send;
             });
@@ -79,7 +79,7 @@ sub run_tests {
                 route   => $self->route.$test->{method},
                 content => $content,
             });
-            diag("SEND: $msg");
+            #diag("SEND: $msg");
             $connection->send($msg);
 
             # We should get one reply for each message
@@ -98,7 +98,7 @@ sub run_tests {
                     # We can ignore these
                 }
                 elsif ($method ne $test->{method}) {
-                    diag("Unexpected method '$method'");
+                    #diag("Unexpected method '$method'");
     #                fail("Unexpected method '$method'");
                 }
                 else {
