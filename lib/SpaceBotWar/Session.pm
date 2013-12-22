@@ -2,6 +2,7 @@ package SpaceBotWar::Session;
 
 use Moose;
 use namespace::autoclean;
+
 use UUID::Tiny ':std';
 use SpaceBotWar;
 use Digest::MD5 qw(md5_hex);
@@ -52,6 +53,18 @@ has user_id => (
     predicate   => 'has_user_id',
 );
 
+# Automatically extend the session if we update any values
+#
+around [qw(user_id)] => sub {
+    my $orig = shift;
+    my $self = shift;
+    return $self->$orig() if not @_;
+
+    my $ret = $self->$orig(@_);
+    $self->extend;
+    return $ret;
+};
+
 sub BUILD {
     my ($self) = @_;
 
@@ -70,7 +83,7 @@ sub to_hash {
     };
 }
 
-# Update the object from the hash
+# Update the object from a hash
 #
 sub from_hash {
     my ($self, $hash) = @_;
@@ -127,11 +140,6 @@ sub assert_validate_session {
     }
     return 1;
 }
-
-
-
-
-
 
 __PACKAGE__->meta->make_immutable;
 
