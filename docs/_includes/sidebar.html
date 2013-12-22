@@ -1,0 +1,34 @@
+<nav>
+  <a href="/">
+    <img src="/sp_ship.png" id="logo" alt="Site logo"/>
+  </a>
+  <h2><a href="/">SpaceBotWar</a>.</h2>
+  <hr/>
+  <h2>
+  {% if page.on_page == "api" %}
+    API Documents
+  {% else %}
+    <a href="/api">API Documents</a>
+  {% endif %}
+  {% if page.api_menu %}
+    {% if page.on_page == "api_game" %}
+      Game
+    {% else %}
+      <h3><a href="/api/game">Game</a></h3>
+    {% endif %}
+  {% endif %}
+  </h2>
+  <hr/>
+  <h2><a href="/blog">Blog posts</a></h2>
+  <hr/>
+  <h2><a href="/about">About</a></h2>
+  <hr/>
+  <h2><a href="/faq">FAQ</a></h2>
+  <hr/>
+  <div>
+    <div id="social">
+      {% include social.html %}
+    </div>
+  </div>
+  </ul>
+</nav>
