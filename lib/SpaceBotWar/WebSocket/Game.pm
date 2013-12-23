@@ -1,4 +1,4 @@
-package SpaceBotWar::WebSocket::Arena;
+package SpaceBotWar::WebSocket::Game;
 
 use Moose;
 use MooseX::NonMoose;

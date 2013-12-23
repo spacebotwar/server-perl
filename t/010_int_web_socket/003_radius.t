@@ -17,7 +17,7 @@ my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
 my $tester = WSTester->new({
-    route       => "/lobby/",
+    route       => "/",
     server      => $config->get('ws_server'),
 });
 

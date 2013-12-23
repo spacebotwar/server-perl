@@ -21,7 +21,7 @@ my $config  = SpaceBotWar->config;
 #   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
-    route       => "/lobby/",
+    route       => "/",
     server      => $config->get('ws_server'),
 });
 

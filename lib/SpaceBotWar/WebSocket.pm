@@ -17,7 +17,6 @@ use Data::Dumper;
 #
 #use SpaceBotWar;
 use SpaceBotWar::Session;
-#use SpaceBotWar::WebSocket::Game::User;
 use SpaceBotWar::WebSocket::Context;
 
 
