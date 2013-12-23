@@ -1,8 +1,6 @@
 package SpaceBotWar::WebSocket::Lobby;
 
 use Moose;
-#use MooseX::NonMoose;
-#extends 'SpaceBotWar::WebSocket';
 
 use SpaceBotWar;
 use SpaceBotWar::Session;
