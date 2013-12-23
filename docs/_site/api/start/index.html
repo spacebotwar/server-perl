@@ -99,15 +99,15 @@
 
 <p>The Start Lobby should be the first place you connect to on the game server. It will give you the names of other routes and rooms which are currently active in the game. It also has the functionality to allow you to log into your account.</p>
 <hr />
-<h1 id="client_id">Client ID</h1>
+<h1 id="client_code">Client Code</h1>
 
-<p>A client ID is used to identify a client to the server. A client ID is provided by the server and once given it should continue to be used, even if you log out and back in again. This enables the server to retain your settings.</p>
+<p>A Client Code is used to identify a client to the server. A Client Code is provided by the server and once given it should continue to be used, even if you log out and back in again. This enables the server to retain your settings.</p>
 
-<p>A session is associated with a Client ID and it may ‘time-out’ (after a few hours) but even so, you should still keep the same Client ID for subsequent sessions.</p>
+<p>A session is associated with a Client Code and it may ‘time-out’ (after a few hours) but even so, you should still keep the same Client Code for subsequent sessions.</p>
 
-<p>A Client may be a different web browser (Internet Explorer, Chrome, Safari etc.) or a different computer, or a script running. Each of these should be given a different Client ID</p>
+<p>A Client may be a different web browser (Internet Explorer, Chrome, Safari etc.) or a different computer, or a script running. Each of these should be given a different Client Code</p>
 
-<p>In the following API calls, if it specifies a Client ID then it is mandatory. If you don’t supply a Client ID the call will be rejected.</p>
+<p>In the following API calls, if it specifies a Client Code then it is mandatory. If you don’t supply a Client Code the call will be rejected.</p>
 <hr />
 <h1 id="server__lobby">Server : lobby</h1>
 
@@ -130,9 +130,9 @@
 
 <p>Supplimentary data, for example the time at which the server is due back on line.</p>
 <hr />
-<h1 id="client__get_client_id">Client : get_client_id</h1>
+<h1 id="client__get_client_code">Client : get_client_code</h1>
 
-<p>Get a new client ID. Note you should only do this if you don’t already have a client ID. e.g. if this is the first time on this computer, or with this Web Browser. If you do have one (even if it is timed out) you should reuse it.</p>
+<p>Get a new Client Code. Note you should only do this if you don’t already have a Client Code. e.g. if this is the first time on this computer, or with this Web Browser. If you do have one (even if it is timed out) you should reuse it.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
 <span class='p'>}</span>
@@ -143,23 +143,23 @@
 
 <h3 id="response">RESPONSE</h3>
 
-<p>The server will respond with a <strong>Server : get_client_id</strong> message.</p>
+<p>The server will respond with a <strong>Server : get_client_code</strong> message.</p>
 <hr />
-<h1 id="server__get_client_id">Server : get_client_id</h1>
+<h1 id="server__get_client_code">Server : get_client_code</h1>
 
-<p>Server response to the <strong>Client : get_client_id</strong> request</p>
+<p>Server response to the <strong>Client : get_client_code</strong> request</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;code&quot;</span>          <span class='p'>:</span> <span class='mi'>0</span><span class='p'>,</span>
     <span class='nt'>&quot;message&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;OK&quot;</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>     <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>     <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
 <p>The <strong>code</strong>, <strong>message</strong> and <strong>msg_id</strong> are the standard server response.</p>
 
-<h3 id="client_id_2">client_id</h3>
+<h3 id="client_code_2">client_code</h3>
 
-<p>This is the Client ID you should use from now on with this browser/computer combination. Even if the session times out the Client ID will still be valid for later sessions and you should not request another one.</p>
+<p>This is the Client Code you should use from now on with this browser/computer combination. Even if the session times out the Client Code will still be valid for later sessions and you should not request another one.</p>
 <hr />
 <h1 id="client__get_radius">Client : get_radius</h1>
 
@@ -195,13 +195,13 @@
 <p>Register a new account with the server.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;email&quot;</span>             <span class='p'>:</span> <span class='s2'>&quot;jb@mi5.gov.co.uk&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="client_id_required">client_id (required)</h3>
+<h3 id="client_code_required">client_code (required)</h3>
 
 <h3 id="username_required">username (required)</h3>
 
@@ -232,7 +232,7 @@
 <p>Request the server to send an email which will allow access to an account where the password has been forgotten.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;email&quot;</span>             <span class='p'>:</span> <span class='s2'>&quot;jb@mi5.gov.co.uk&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
@@ -260,7 +260,7 @@
 <p>Log into the server by giving the username and password</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
@@ -290,7 +290,7 @@
 <p>The email sent as a result of the <strong>Client : forgot_password</strong> message will have a link allowing you to log directly into your account and to then change your password.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
     <span class='nt'>&quot;email_code&quot;</span>        <span class='p'>:</span> <span class='s2'>&quot;342e883c-ab8e-8782-fe89-9d828db8f9ca-2ea8d&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
@@ -315,7 +315,7 @@
 <p>The client is logged out of the server.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
-    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
 <h3 id="response_7">RESPONSE</h3>
