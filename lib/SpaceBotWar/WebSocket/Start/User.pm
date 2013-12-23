@@ -12,7 +12,7 @@ use Moose;
 sub ws_get_profile {
     my ($self, $context) = @_;
 
-    print STDERR "GET_PROFILE: user [".$context->user->id."] session [".$context->session->id."]\n";
+    print STDERR "GET_PROFILE: user [".$context->user->id."] client_code [".$context->client_code->id."]\n";
     return {
         code    => 0,
         message => "Success",

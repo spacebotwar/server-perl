@@ -16,9 +16,9 @@ has 'content' => (
     is      => 'rw',
 );
 
-has 'session' => (
+has 'client_code' => (
     is      => 'rw',
-#    isa     => 'Maybe[SpaceBotWar::Session]',
+#    isa     => 'Maybe[SpaceBotWar::ClientCode]',
 );
 
 has 'user' => (

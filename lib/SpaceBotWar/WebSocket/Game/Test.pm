@@ -5,11 +5,11 @@ use Moose;
 sub ws_test {
     my ($self, $context) = @_;
 
-    print STDERR "TEST: session [".$context->session->id."] user [".$context->user->id."]\n";
+    print STDERR "TEST: client_code [".$context->client_code->id."] user [".$context->user->id."]\n";
     return {
         code    => 0,
         message => "Success",
-        test_session    => $context->session->id,
+        test_client_code    => $context->client_code->id,
         test_user       => $context->user->id,
     };
 }

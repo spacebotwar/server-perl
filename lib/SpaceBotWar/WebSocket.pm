@@ -17,7 +17,7 @@ use Data::Dumper;
 # Perhaps we need to use 'pluggable'?
 #
 #use SpaceBotWar;
-use SpaceBotWar::Session;
+use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
 
@@ -136,7 +136,7 @@ print STDERR "ON EST: $self\n";
     # should we be retaining this in memory like this?
     # Should the web socket care?
     my $user;
-    my $session;
+    my $client_code;
 #print STDERR "ON EST: 4\n";
     
     $connection->on(
@@ -154,14 +154,14 @@ print STDERR "ON EST: $self\n";
 #print STDERR "GOT HERE!\n";
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
-                if (defined $content->{session}) {
-                    if (not defined $session or $content->{session} != $session->id) {
-                        $session = SpaceBotWar::Session->validate_session($content->{session});
+                if (defined $content->{client_code}) {
+                    if (not defined $client_code or $content->{client_code} != $client_code->id) {
+                        $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
                     }
                 }
-                if (defined $session and defined $session->user_id) {
-                    if (not defined $user or $session->user_id != $user->id) {
-                        $user = SpaceBotWar->db->resultset('User')->find($session->user_id);
+                if (defined $client_code and defined $client_code->user_id) {
+                    if (not defined $user or $client_code->user_id != $user->id) {
+                        $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
                     }
                 }
 
@@ -190,7 +190,7 @@ print STDERR "ROUTE 5[$route]\n";
                         room            => $room,
                         connection      => $connection,
                         content         => $content,
-                        session         => $session,
+                        client_code         => $client_code,
                         user            => $user,
                     });
 #print STDERR "ROUTE [$obj][$method]\n";

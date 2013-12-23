@@ -18,7 +18,7 @@ my $config  = SpaceBotWar->config;
 
 # Testing async replies is tricky.
 # All the 'tricky' bits have been factored out into the WSTester library.
-#   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
+#   Note that the 'client_code' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
     route       => "/lobby/",
@@ -26,8 +26,8 @@ my $tester = WSTester->new({
 });
 
 my $tests = {
-    # Get a new session (to be used in subsequent calls)
-    "000_no_session"  => {
+    # Get a new client_code (to be used in subsequent calls)
+    "000_no_client_code"  => {
         method  => 'register',
         send    => {
             username    => 'james_bond',
@@ -36,19 +36,19 @@ my $tests = {
         },
         recv    => {
             code        => 1001,
-            message     => 'Session is missing',
+            message     => 'Client Code is missing',
         },
     },
-    "001_get_session" => {
-        method  => 'get_session',
+    "001_get_client_code" => {
+        method  => 'get_client_code',
         send    => {
         },
         recv    => {
             code        => 0,
-            message     => 'new session',
+            message     => 'new Client Code',
         },
     },
-    # After this point the WSTester will inject the session
+    # After this point the WSTester will inject the client_code
      "002_no_email"  => {
         method  => 'register',
         send    => {

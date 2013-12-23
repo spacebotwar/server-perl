@@ -4,7 +4,7 @@ use Moose;
 
 use AnyEvent;
 use SpaceBotWar;
-use SpaceBotWar::Session;
+use SpaceBotWar::ClientCode;
 use SpaceBotWar::EmailCode;
 use Carp;
 use UUID::Tiny ':std';
@@ -28,17 +28,17 @@ sub DEMOLISH {
     print STDERR "DEMOLISH: SpaceBotWar::WebSocket::Start::Lobby $self\n";
 }
 
-# Get a new session variable.
+# Get a new client_code variable.
 #
-sub ws_get_session {
+sub ws_get_client_code {
     my ($self, $context) = @_;
 
-    my $session = SpaceBotWar::Session->create_session;
+    my $client_code = SpaceBotWar::ClientCode->create_client_code;
 
     return {
-        code    => 0,
-        message => "new session",
-        session => $session->id,
+        code        => 0,
+        message     => "new Client Code",
+        client_code   => $client_code->id,
     };
 }
 
@@ -61,7 +61,7 @@ sub ws_get_radius {
 sub ws_register {
     my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($context->content->{session});
+    SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
     my $db = SpaceBotWar->db;
     $db->resultset('User')->assert_username_available($context->content->{username});
     $db->resultset('User')->assert_email_valid($context->content->{email});
@@ -72,25 +72,25 @@ sub ws_register {
     return {
         code    => 0,
         message => 'Available',
-        data    => $context->content->{username},
     };
 }
 
 
 # A user requests to be sent an email code due to forgotten password
 #
-sub ws_confirm_email {
+sub ws_forgot_password {
     my ($self, $context) = @_;
 
-    SpaceBotWar::Session->assert_validate_session($context->content->{session});
+    SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
     my $db = SpaceBotWar->db;
 
-    my $user = $db->resultset('User')->assert_confirm_email($context->content->{code});
+    my $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username}, $context->content->{email});
 
+    confess [9999, "Not yet implemented"];
+    
     return {
         code        => 0,
         message     => 'Email code sent.',
-        data        => $user->name,
     };
 }
 
@@ -100,12 +100,12 @@ sub ws_confirm_email {
 sub ws_login_with_password {
     my ($self, $context) = @_;
 
-    my $session = SpaceBotWar::Session->assert_validate_session($context->content->{session});
+    my $client_code = SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_login_with_password($context->content);
-    $session->user_id($user->id);
-    $session->logged_in(1);
+    $client_code->user_id($user->id);
+    $client_code->logged_in(1);
 
     return {
         code        => 0,
@@ -121,7 +121,7 @@ sub ws_login_with_email_code {
 
     SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
 
-    # email code login? Just recover the session user_id?
+    # email code login? Just recover the client_code user_id?
 
     return {
         code        => 0,
@@ -138,7 +138,7 @@ sub ws_logout {
     my ($self, $context) = @_;
 
     # What should a 'logout' do? Just set the cache value associated with
-    # the session ID?
+    # the Client Code?
     #
     return {
         code        => 0,

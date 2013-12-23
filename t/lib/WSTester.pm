@@ -26,7 +26,7 @@ has 'server' => (
     required    => 1,
 );
 
-has 'session' => (
+has 'client_code' => (
     is      => 'rw',
     isa     => 'Str',
 );
@@ -70,8 +70,8 @@ sub run_tests {
             });
 
             my $content = $test->{send};
-            if (defined $self->session and not defined $content->{session}) {
-                $content->{session} = $self->session;
+            if (defined $self->client_code and not defined $content->{client_code}) {
+                $content->{client_code} = $self->client_code;
             }
             $content->{msg_id} = $key;
 
@@ -91,8 +91,8 @@ sub run_tests {
                 my $content = $json->{content};
                 #diag "RECEIVED: ".Dumper($json);
                 my ($method) = $json->{route} =~ m{/([^/]*)$};;
-                if ($content->{session}) {
-                    $self->session($content->{session});
+                if ($content->{client_code}) {
+                    $self->client_code($content->{client_code});
                 }
                 if ($method eq 'lobby_status') {
                     # We can ignore these

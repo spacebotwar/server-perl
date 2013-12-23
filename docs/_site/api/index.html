@@ -33,7 +33,7 @@
   
   
     
-      <h3><a href="/api/game">Game</a></h3>
+      <h3><a href="/api/start">Start</a></h3>
     
   
   </h2>
@@ -128,7 +128,7 @@
 
 <span class='k'>my</span> <span class='nv'>$connection</span><span class='p'>;</span>
 
-<span class='nv'>$client</span><span class='o'>-&gt;</span><span class='nb'>connect</span><span class='p'>(</span><span class='s'>&quot;ws://spacebotwar.com/ws/game/lobby&quot;</span><span class='p'>)</span><span class='o'>-&gt;</span><span class='n'>cb</span><span class='p'>(</span><span class='k'>sub </span><span class='p'>{</span>
+<span class='nv'>$client</span><span class='o'>-&gt;</span><span class='nb'>connect</span><span class='p'>(</span><span class='s'>&quot;ws://spacebotwar.com/ws/start&quot;</span><span class='p'>)</span><span class='o'>-&gt;</span><span class='n'>cb</span><span class='p'>(</span><span class='k'>sub </span><span class='p'>{</span>
     <span class='o'>...</span>
 <span class='p'>});</span>
 </code></pre></div>
@@ -142,6 +142,8 @@
 
 <p>Each connection requires a separate Web Socket Connection. e.g. <strong>ws://spacebotwar.com/ws/chat</strong> is the connection to the chat system. There is also a <strong>game</strong> and an <strong>arena</strong> system. You may have a Web Socket connection into more than one of these at the same time.</p>
 
+<p>You should generally start with a connection to <strong>ws://spacebotwar.com/ws/start</strong> which will give you a list of the web socket connections to the other areas.</p>
+
 <h3 id="room">Room</h3>
 
 <p>A Connection will allow you to enter one or more <strong>rooms</strong> which are just convenient localities to separate the total environment into smaller managable sections. For example in the <strong>chat</strong> system it would be hard to follow conversations if everyone was in the same room. On making a connection you should join the <strong>lobby</strong> which is a room that is always available and from which you can obtain a list of all other rooms that can be joined.</p>
@@ -149,6 +151,20 @@
 <h3 id="route">Route</h3>
 
 <p>A <strong>route</strong> defines a specific command in the API and these routes use a path-like structure to group commands with similar functionality. e.g. user account commands are <strong>/user/register</strong>, <strong>/user/login</strong> and <strong>/user/logout</strong></p>
+
+<h3 id="putting_it_together">Putting it together</h3>
+
+<p>Putting the connection, the Room and the Route together.</p>
+
+<ul>
+<li>Connection - <strong>ws://spacebotwar.com</strong></li>
+
+<li>Room - <strong>/chat/</strong></li>
+
+<li>Route - <strong>/general/post_message</strong></li>
+</ul>
+
+<p>Gives the connection string of <strong>ws://spacebotwar.com/chat/general/post_message</strong></p>
 
 <h2 id="web_socket_message_structure">Web Socket Message Structure</h2>
 
@@ -167,6 +183,17 @@
     <span class='nt'>&quot;msg_id&quot;</span>    <span class='p'>:</span> <span class='s2'>&quot;123&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
+<p>This shows a message from a client to the server. In this case a ‘registration’ for a new user.</p>
+
+<p>The arguments are self explanatory except for the <strong>msg_id</strong></p>
+
+<h4 id="msg_id">msg_id</h4>
+
+<p>This is a unique number for the message. Due to the asynchronous nature of Web Sockets there is often no correlation between a client request and the server response. The <strong>msg_id</strong> is a way for the client to match a server response to an earlier client request.</p>
+
+<p>The simplest way to implement this is to have a counter on the client which is incremented for each message sent. So sending a <em>Client : Register</em> request (message number 123) will result in a <em>Server Register</em> response with msg_id 123.</p>
+
+<p>Note that there will be cases where the server sends messages which were not requested (such as status changes) where the msg_id will not be relevant and may not be included.</p>
 
       <div class="footer">
         <div class="disclaimer">

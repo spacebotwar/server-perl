@@ -18,29 +18,29 @@ my $config  = SpaceBotWar->config;
 
 # Testing async replies is tricky.
 # All the 'tricky' bits have been factored out into the WSTester library.
-#   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
+#   Note that the 'client_code' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
     route       => "/lobby/",
     server      => $config->get('ws_server'),
 });
 
-my $session;
+my $client_code;
 my $tests = {
-    # Get a new session (to be used in subsequent calls)
-    "000_get_session" => {
-        method  => 'get_session',
+    # Get a new client_code (to be used in subsequent calls)
+    "000_get_client_code" => {
+        method  => 'get_client_code',
         send    => {
         },
         recv    => {
             code        => 0,
-            message     => 'new session',
+            message     => 'new Client Code',
         },
         callback => sub {
             my ($data) = @_;
             diag "CALLBACK: ". Dumper($data);
-            $session = $data->{content}{session};
-            print STDERR "SESSION : [$session]\n";
+            $client_code = $data->{content}{client_code};
+            print STDERR "CLIENT_CODE : [$client_code]\n";
         },
     },
     "005_login_success"  => {
@@ -59,7 +59,7 @@ my $tests = {
 
 $tester->run_tests($tests);
 
-print STDERR "SESSION external : [$session]\n";
+print STDERR "CLIENT_CODE external : [$client_code]\n";
 
 my $tester2 = WSTester->new({
     route       => "/test/",
@@ -67,16 +67,16 @@ my $tester2 = WSTester->new({
 });
 
 my $tests2 = {
-    # Get a new session (to be used in subsequent calls)
+    # Get a new client_code (to be used in subsequent calls)
     "000_test"  => {
         method  => 'test',
         send    => {
-            session     => $session,
+            client_code     => $client_code,
         },
         recv    => {
             code            => 0,
             message         => 'Success',
-            test_session    => $session,
+            test_client_code    => $client_code,
         },
     },
 };

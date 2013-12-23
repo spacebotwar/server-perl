@@ -23,13 +23,13 @@ my $tester = WSTester->new({
 
 
 my $tests = {
-    "000_get_session" => {
-        method  => 'get_session',
+    "000_get_client_code" => {
+        method  => 'get_client_code',
         send    => {
         },
         recv    => {
             code        => 0,
-            message     => 'new session',
+            message     => 'new Client Code',
         },
     },
     "001_radius_api" => {

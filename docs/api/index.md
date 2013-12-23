@@ -46,7 +46,7 @@ my $client = AnyEvent::WebSocket::Client->new;
 
 my $connection;
 
-$client->connect("ws://spacebotwar.com/ws/lobby")->cb(sub {
+$client->connect("ws://spacebotwar.com/ws/start")->cb(sub {
     ...
 });
 {% endhighlight %}
@@ -64,6 +64,9 @@ Each connection requires a separate Web Socket Connection. e.g. **ws://spacebotw
 the connection to the chat system. There is also a **game** and an **arena** system. You may have a
 Web Socket connection into more than one of these at the same time.
 
+You should generally start with a connection to **ws://spacebotwar.com/ws/start** which will give
+you a list of the web socket connections to the other areas.
+
 ###Room
 
 A Connection will allow you to enter one or more **rooms** which are just convenient localities to
@@ -77,6 +80,17 @@ a list of all other rooms that can be joined.
 A **route** defines a specific command in the API and these routes use a path-like structure to
 group commands with similar functionality. e.g. user account commands are **/user/register**, 
 **/user/login** and **/user/logout**
+
+
+###Putting it together
+
+Putting the connection, the Room and the Route together.
+
+  * Connection - **ws://spacebotwar.com**
+  * Room - **/chat/**
+  * Route - **/general/post_message**
+
+Gives the connection string of **ws://spacebotwar.com/chat/general/post_message**
 
 Web Socket Message Structure
 ----------------------------
@@ -113,7 +127,7 @@ This is a unique number for the message. Due to the asynchronous nature of Web S
 there is often no correlation between a client request and the server response. The **msg_id**
 is a way for the client to match a server response to an earlier client request.
 
-The simplest way to implement this is to have a number of the client which is incremented for
+The simplest way to implement this is to have a counter on the client which is incremented for
 each message sent. So sending a *Client : Register* request (message number 123) will result in
 a *Server Register* response with msg_id 123.
 

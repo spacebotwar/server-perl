@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iain C Docherty - API Documents</title>
+  <meta name="author" content="Iain C Docherty" />
+  <meta name="description" content="The blog of Iain C Docherty" />
+  <link rel="canonical" href="http://spacebotwar.com:4000/api/start/" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="http://spacebotwar.com:4000/favicon.png">
+  <link rel="alternate" type="application/rss+xml" title="Iain C Docherty" href="http://spacebotwar.com:4000/atom.xml" />
+
+  <link rel="stylesheet" href="http://spacebotwar.com:4000/assets/css/all.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <a href="/">
+    <img src="/sp_ship.png" id="logo" alt="Site logo"/>
+  </a>
+  <h2><a href="/">SpaceBotWar</a>.</h2>
+  <hr/>
+  <h2>
+  
+    <a href="/api">API Documents</a>
+  
+  
+    
+      Start
+    
+  
+  </h2>
+  <hr/>
+  <h2><a href="/blog">Blog posts</a></h2>
+  <hr/>
+  <h2><a href="/about">About</a></h2>
+  <hr/>
+  <h2><a href="/faq">FAQ</a></h2>
+  <hr/>
+  <div>
+    <div id="social">
+      Follow me:
+<div id="stalker">
+  
+  <a title="icydee on Github" href="https://github.com/icydee">
+    <i class="fa fa-github-square"></i>
+  </a>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <a title="Iain C Docherty on Facebook" href="https://facebook.com/icydee">
+    <i class="fa fa-facebook-square"></i>
+  </a>
+  
+
+  
+
+  
+  <a title="Iain C Docherty on LinkedIn" href="https://www.linkedin.com/in/icydee">
+    <i class="fa fa-linkedin-square"></i>
+  </a>
+  
+
+  
+
+  <a title="RSS feed" id="rss" href="/atom.xml">
+    <i class="fa fa-rss-square"></i>
+  </a>
+</div>
+
+    </div>
+  </div>
+  </ul>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <h1 id="start_lobby">Start Lobby</h1>
+
+<p>All methods in this section can be carried out by a connection to the <strong>/start/lobby</strong> route.</p>
+
+<p>The Start Lobby should be the first place you connect to on the game server. It will give you the names of other routes and rooms which are currently active in the game. It also has the functionality to allow you to log into your account.</p>
+<hr />
+<h1 id="client_id">Client ID</h1>
+
+<p>A client ID is used to identify a client to the server. A client ID is provided by the server and once given it should continue to be used, even if you log out and back in again. This enables the server to retain your settings.</p>
+
+<p>A session is associated with a Client ID and it may ‘time-out’ (after a few hours) but even so, you should still keep the same Client ID for subsequent sessions.</p>
+
+<p>A Client may be a different web browser (Internet Explorer, Chrome, Safari etc.) or a different computer, or a script running. Each of these should be given a different Client ID</p>
+
+<p>In the following API calls, if it specifies a Client ID then it is mandatory. If you don’t supply a Client ID the call will be rejected.</p>
+<hr />
+<h1 id="server__lobby">Server : lobby</h1>
+
+<p>On making a Web Socket connection, the server will send a <strong>lobby</strong> message indicating the current status of the room. It may also send an update whenever the room status changes.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;code&quot;</span>          <span class='p'>:</span> <span class='mi'>0</span><span class='p'>,</span>
+    <span class='nt'>&quot;message&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;Welcome to the Game Lobby&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;data&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;lobby&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="code">code</h3>
+
+<p>The numeric code representing the status of the <strong>lobby</strong> where <strong>0</strong> represents success and any other value indicates a fault.</p>
+
+<h3 id="message">message</h3>
+
+<p>A human readable message, for example a message to the effect that the server is off-line.</p>
+
+<h2 id="data">data</h2>
+
+<p>Supplimentary data, for example the time at which the server is due back on line.</p>
+<hr />
+<h1 id="client__get_client_id">Client : get_client_id</h1>
+
+<p>Get a new client ID. Note you should only do this if you don’t already have a client ID. e.g. if this is the first time on this computer, or with this Web Browser. If you do have one (even if it is timed out) you should reuse it.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="msg_id_optional">msg_id (optional)</h3>
+
+<p>An <strong>ID</strong> to identify this message. If used the server reply will contain the same message ID. This can be useful if you wish to link the server response to the client request.</p>
+
+<h3 id="response">RESPONSE</h3>
+
+<p>The server will respond with a <strong>Server : get_client_id</strong> message.</p>
+<hr />
+<h1 id="server__get_client_id">Server : get_client_id</h1>
+
+<p>Server response to the <strong>Client : get_client_id</strong> request</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;code&quot;</span>          <span class='p'>:</span> <span class='mi'>0</span><span class='p'>,</span>
+    <span class='nt'>&quot;message&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;OK&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>     <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<p>The <strong>code</strong>, <strong>message</strong> and <strong>msg_id</strong> are the standard server response.</p>
+
+<h3 id="client_id_2">client_id</h3>
+
+<p>This is the Client ID you should use from now on with this browser/computer combination. Even if the session times out the Client ID will still be valid for later sessions and you should not request another one.</p>
+<hr />
+<h1 id="client__get_radius">Client : get_radius</h1>
+
+<p>Get the API keys for the Radius login (note, Radius login is not yet implemented)</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="msg_id_optional_2">msg_id (optional)</h3>
+
+<p>An <strong>ID</strong> to identify this message. If used the server reply will contain the same message ID. This can be useful if you wish to link the server response to the client request. (I’m probably not going to mention this again, take it as read)</p>
+
+<h3 id="response_2">RESPONSE</h3>
+
+<p>The server will respond with a <strong>Server:: get_radius</strong> message.</p>
+<hr />
+<h1 id="server__get_radius">Server : get_radius</h1>
+
+<p>Return the radius API key values. In response to a <strong>Client : get_radius</strong> request.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;code&quot;</span>              <span class='p'>:</span> <span class='mi'>0</span><span class='p'>,</span>
+    <span class='nt'>&quot;message&quot;</span>           <span class='p'>:</span> <span class='s2'>&quot;Radius API key&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;radius_api_key&quot;</span>    <span class='p'>:</span> <span class='s2'>&quot;78855680-671c-4c70-b294-3e392a0a7c80&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="radius_api_key">radius_api_key</h3>
+
+<p>This is the key that should be sent to the Radius Social login site.</p>
+<hr />
+<h1 id="client__register">Client : register</h1>
+
+<p>Register a new account with the server.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;email&quot;</span>             <span class='p'>:</span> <span class='s2'>&quot;jb@mi5.gov.co.uk&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="client_id_required">client_id (required)</h3>
+
+<h3 id="username_required">username (required)</h3>
+
+<p>This is the nickname you will be known as and will be part of your login credentials. It should be at least three characters long.</p>
+
+<h3 id="email_required">email (required)</h3>
+
+<p>Your email address, this will be used to help you recover your password should your forget it.</p>
+
+<p>Your email address will need to be verified before you complete the registration process.</p>
+
+<h3 id="password_required">password (required)</h3>
+
+<p>The password you will use to log in. It must be at least five characters long, should include at least of of the following - Uppercase character, Lowercase character, Number.</p>
+
+<h3 id="response_3">RESPONSE</h3>
+
+<p>The server will respond with a <strong>Server : register</strong> message.</p>
+<hr />
+<h1 id="server__register">Server : register</h1>
+
+<p>In response to a <strong>Client : registe</strong> request.</p>
+
+<p>Gives a standard response with <strong>msg_id</strong>, <strong>code</strong>, and <strong>message</strong></p>
+<hr />
+<h1 id="client__forgot_password">Client : forgot_password</h1>
+
+<p>Request the server to send an email which will allow access to an account where the password has been forgotten.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;email&quot;</span>             <span class='p'>:</span> <span class='s2'>&quot;jb@mi5.gov.co.uk&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="username_optional">username (optional)</h3>
+
+<h3 id="email_optional">email (optional)</h3>
+
+<p>One or other, but not both, of <strong>username</strong> or <strong>email</strong> should be provided in order to identify the account.</p>
+
+<p>If they are verified, then an email will be sent to the registered email address with details of how to log in.</p>
+
+<h3 id="response_4">RESPONSE</h3>
+
+<p>There will be a <strong>Server : forgot_password</strong> response.</p>
+<hr />
+<h1 id="server__forgot_password">Server : forgot_password</h1>
+
+<p>The response to a <strong>Client : forgot_password</strong> request.</p>
+
+<p>Gives a standard response with <strong>msg_id</strong>, <strong>code</strong>, and <strong>message</strong></p>
+<hr />
+<h1 id="client__login_with_password">Client : login_with_password</h1>
+
+<p>Log into the server by giving the username and password</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;username&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;james_bond&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="username_required_2">username (required)</h3>
+
+<p>Your unique username.</p>
+
+<h3 id="password_required_2">password (required)</h3>
+
+<p>Your password. Note this is case sensitive and must be entered exactly.</p>
+
+<h3 id="response_5">RESPONSE</h3>
+
+<p>The server will respond with a <strong>Server : login_with_password</strong> message</p>
+<hr />
+<h1 id="server__login_with_password">Server : login_with_password</h1>
+
+<p>The server response to a <strong>Client : login_with_password</strong> message.</p>
+
+<p>Gives a standard response with <strong>msg_id</strong>, <strong>code</strong>, and <strong>message</strong></p>
+
+<p>If successful, you will now be logged in with access to your account.</p>
+<hr />
+<h1 id="client__login_with_email_code">Client : login_with_email_code</h1>
+
+<p>The email sent as a result of the <strong>Client : forgot_password</strong> message will have a link allowing you to log directly into your account and to then change your password.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;email_code&quot;</span>        <span class='p'>:</span> <span class='s2'>&quot;342e883c-ab8e-8782-fe89-9d828db8f9ca-2ea8d&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="email_code_required">email_code (required)</h3>
+
+<p>The code sent in the email.</p>
+
+<h3 id="response_6">RESPONSE</h3>
+
+<p>The server responds with a <strong>Server : login_with_email_code</strong></p>
+<hr />
+<h1 id="server__login_with_email_code">Server : login_with_email_code</h1>
+
+<p>The server response to a <strong>Client : login_with_email_code</strong> message.</p>
+
+<p>Gives a standard response with <strong>msg_id</strong>, <strong>code</strong>, and <strong>message</strong></p>
+
+<p>If successful, you will now be logged in with access to your account.</p>
+<hr />
+<h1 id="client__logout">Client : logout</h1>
+
+<p>The client is logged out of the server.</p>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span>
+    <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_id&quot;</span>         <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
+<span class='p'>}</span>
+</code></pre></div>
+<h3 id="response_7">RESPONSE</h3>
+
+<p>The server will log the user out and respond with a <strong>Server : logout</strong> message.</p>
+<hr />
+<h1 id="server__logout">Server : logout</h1>
+
+<p>The server response to a <strong>Client : logout</strong> message.</p>
+
+<p>Gives a standard response with <strong>msg_id</strong>, <strong>code</strong>, and <strong>message</strong></p>
+
+      <div class="footer">
+        <div class="disclaimer">
+  
+
+  <p>
+    © Iain C Docherty, 2013 &mdash; 
+  </p>
+</div>
+
+      </div>
+    </div>
+  </div>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-xxxx-x']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+</body>
+</html>

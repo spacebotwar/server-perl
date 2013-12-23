@@ -1,4 +1,4 @@
-package SpaceBotWar::Session;
+package SpaceBotWar::ClientCode;
 
 use Moose;
 use namespace::autoclean;
@@ -8,12 +8,12 @@ use SpaceBotWar;
 use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 
-# A unique ID for the session key
+# A unique ID for the client_code key
 # 
 has id => (
     is      => 'ro',
     default => sub {
-        return _create_session_id();
+        return _create_client_code_id();
     },
 );
 
@@ -21,7 +21,7 @@ has id => (
 #
 has namespace => (
     is      => 'rw',
-    default => 'session',
+    default => 'client_code',
 );
 
 # The Cache object
@@ -33,14 +33,14 @@ has cache => (
     },
 );
 
-# How long until the session times out due to lack of activity
+# How long until the client_code times out due to lack of activity
 #
 has timeout_sec => (
     is      => 'rw',
     default => 60 * 60 * 2,
 );
 
-# Number of times the session has been extended
+# Number of times the client_code has been extended
 #
 has extended => (
     is      => 'rw',
@@ -63,7 +63,7 @@ has logged_in => (
     default     => 0,
 );
 
-# Automatically extend the session if we update any values
+# Automatically extend the client_code if we update any values
 #
 for my $func (qw(user_id logged_in)) {
     around $func => sub {
@@ -97,7 +97,7 @@ sub BUILD {
 }
 
 
-# Create a hash of this session
+# Create a hash of this client_code
 #
 sub to_hash {
     my ($self) = @_;
@@ -123,20 +123,20 @@ sub from_hash {
 }
 
 
-# extend the session timer
+# extend the client_code timer
 # 
 sub extend {
     my ($self) = @_;
 
     $self->extended($self->extended + 1);
-    $self->cache->set('session', $self->id, $self->to_hash, $self->timeout_sec);
+    $self->cache->set('client_code', $self->id, $self->to_hash, $self->timeout_sec);
 }
 
 
-# Class method. Create a new random session_id
-#   Add a 'secret' so that people can't invent their own session
+# Class method. Create a new random client_code_id
+#   Add a 'secret' so that people can't invent their own client_code
 #   
-sub _create_session_id {
+sub _create_client_code_id {
     my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = create_uuid_as_string(UUID_V4);
     my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
@@ -144,54 +144,54 @@ sub _create_session_id {
 }
 
 
-# Class method. Create a new session object
-#   If an existing session_id is specified, then see if there is a cached object
+# Class method. Create a new client_code object
+#   If an existing client_code_id is specified, then see if there is a cached object
 #   Otherwise create it.
-#   If no session_id is supplied, create one
+#   If no client_code_id is supplied, create one
 #   
-sub create_session {
-    my ($class, $session_id) = @_;
+sub create_client_code {
+    my ($class, $client_code_id) = @_;
 
-    if (not ($session_id and $class->validate_session($session_id))) {
-        $session_id = _create_session_id();
+    if (not ($client_code_id and $class->validate_client_code($client_code_id))) {
+        $client_code_id = _create_client_code_id();
     }
 
-    my $session = $class->new({
-        id      => $session_id,
+    my $client_code = $class->new({
+        id      => $client_code_id,
     });
-    $session->extend;
+    $client_code->extend;
 
-    return $session;
+    return $client_code;
 }
 
-# Validate a session variable
+# Validate a client_code variable
 #
-sub validate_session {
-    my ($class, $session_id) = @_;
+sub validate_client_code {
+    my ($class, $client_code_id) = @_;
 
-    return if not defined $session_id;
+    return if not defined $client_code_id;
     my $secret  = SpaceBotWar->config->get('secret');
-    my $uuid    = substr($session_id, 0, 36);
+    my $uuid    = substr($client_code_id, 0, 36);
     my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
-    if ($test eq $session_id) {
+    if ($test eq $client_code_id) {
         return $class->new({
-            id      => $session_id,
+            id      => $client_code_id,
         });
     }
     return;
 }
 
-# Validate a session variable with confess
+# Validate a client_code variable with confess
 #
-sub assert_validate_session {
-    my ($class, $session_id) = @_;
+sub assert_validate_client_code {
+    my ($class, $client_code_id) = @_;
 
-    confess [1001, "Session is missing"] if not defined $session_id;
-    my $session = $class->validate_session($session_id);
-    if (not $session) {
-        confess [1001, "Session is invalid!", "[$session_id]"];
+    confess [1001, "Client Code is missing"] if not defined $client_code_id;
+    my $client_code = $class->validate_client_code($client_code_id);
+    if (not $client_code) {
+        confess [1001, "Client Code is invalid!", "[$client_code_id]"];
     }
-    return $session;
+    return $client_code;
 }
 
 __PACKAGE__->meta->make_immutable;
