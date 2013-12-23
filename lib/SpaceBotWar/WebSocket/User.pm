@@ -1,8 +1,8 @@
-package SpaceBotWar::WebSocket::Game::User;
+package SpaceBotWar::WebSocket::User;
 
 use Moose;
 use MooseX::NonMoose;
-extends 'SpaceBotWar::WebSocket';
+#extends 'SpaceBotWar::WebSocket';
 
 # This API supports the /user route
 

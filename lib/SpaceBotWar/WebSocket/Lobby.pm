@@ -1,12 +1,12 @@
-package SpaceBotWar::WebSocket::Game;
+package SpaceBotWar::WebSocket::Lobby;
 
 use Moose;
-use MooseX::NonMoose;
-extends 'SpaceBotWar::WebSocket';
+#use MooseX::NonMoose;
+#extends 'SpaceBotWar::WebSocket';
 
 use SpaceBotWar;
 use SpaceBotWar::Session;
-
+use SpaceBotWar::EmailCode;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
@@ -144,7 +144,7 @@ sub on_connect {
 
     return {
         code        => 0,
-        message     => 'Welcome to the game lobby',
+        message     => 'Welcome to the lobby',
         data        => 'lobby',
     };
 }

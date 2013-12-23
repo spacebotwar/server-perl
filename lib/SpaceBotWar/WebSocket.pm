@@ -15,7 +15,9 @@ use Data::Dumper;
 # It's not ideal to load everything here, but it will do for now.
 # Perhaps we need to use 'pluggable'?
 #
-use SpaceBotWar::WebSocket::Game::User;
+#use SpaceBotWar;
+use SpaceBotWar::Session;
+#use SpaceBotWar::WebSocket::Game::User;
 use SpaceBotWar::WebSocket::Context;
 
 
@@ -81,10 +83,17 @@ sub render_json {
     $context->connection->send($sent);
 }
 
+sub on_connect {
+    my ($self, $context) = @_;
+
+    return {};
+}
 
 # Establish a connection
 sub on_establish {
     my ($self, $connection, $env) = @_;
+
+#print STDERR "ON EST: 1\n";
 
     my $room = $self->{room};
     
@@ -93,15 +102,23 @@ sub on_establish {
         connection      => $connection,
         content         => {},
     });
+#print STDERR "ON EST: 2\n";
     my $reply = {
         room    => $room,
         route   => '/',
         content => $self->on_connect($context),
     };
+#print STDERR "ON EST: 3\n";
     if ($reply) {
         $self->render_json($context, $reply);
     }
-
+    # Not sure about this. it is the DB user object
+    # should we be retaining this in memory like this?
+    # Should the web socket care?
+    my $user;
+    my $session;
+#print STDERR "ON EST: 4\n";
+    
     $connection->on(
         message => sub {
             my ($connection, $msg) = @_;
@@ -117,6 +134,17 @@ sub on_establish {
 #print STDERR "GOT HERE!\n";
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
+                if (defined $content->{session}) {
+                    if (not defined $session or $content->{session} != $session->id) {
+                        $session = SpaceBotWar::Session->validate_session($content->{session});
+                    }
+                }
+                if (defined $session and defined $session->user_id) {
+                    if (not defined $user or $session->user_id != $user->id) {
+                        $user = SpaceBotWar->db->resultset('User')->find($session->user_id);
+                    }
+                }
+
                 my $msg_id  = $content->{msg_id};
                 eval {
                     my ($route, $method) = $path =~ m{(.*)/([^/]*)};
@@ -136,11 +164,14 @@ sub on_establish {
                         $route = ref($self);
                     }
 #print STDERR "ROUTE 5[$route]\n";
+                    eval "require $route";
                     my $obj = $route->new({});
                     my $context = SpaceBotWar::WebSocket::Context->new({
                         room            => $room,
                         connection      => $connection,
                         content         => $content,
+                        session         => $session,
+                        user            => $user,
                     });
 #print STDERR "ROUTE [$obj][$method]\n";
                     my $reply = $obj->$method($context);

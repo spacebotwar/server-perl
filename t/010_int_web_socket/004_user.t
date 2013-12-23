@@ -17,7 +17,7 @@ my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
 my $tester = WSTester->new({
-    route       => "/",
+    route       => "/lobby/",
     server      => $config->get('ws_server'),
 });
 
@@ -77,7 +77,7 @@ my $user = $db->resultset('User')->create({
     email       => 'me@example.com',
 });
 
-$tester->route('/');
+$tester->route('/lobby/');
 $tester->run_tests($test_setup);
 
 $tester->route('/user/');

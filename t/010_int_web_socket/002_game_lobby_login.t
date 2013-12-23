@@ -17,12 +17,11 @@ my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
 my $tester = WSTester->new({
-    route       => "/",
+    route       => "/lobby/",
     server      => $config->get('ws_server'),
 });
 
 
-my $route = "/";
 my $tests = {
     "000_get_session" => {
         method  => 'get_session',

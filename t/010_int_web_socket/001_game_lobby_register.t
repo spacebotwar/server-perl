@@ -21,11 +21,10 @@ my $config  = SpaceBotWar->config;
 #   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
-    route       => "/",
+    route       => "/lobby/",
     server      => $config->get('ws_server'),
 });
 
-my $route = "/";
 my $tests = {
     # Get a new session (to be used in subsequent calls)
     "000_no_session"  => {

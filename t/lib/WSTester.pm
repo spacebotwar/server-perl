@@ -44,7 +44,7 @@ sub run_tests {
         #diag("test $key");
         # We need to time-out if the connection fails to respond correctly.
         my $test_timer = AnyEvent->timer(
-            after   => 0.5,
+            after   => 2,
             cb      => sub {
                 $cv->send;
                 fail("Timer expired");
