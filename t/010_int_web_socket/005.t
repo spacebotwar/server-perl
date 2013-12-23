@@ -25,22 +25,69 @@ my $tester = WSTester->new({
     server      => $config->get('ws_server'),
 });
 
+my $session;
 my $tests = {
     # Get a new session (to be used in subsequent calls)
-    "000_no_session"  => {
-        method  => 'register',
+    "000_get_session" => {
+        method  => 'get_session',
         send    => {
-            username    => 'james_bond',
-            password    => 'tops3Cr3t',
-            email       => 'jb@mi6.gov.org.uk',
         },
         recv    => {
-            code        => 1001,
-            message     => 'Session is missing',
+            code        => 0,
+            message     => 'new session',
+        },
+        callback => sub {
+            my ($data) = @_;
+            diag "CALLBACK: ". Dumper($data);
+            $session = $data->{content}{session};
+            print STDERR "SESSION : [$session]\n";
+        },
+    },
+    "005_login_success"  => {
+        method  => 'login_with_password',
+        send    => {
+            username    => ' test_user_1',
+            password    => 'Yop_s3cr3t',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Welcome',
+            username    => ' test_user_1',
         },
     },
 };
 
 $tester->run_tests($tests);
+
+print STDERR "SESSION external : [$session]\n";
+
+my $tester2 = WSTester->new({
+    route       => "/test/",
+    server      => $config->get('ws_game_server'),
+});
+
+my $tests2 = {
+    # Get a new session (to be used in subsequent calls)
+    "000_test"  => {
+        method  => 'test',
+        send    => {
+            session     => $session,
+        },
+        recv    => {
+            code            => 0,
+            message         => 'Success',
+            test_session    => $session,
+        },
+    },
+};
+
+$tester2->run_tests($tests2);
+
+
+
+
+
+
+
 done_testing();
 
