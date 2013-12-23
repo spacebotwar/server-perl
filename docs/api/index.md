@@ -46,7 +46,7 @@ my $client = AnyEvent::WebSocket::Client->new;
 
 my $connection;
 
-$client->connect("ws://spacebotwar.com/ws/game/lobby")->cb(sub {
+$client->connect("ws://spacebotwar.com/ws/lobby")->cb(sub {
     ...
 });
 {% endhighlight %}
@@ -103,12 +103,20 @@ Send a registration message from the client to the server.
 }
 {% endhighlight %}
 
+This shows a message from a client to the server. In this case a 'registration' for a new user.
 
+The arguments are self explanatory except for the **msg_id**
 
+####msg_id
 
+This is a unique number for the message. Due to the asynchronous nature of Web Sockets
+there is often no correlation between a client request and the server response. The **msg_id**
+is a way for the client to match a server response to an earlier client request.
 
+The simplest way to implement this is to have a number of the client which is incremented for
+each message sent. So sending a *Client : Register* request (message number 123) will result in
+a *Server Register* response with msg_id 123.
 
-
-
-
+Note that there will be cases where the server sends messages which were not requested (such as
+status changes) where the msg_id will not be relevant and may not be included.
 

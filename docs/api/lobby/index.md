@@ -2,25 +2,28 @@
 layout: default
 title: API Documents
 api_menu: 1
-on_page: api_game
+on_page: api_lobby
 
 ---
 
-Game Lobby
-==========
+Lobby
+=====
 
-All methods in this section can be carried out by a connection to the **game/lobby** route.
+All methods in this section can be carried out by a connection to the **/lobby/** route.
 
 ---
-Sessions
+Client ID
 ========
 
-A session ID is used to identify a client to the server. A session ID is provided by the server
+A client ID is used to identify a client to the server. A client ID is provided by the server
 and once given it should continue to be used, even if you log out and back in again. This
 enables the server to retain your settings.
 
-A session may 'time-out' (after a few hours) but even so, you should still keep the same
-session ID.
+A session is associated with a Client ID and it  may 'time-out' (after a few hours) but even so, 
+you should still keep the same Client ID for subsequent sessions.
+
+A Client may be a different web browser (Internet Explorer, Chrome, Safari etc.) or a
+different computer, or a script running. Each of these should be given a different Client ID
 
 In the following API calls, if it specifies a session ID then it is mandatory. If you don't
 supply a session ID the call will be rejected.

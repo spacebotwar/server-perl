@@ -14,7 +14,7 @@ use MooseX::NonMoose;
 sub ws_get_profile {
     my ($self, $context) = @_;
 
-
+    print STDERR "GET_PROFILE: user [".$context->user->id."] session [".$context->session->id."]\n";
     return {
         code    => 0,
         message => "Success",
