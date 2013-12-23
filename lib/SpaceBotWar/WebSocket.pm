@@ -6,6 +6,7 @@ use warnings;
 use parent qw(Plack::Component);
 use Carp;
 use Plack::Response;
+use AnyEvent;
 use AnyEvent::WebSocket::Server;
 use Try::Tiny;
 use Plack::App::WebSocket::Connection;
@@ -20,6 +21,26 @@ use SpaceBotWar::Session;
 use SpaceBotWar::WebSocket::Context;
 
 
+sub BUILD {
+    my ($self) = @_;
+
+    # every half second, send a status message (for test purposes)
+    #
+    print STDERR "BUILD: SpaceBotWar::WebSocket $self\n";
+    AnyEvent->timer (
+        after       => 0.1,
+        interval    => 0.5,
+        cb          => sub {
+            print STDERR "PING: $self\n";
+        },
+    );
+}
+
+sub DEMOLISH {
+    my ($self) = @_;
+
+    print STDERR "DEMOLISH: SpaceBotWar::WebSocket $self\n";
+}
 
 my $ERROR_ENV = "plack.app.websocket.error";
 
@@ -92,7 +113,7 @@ sub on_connect {
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-#print STDERR "ON EST: 1\n";
+print STDERR "ON EST: $self\n";
 
     my $room = $self->{room};
     
@@ -162,7 +183,7 @@ sub on_establish {
                     else {
                         $route = ref($self);
                     }
-#print STDERR "ROUTE 5[$route]\n";
+print STDERR "ROUTE 5[$route]\n";
                     eval "require $route";
                     my $obj = $route->new({});
                     my $context = SpaceBotWar::WebSocket::Context->new({

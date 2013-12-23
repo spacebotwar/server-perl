@@ -21,7 +21,7 @@ my $config  = SpaceBotWar->config;
 #   Note that the 'session' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
-    route       => "/",
+    route       => "/lobby/",
     server      => $config->get('ws_server'),
 });
 
@@ -37,27 +37,6 @@ my $tests = {
         recv    => {
             code        => 1001,
             message     => 'Session is missing',
-        },
-    },
-    "001_get_session" => {
-        method  => 'get_session',
-        send    => {
-        },
-        recv    => {
-            code        => 0,
-            message     => 'new session',
-        },
-    },
-    # After this point the WSTester will inject the session
-     "002_no_email"  => {
-        method  => 'register',
-        send    => {
-            username    => 'james_bond',
-            password    => 'tops3Cr3t',
-        },
-        recv    => {
-            code        => 1001,
-            message     => 'Email is missing',
         },
     },
 };
