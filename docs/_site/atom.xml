@@ -4,13 +4,67 @@
  <title>The blog of Iain C Docherty</title>
  <link href="http://spacebotwar.com:4000/atom.xml" rel="self"/>
  <link href="http://spacebotwar.com:4000"/>
- <updated>2013-12-23T23:31:37+00:00</updated>
+ <updated>2013-12-24T00:00:06+00:00</updated>
  <id>http://spacebotwar.com:4000</id>
  <author>
    <name>Iain C Docherty</name>
    <email>spacebotwar@iain-docherty.com</email>
  </author>
 
+ 
+ <entry>
+   <title>About Battles</title>
+   <link href="http://spacebotwar.com:4000/blog/2013/12/23/battles.html"/>
+   <updated>2013-12-23T00:00:00+00:00</updated>
+   <id>http://spacebotwar.com:4000/blog/2013/12/23/battles</id>
+   <content type="html">&lt;p&gt;I explained how the core concept of SpaceBotWar was the ability to have computer programs compete against each other. I would like to expand a little on what this means in practice.&lt;/p&gt;
+
+&lt;p&gt;In the early versions, each player will have an ‘ideal’ fleet of six ships. All ships will be the same, with the same characteristics, speed, turning speed, armaments, etc. The fleet of one player will compete against another, the only difference being the computer program controlling them.&lt;/p&gt;
+
+&lt;p&gt;In a tournament, all computer programs in a league (of 30 programs) will be matched against all others. Most probably in a ‘best of three’ set, where each match will take up to five minutes.&lt;/p&gt;
+
+&lt;p&gt;The playing area, or Arena, will be a grid (square or circular to be determined) within which the ships can move freely.&lt;/p&gt;
+
+&lt;p&gt;At the start of the match, the ships will be positioned in set places, facing each other.&lt;/p&gt;
+
+&lt;p&gt;The programs controlling each fleet will receive the initial position and speed (zero) of each teams ships and will respond with the instructions to follow at the start of the match (time zero). These instructions will allow the following commands to be given.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Forward thrust rate&lt;/li&gt;
+
+&lt;li&gt;Reverse thrust rate&lt;/li&gt;
+
+&lt;li&gt;Sideway thrust rate&lt;/li&gt;
+
+&lt;li&gt;Turning rate&lt;/li&gt;
+
+&lt;li&gt;Missile launch and direction.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There will be standard limits for each of these parameters which will be enforced by the server. Any attempt to move outside the Arena will result in the ship stopping at the boundary.&lt;/p&gt;
+
+&lt;p&gt;It will be a turn-based system. Every 500 milliseconds the server will give the latest known position, speed and direction for every ship and missile. Each program will need to respond with the new commands within the next 500 ms.&lt;/p&gt;
+
+&lt;p&gt;There is no ‘random’ element, everything is controlled by the fleet programs and enforced by the server code. The server code also determines if missiles hit their target and will calculate damage.&lt;/p&gt;
+
+&lt;p&gt;A win will be based on two factors.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;An outright win, where one fleet is totally destroyed within the five minutes.&lt;/li&gt;
+
+&lt;li&gt;A win based on the percentage damage to all ships at the end of five minutes.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;An outright win within the five minutes will give the winning program three points.&lt;/p&gt;
+
+&lt;p&gt;A win based on the least damage at the end of five minutes will give the winning program one point.&lt;/p&gt;
+
+&lt;p&gt;So, a program must be able to predict where an enemy ship will be at a future point in time, so that it’s missiles can intercept the enemy.&lt;/p&gt;
+
+&lt;p&gt;It must also not be too predictable in it’s own movements else it will be destroyed by the enemy.&lt;/p&gt;
+
+&lt;p&gt;Quite how programs will evolve, and what strategies develop, will be interesting to see.&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>First Post</title>
