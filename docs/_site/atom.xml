@@ -4,13 +4,189 @@
  <title>The blog of Iain C Docherty</title>
  <link href="http://spacebotwar.com:4000/atom.xml" rel="self"/>
  <link href="http://spacebotwar.com:4000"/>
- <updated>2013-12-24T00:00:06+00:00</updated>
+ <updated>2013-12-26T16:34:09+00:00</updated>
  <id>http://spacebotwar.com:4000</id>
  <author>
    <name>Iain C Docherty</name>
    <email>spacebotwar@iain-docherty.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Separation of Concerns</title>
+   <link href="http://spacebotwar.com:4000/blog/2013/12/26/separation-of-concerns.html"/>
+   <updated>2013-12-26T00:00:00+00:00</updated>
+   <id>http://spacebotwar.com:4000/blog/2013/12/26/separation-of-concerns</id>
+   <content type="html">&lt;p&gt;Learning about the Javascript framework &lt;a href=&quot;http://backbonejs.org&quot;&gt;Backbone&lt;/a&gt; has been a timeconsuming process, but I think it is worthwhile especially when embarking on a potentially large javascript application (like SpaceBotWar).&lt;/p&gt;
+
+&lt;p&gt;One problem I have encountered many times in the past is convoluted code which has many diverse tasks. e.g. code which captures user input, sends data to the server, waits for the response, renders the html output, all mixed in together.&lt;/p&gt;
+
+&lt;p&gt;Backbone solves this problem elegantly but it requires a bit of thought, this example shows how I tackled the thorny issue of how to log in and out :)&lt;/p&gt;
+
+&lt;p&gt;Using the Model View Controller design pattern we can create a Model that just models the status of the user.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;javascript&#39;&gt;&lt;span class=&#39;c1&#39;&gt;// app/models/login_status.js&lt;/span&gt;
+
+&lt;span class=&#39;nx&#39;&gt;define&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;([&lt;/span&gt;    &lt;span class=&#39;s2&#39;&gt;&amp;quot;jquery&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;   &lt;span class=&#39;s2&#39;&gt;&amp;quot;backbone&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;],&lt;/span&gt;
+&lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;    &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;          &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+    &lt;span class=&#39;c1&#39;&gt;// Creates a new Backbone Model class object&lt;/span&gt;
+    &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;LoginStatus&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;Model&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;extend&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;
+
+        &lt;span class=&#39;nx&#39;&gt;defaults&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;logged_in&lt;/span&gt;   &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kc&#39;&gt;false&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;initialize&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+    &lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+    &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;LoginStatus&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;As it stands, it just has a single attribute, ‘logged_in’ which reflects the logged in status of the user.&lt;/p&gt;
+
+&lt;p&gt;In order to log in, we need a log-in form. When we are logged out, we will display a form to allow username and password to be entered, when we are logged in we can display a button to ‘log out’. Now this could be done by having a template and passing in the ‘logged_in’ status and having conditional code to display either one view or the other. I prefer keeping logic out of the template and putting it in the view so I created two templates.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;html&#39;&gt;&lt;span class=&#39;c&#39;&gt;&amp;lt;!-- app/templates/all/main/logged_out.html --&amp;gt;&lt;/span&gt;
+
+&lt;span class=&#39;nt&#39;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;login&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;type=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;text&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;placeholder=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;Username&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;username&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;type=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;password&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;placeholder=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;Password&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;password&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;p&amp;gt;&amp;lt;button&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;login&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;type=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;button&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;btn btn-default&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;Sign In&lt;span class=&#39;nt&#39;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;lost_password&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;href=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;/#/lost_password&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;forgot&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;lost password?&lt;span class=&#39;nt&#39;&gt;&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;p&amp;gt;&amp;lt;button&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;register&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;type=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;button&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;btn btn-default&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;Register&lt;span class=&#39;nt&#39;&gt;&amp;lt;/button&amp;gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+&lt;span class=&#39;nt&#39;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;html&#39;&gt;&lt;span class=&#39;c&#39;&gt;&amp;lt;!-- app/templates/all/main/logged_in.html --&amp;gt;&lt;/span&gt;
+
+&lt;span class=&#39;nt&#39;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;login&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&#39;nt&#39;&gt;&amp;lt;p&amp;gt;&amp;lt;button&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;id=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;logout&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;type=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;button&amp;quot;&lt;/span&gt; &lt;span class=&#39;na&#39;&gt;class=&lt;/span&gt;&lt;span class=&#39;s&#39;&gt;&amp;quot;btn btn-default&amp;quot;&lt;/span&gt;&lt;span class=&#39;nt&#39;&gt;&amp;gt;&lt;/span&gt;Log Out&lt;span class=&#39;nt&#39;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;span class=&#39;nt&#39;&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The decision on which one of these templates is displayed can now be delegated to the View.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;javascript&#39;&gt;&lt;span class=&#39;c&#39;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;app&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;views&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;dt&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;main&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;login_status&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;js&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;--&amp;gt;&lt;/span&gt;
+
+&lt;span class=&#39;nx&#39;&gt;define&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;([&lt;/span&gt;    &lt;span class=&#39;s1&#39;&gt;&amp;#39;jquery&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;   &lt;span class=&#39;s1&#39;&gt;&amp;#39;hbs!templates/all/main/logged_in&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;  &lt;span class=&#39;s1&#39;&gt;&amp;#39;hbs!templates/all/main/logged_out&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;s1&#39;&gt;&amp;#39;backbone&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;s1&#39;&gt;&amp;#39;marionette&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;],&lt;/span&gt;
+&lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;   &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;          &lt;span class=&#39;nx&#39;&gt;template_logged_in&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;                 &lt;span class=&#39;nx&#39;&gt;template_logged_out&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;                &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+    &lt;span class=&#39;c1&#39;&gt;//ItemView provides some default rendering logic&lt;/span&gt;
+    &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;Marionette&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;ItemView&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;extend&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;render&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;k&#39;&gt;if&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;model&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;get&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;logged_in&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;))&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;el&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;).&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;empty&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;().&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;html&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;template_logged_in&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+            &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+            &lt;span class=&#39;k&#39;&gt;else&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;el&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;).&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;empty&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;().&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;html&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;template_logged_out&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+            &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;initialize&lt;/span&gt;  &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;model&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;bind&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;change:logged_in&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;render&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+    &lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+&lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;As it stands, when the app starts, it will display the login form, since the logged_in attribute in the model defaults to false (which is what we want).&lt;/p&gt;
+
+&lt;p&gt;Notice that the View binds to any change in the logged_in attribute of the Model. This is what I mean by separation of concerns. The View simply has to render the appropriate template whenever the logged_in status changes, it does not care &lt;em&gt;how&lt;/em&gt; it changes. Similarly all the Model has to do is maintain the status of the attribute and not care about how the View changes.&lt;/p&gt;
+
+&lt;p&gt;Now, what should happen when we fill in the login form, username and password and click the ‘Log in’ button? Well, eventually it needs to send a message to the server and get the response, but again I am going to delegate that work to something other than the view.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;javascript&#39;&gt;&lt;span class=&#39;c&#39;&gt;&amp;lt;!--&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;app&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;views&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;dt&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;main&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;/&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;login_status&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;js&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;--&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+    &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;Marionette&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;ItemView&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;extend&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;render&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;events&lt;/span&gt;          &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;s1&#39;&gt;&amp;#39;click #login&amp;#39;&lt;/span&gt;          &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;s1&#39;&gt;&amp;#39;login&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+            &lt;span class=&#39;s1&#39;&gt;&amp;#39;click #logout&amp;#39;&lt;/span&gt;         &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;s1&#39;&gt;&amp;#39;logout&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;login&lt;/span&gt;   &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;username&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;#username&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;).&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;val&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;();&lt;/span&gt;
+            &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;password&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;#password&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;).&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;val&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;();&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;trigger&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;user:login&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;  &lt;span class=&#39;nx&#39;&gt;username&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;username&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;password&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;password&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;}&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;logout&lt;/span&gt;  &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;trigger&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;user:logout&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+
+
+    &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;In this case I have bound the &lt;em&gt;click&lt;/em&gt; events for the &lt;em&gt;login&lt;/em&gt; and &lt;em&gt;logout&lt;/em&gt; buttons to similarly named methods. In those routines I have made use of the Backbone event handler to &lt;em&gt;trigger&lt;/em&gt; an event using the namespaces &lt;strong&gt;user:login&lt;/strong&gt; and &lt;strong&gt;user:logout&lt;/strong&gt; respectively. As far as the view is concerned, it does not matter how these events are handled, so long as there is something listening for those events. Indeed there can be more than one listener and all of them would be informed.&lt;/p&gt;
+
+&lt;p&gt;And the listener? Well I decided to create a component that had the sole responsibility of co-ordinating communication with the server. Part of which is as follows. &lt;a href=&quot;http://lostechies.com/derickbailey/2012/04/19/decoupling-backbone-apps-from-websockets/&quot;&gt;This article on decoupling&lt;/a&gt; was the influence for the design.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;javascript&#39;&gt;&lt;span class=&#39;c1&#39;&gt;// app/components/lobby.js&lt;/span&gt;
+
+&lt;span class=&#39;nx&#39;&gt;define&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;([&lt;/span&gt;    &lt;span class=&#39;s1&#39;&gt;&amp;#39;my-config&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;    &lt;span class=&#39;s1&#39;&gt;&amp;#39;jquery&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;    &lt;span class=&#39;s1&#39;&gt;&amp;#39;backbone&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;s1&#39;&gt;&amp;#39;humane&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;  &lt;span class=&#39;s1&#39;&gt;&amp;#39;jquery.json&amp;#39;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;],&lt;/span&gt;
+&lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;   &lt;span class=&#39;nx&#39;&gt;MyConfig&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;       &lt;span class=&#39;nx&#39;&gt;$&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;           &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;   &lt;span class=&#39;nx&#39;&gt;Humane&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+
+    &lt;span class=&#39;c1&#39;&gt;// The Lobby is responsible for handling login and registration&lt;/span&gt;
+    &lt;span class=&#39;c1&#39;&gt;//&lt;/span&gt;
+    &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Lobby&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+        &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;ws&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+
+        &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;init&lt;/span&gt;    &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+                &lt;span class=&#39;c1&#39;&gt;// The user has logged in&lt;/span&gt;
+                &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;on&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;user:login&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;data&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                    &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;msg&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                        &lt;span class=&#39;nx&#39;&gt;route&lt;/span&gt;   &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;s2&#39;&gt;&amp;quot;/lobby/login_with_password&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+                        &lt;span class=&#39;nx&#39;&gt;content&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                            &lt;span class=&#39;nx&#39;&gt;password&lt;/span&gt;    &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;data&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;password&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+                            &lt;span class=&#39;nx&#39;&gt;username&lt;/span&gt;    &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;data&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;username&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+                            &lt;span class=&#39;nx&#39;&gt;client_code&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;client_code&lt;/span&gt;
+                        &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+                    &lt;span class=&#39;p&#39;&gt;};&lt;/span&gt;
+                    &lt;span class=&#39;nx&#39;&gt;ws&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;send&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;JSON&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;stringify&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;msg&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;));&lt;/span&gt;
+                &lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+                &lt;span class=&#39;c1&#39;&gt;// The user has logged out&lt;/span&gt;
+                &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;on&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;user:logout&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                    &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;msg&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                        &lt;span class=&#39;nx&#39;&gt;route&lt;/span&gt;   &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;s2&#39;&gt;&amp;quot;/lobby/logout&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt;
+                        &lt;span class=&#39;nx&#39;&gt;content&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+                            &lt;span class=&#39;nx&#39;&gt;client_code&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;client_code&lt;/span&gt;
+                        &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+                    &lt;span class=&#39;p&#39;&gt;};&lt;/span&gt;
+                    &lt;span class=&#39;nx&#39;&gt;ws&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;send&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;JSON&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;stringify&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;msg&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;));&lt;/span&gt;
+                &lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+                &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+            &lt;span class=&#39;p&#39;&gt;}&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;};&lt;/span&gt;
+    &lt;span class=&#39;p&#39;&gt;};&lt;/span&gt;
+    &lt;span class=&#39;k&#39;&gt;return&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Lobby&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;;&lt;/span&gt;
+&lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;ws&lt;/strong&gt; is a WebSocket object, the details of which I won’t go into, suffice to say that it has a &lt;strong&gt;send&lt;/strong&gt; method which sends a message to the server and an &lt;strong&gt;onmessage&lt;/strong&gt; method which accepts messages from the server.&lt;/p&gt;
+
+&lt;p&gt;The two &lt;em&gt;Backbone.on&lt;/em&gt; methods are registering a callback function for each of the events &lt;strong&gt;user:login&lt;/strong&gt; and &lt;strong&gt;user:logout&lt;/strong&gt; that we saw earlier in the &lt;strong&gt;LoginStatus&lt;/strong&gt; view.&lt;/p&gt;
+
+&lt;p&gt;We happen to be using Web Sockets to communicate with the server, but by decoupling the code in this way we would be free to change the communication with minimal change to the rest of the code.&lt;/p&gt;
+
+&lt;p&gt;The &lt;strong&gt;user:login&lt;/strong&gt; event results in a message to the server of &lt;strong&gt;/lobby/login_with_password&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;All that remains now is to create an event on recept of the server confirming the receipt of the login or the logout messages, which put a &lt;strong&gt;ws:recv:/lobby/login_with_password&lt;/strong&gt; or a &lt;strong&gt;ws:recv:/logout&lt;/strong&gt; message on the Event Handler bus respectively.&lt;/p&gt;
+
+&lt;p&gt;And what do we need to do when we receive confirmation? We need to change the state of the &lt;strong&gt;logged_in&lt;/strong&gt; attribute in the LoginStatus Model of course.&lt;/p&gt;
+&lt;div class=&#39;highlight&#39;&gt;&lt;pre&gt;&lt;code class=&#39;javascript&#39;&gt;    &lt;span class=&#39;c1&#39;&gt;// app/models/login_status.js&lt;/span&gt;
+
+    &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+    &lt;span class=&#39;kd&#39;&gt;var&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;LoginStatus&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;=&lt;/span&gt; &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;Model&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;extend&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;
+
+        &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+        &lt;span class=&#39;nx&#39;&gt;initialize&lt;/span&gt;&lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;()&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;on&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;ws:recv:/lobby/login_with_password&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;login_success&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+            &lt;span class=&#39;nx&#39;&gt;Backbone&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;on&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;s2&#39;&gt;&amp;quot;ws:recv:/lobby/logout&amp;quot;&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;logout_success&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;,&lt;/span&gt; &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;);&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+
+        &lt;span class=&#39;nx&#39;&gt;logout_success&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;data&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;set&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;logged_in&amp;#39;&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kc&#39;&gt;false&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+
+        &lt;span class=&#39;nx&#39;&gt;login_success&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kd&#39;&gt;function&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;(&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;data&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;)&lt;/span&gt; &lt;span class=&#39;p&#39;&gt;{&lt;/span&gt;
+            &lt;span class=&#39;k&#39;&gt;this&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;.&lt;/span&gt;&lt;span class=&#39;nx&#39;&gt;set&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;({&lt;/span&gt;&lt;span class=&#39;s1&#39;&gt;&amp;#39;logged_in&amp;#39;&lt;/span&gt; &lt;span class=&#39;o&#39;&gt;:&lt;/span&gt; &lt;span class=&#39;kc&#39;&gt;true&lt;/span&gt;&lt;span class=&#39;p&#39;&gt;});&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;},&lt;/span&gt;
+        &lt;span class=&#39;p&#39;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Which takes us full circle since we have already seen that when the &lt;strong&gt;logged_in&lt;/strong&gt; status changes it also triggers a change in the view.&lt;/p&gt;
+
+&lt;p&gt;And although this might seem to be a convoluted and complex method to simply handle a single flag (logged_in) it really comes into it’s own with more complex examples, ensuring that each module has a simple, single thing to do. It also makes testing so much easier as well!&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>About Battles</title>

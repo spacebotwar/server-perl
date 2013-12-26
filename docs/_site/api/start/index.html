@@ -135,11 +135,18 @@
 <p>Get a new Client Code. Note you should only do this if you don’t already have a Client Code. e.g. if this is the first time on this computer, or with this Web Browser. If you do have one (even if it is timed out) you should reuse it.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
+    <span class='nt'>&quot;client_code&quot;</span>     <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
 <h3 id="msg_id_optional">msg_id (optional)</h3>
 
 <p>An <strong>ID</strong> to identify this message. If used the server reply will contain the same message ID. This can be useful if you wish to link the server response to the client request.</p>
+
+<h3 id="client_code_optional">client_code (optional)</h3>
+
+<p>You can validate/refresh your existing client code. If valid the server will return the same Client Code. If not valid it will return a new one.</p>
+
+<p>If you don’t supply a Client code, then you will get a new one.</p>
 
 <h3 id="response">RESPONSE</h3>
 

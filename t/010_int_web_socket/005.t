@@ -6,8 +6,6 @@ FindBin->again;
 use lib "$FindBin::Bin/../../lib";
 use lib "$FindBin::Bin/../lib";
 
-use AnyEvent::WebSocket::Client;
-use JSON;
 use Data::Dumper;
 use Test::More;
 use SpaceBotWar;

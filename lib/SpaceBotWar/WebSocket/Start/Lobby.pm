@@ -33,12 +33,19 @@ sub DEMOLISH {
 sub ws_get_client_code {
     my ($self, $context) = @_;
 
-    my $client_code = SpaceBotWar::ClientCode->create_client_code;
+    my $client_code_id;
+    if (SpaceBotWar::ClientCode->validate_client_code($context->content->{client_code})) {
+        $client_code_id = $context->content->{client_code};
+    }
+    else {
+        my $client_code = SpaceBotWar::ClientCode->create_client_code;
+        $client_code_id = $client_code->id;
+    }
 
     return {
         code        => 0,
         message     => "new Client Code",
-        client_code   => $client_code->id,
+        client_code   => $client_code_id,
     };
 }
 

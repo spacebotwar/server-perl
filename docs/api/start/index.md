@@ -77,6 +77,7 @@ one (even if it is timed out) you should reuse it.
 {% highlight JSON %}
 {
     "msg_id"        : 123,
+    "client_code"     : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
 }
 {% endhighlight %}
 
@@ -84,6 +85,13 @@ one (even if it is timed out) you should reuse it.
 
 An **ID** to identify this message. If used the server reply will contain the same message
 ID. This can be useful if you wish to link the server response to the client request.
+
+### client_code (optional)
+
+You can validate/refresh your existing client code. If valid the server will return
+the same Client Code. If not valid it will return a new one.
+
+If you don't supply a Client code, then you will get a new one.
 
 ### RESPONSE
 

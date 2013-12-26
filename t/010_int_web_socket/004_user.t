@@ -6,8 +6,6 @@ FindBin->again;
 use lib "$FindBin::Bin/../../lib";
 use lib "$FindBin::Bin/../lib";
 
-use AnyEvent::WebSocket::Client;
-use JSON;
 use Data::Dumper;
 use Test::More;
 use SpaceBotWar;
@@ -15,6 +13,8 @@ use WSTester;
 
 my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
+my $client_code = "illegal client code";
+my $new_client_code;
 
 my $tester = WSTester->new({
     route       => "/lobby/",
@@ -26,10 +26,28 @@ my $test_setup = {
     "000_get_client_code" => {
         method  => 'get_client_code',
         send    => {
+            client_code => $client_code,
         },
         recv    => {
             code        => 0,
             message     => 'new Client Code',
+        },
+        callback => sub {
+            my ($data) = @_;
+            $new_client_code = $data->{content}{client_code};
+            isnt($client_code, $new_client_code, "Got a new client code");
+            $client_code = $new_client_code;
+        },
+    },
+    "001_get_same_client_code" => {
+        method  => 'get_client_code',
+        send    => {
+            client_code => '6ab031da-1dc9-4d87-9e1a-566e14656c9c-d0740c',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'new Client Code',
+            client_code => '6ab031da-1dc9-4d87-9e1a-566e14656c9c-d0740c',
         },
     },
     "005_login_success"  => {
