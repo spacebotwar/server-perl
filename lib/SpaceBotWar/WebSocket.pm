@@ -155,7 +155,7 @@ print STDERR "ON EST: $self\n";
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
                 if (defined $content->{client_code}) {
-                    if (not defined $client_code or $content->{client_code} != $client_code->id) {
+                    if (not defined $client_code or $content->{client_code} ne $client_code->id) {
                         $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
                     }
                 }
