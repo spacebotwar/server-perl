@@ -6,11 +6,17 @@
         "username"  : "sbw_icydee",
     },
     "redis_server"  : "localhost:7000",
-    "ws_server"     : "ws://spacebotwar.co.uk:5000/ws/game/lobby",
+    "ws_servers"    : {
+        "start"         : "ws://spacebotwar.co.uk:5000/ws/start",
+        "game"          : "ws://spacebotwar.co.uk:5000/ws/game",
+        "arena"         : "ws://spacebotwar.co.uk:5000/ws/arena",
+        "match_gold"    : "ws://spacebotwar.co.uk:5000/ws/match/gold",
+        "match_silver"  : "ws://spacebotwar.co.uk:5000/ws/match/silver",
+    },
     "secret"        : "a random code",
     "email_secret"  : "another random code",
     "radius"   : {
         "api_key"   : "78855680-671c-4c70-b194-2e392a0a7c81",
-        "secret"    : "api secret goes here!"
+        "secret"    : "9aa93d7d-59a1-4589-bdf3-bfe6d6531c4c"
     }
 }

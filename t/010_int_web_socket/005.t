@@ -20,7 +20,7 @@ my $config  = SpaceBotWar->config;
 #
 my $tester = WSTester->new({
     route       => "/lobby/",
-    server      => $config->get('ws_server'),
+    server      => $config->get('ws_servers/start'),
 });
 
 my $client_code;
@@ -61,7 +61,7 @@ print STDERR "CLIENT_CODE external : [$client_code]\n";
 
 my $tester2 = WSTester->new({
     route       => "/test/",
-    server      => $config->get('ws_game_server'),
+    server      => $config->get('ws_servers/game'),
 });
 
 my $tests2 = {

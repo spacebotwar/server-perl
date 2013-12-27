@@ -18,7 +18,7 @@ my $new_client_code;
 
 my $tester = WSTester->new({
     route       => "/lobby/",
-    server      => $config->get('ws_server'),
+    server      => $config->get('ws_servers/start'),
 });
 
 # Set up test conditions.

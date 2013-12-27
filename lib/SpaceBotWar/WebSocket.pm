@@ -31,7 +31,7 @@ sub BUILD {
         after       => 0.1,
         interval    => 0.5,
         cb          => sub {
-            print STDERR "PING: $self\n";
+            #print STDERR "PING: $self\n";
         },
     );
 }
@@ -113,7 +113,7 @@ sub on_connect {
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-print STDERR "ON EST: $self\n";
+#print STDERR "ON EST: $self\n";
 
     my $room = $self->{room};
     
@@ -176,14 +176,14 @@ print STDERR "ON EST: $self\n";
                     $route =~ s{/}{::};
 #print STDERR "ROUTE 3[$route]\n";
                     $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-#print STDERR "ROUTE 4[$route]\n";
+#print STDERR "ROUTE 4[$route] self=[$self]\n";
                     if ($route) {
                         $route = ref($self)."::".$route;
                     }
                     else {
                         $route = ref($self);
                     }
-print STDERR "ROUTE 5[$route]\n";
+#print STDERR "ROUTE 5[$route]\n";
                     eval "require $route";
                     my $obj = $route->new({});
                     my $context = SpaceBotWar::WebSocket::Context->new({
