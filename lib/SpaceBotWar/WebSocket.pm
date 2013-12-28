@@ -149,90 +149,90 @@ sub on_establish {
             if ($@) {
                 $self->log->error($@);
                 $self->fatal($connection, $@);
+                return;
             }
-            else {
-                $self->log->debug("Establish");
-                my $path    = $json_msg->{route};
-                my $content = $json_msg->{content} || {};
-                if (defined $content->{client_code}) {
-                    if (not defined $client_code or $content->{client_code} ne $client_code->id) {
-                        $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
-                    }
-                }
-                if (defined $client_code and defined $client_code->user_id) {
-                    if (not defined $user or $client_code->user_id != $user->id) {
-                        $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
-                    }
-                }
 
-                my $msg_id  = $content->{msg_id};
-                eval {
-                    my ($route, $method) = $path =~ m{(.*)/([^/]*)};
-                    $method = "ws_".$method;
-                    $route =~ s{/$}{};
-                    $route =~ s{^/}{};
-                    $route =~ s{/}{::};
-                    $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-                    $self->log->debug("route = [$route]");
-                    if ($route) {
-                        $route = ref($self)."::".$route;
-                    }
-                    else {
-                        $route = ref($self);
-                    }
-                    $self->log->debug("route = [$route]");
-                    eval "require $route";
-                    my $obj = $route->new({});
-                    my $context = SpaceBotWar::WebSocket::Context->new({
-                        room            => $room,
-                        connection      => $connection,
-                        content         => $content,
-                        client_code         => $client_code,
-                        user            => $user,
-                    });
-                    $self->log->debug("Call [$obj][$method]");
-                    my $reply = $obj->$method($context);
-                    if ($reply) {
-                        # Send back the message ID
-                        if ($content->{msg_id}) {
-                            $reply->{msg_id} = $content->{msg_id}
-                        }
-                        $reply = {
-                            room    => $room,
-                            route   => $path,
-                            content => $reply,
-                        };
-
-                        $self->render_json($context, $reply);
-                    }
-                };
-
-                my @error;
-                if ($@ and ref($@) eq 'ARRAY') {
-                    @error = @{$@};
+            $self->log->debug("Establish");
+            my $path    = $json_msg->{route};
+            my $content = $json_msg->{content} || {};
+            if (defined $content->{client_code}) {
+                if (not defined $client_code or $content->{client_code} ne $client_code->id) {
+                    $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
                 }
-                elsif ($@) {
-                    @error = (
-                        1000,
-                        'unknown error',
-                        $@,
-                    );
+            }
+            if (defined $client_code and defined $client_code->user_id) {
+                if (not defined $user or $client_code->user_id != $user->id) {
+                    $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
                 }
-                if (@error) {
-                    my $msg = {
-                        route   => $path,
+            }
+
+            my $msg_id  = $content->{msg_id};
+            eval {
+                my ($route, $method) = $path =~ m{(.*)/([^/]*)};
+                $method = "ws_".$method;
+                $route =~ s{/$}{};
+                $route =~ s{^/}{};
+                $route =~ s{/}{::};
+                $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
+                $self->log->debug("route = [$route]");
+                if ($route) {
+                    $route = ref($self)."::".$route;
+                }
+                else {
+                    $route = ref($self);
+                }
+                $self->log->debug("route = [$route]");
+                eval "require $route";
+                my $obj = $route->new({});
+                my $context = SpaceBotWar::WebSocket::Context->new({
+                    room            => $room,
+                    connection      => $connection,
+                    content         => $content,
+                    client_code         => $client_code,
+                    user            => $user,
+                });
+                $self->log->debug("Call [$obj][$method]");
+                my $reply = $obj->$method($context);
+                if ($reply) {
+                    # Send back the message ID
+                    if ($content->{msg_id}) {
+                        $reply->{msg_id} = $content->{msg_id}
+                    }
+                    $reply = {
                         room    => $room,
-                        content => {
-                            code        => $error[0],
-                            message     => $error[1],
-                            data        => $error[2],
-                            msg_id      => $msg_id,
-                        },
+                        route   => $path,
+                        content => $reply,
                     };
-                    $msg = JSON->new->encode($msg);
-                    $self->log->info("SEND: $msg");
-                    $connection->send($msg);
+
+                    $self->render_json($context, $reply);
                 }
+            };
+
+            my @error;
+            if ($@ and ref($@) eq 'ARRAY') {
+                @error = @{$@};
+            }
+            elsif ($@) {
+                @error = (
+                    1000,
+                    'unknown error',
+                    $@,
+                );
+            }
+            if (@error) {
+                my $msg = {
+                    route   => $path,
+                    room    => $room,
+                    content => {
+                        code        => $error[0],
+                        message     => $error[1],
+                        data        => $error[2],
+                        msg_id      => $msg_id,
+                    },
+                };
+                $msg = JSON->new->encode($msg);
+                $self->log->info("SEND: $msg");
+                $connection->send($msg);
             }
        }
    );
