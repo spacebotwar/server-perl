@@ -1,7 +1,8 @@
 # log4perl configuration file
 #
 log4perl.rootLogger=DEBUG, LOGFILE
-log4perl.category.SpaceBotWar.WebSocket=DEBUG, LOGFILE
+log4perl.category.SpaceBotWar.WebSocket = INFO, SCREEN
+log4perl.category.SpaceBotWar = WARN, SCREEN
 
 log4perl.appender.LOGFILE=Log::Log4perl::Appender::File
 log4perl.appender.LOGFILE.filename=/home/icydee/space-bot-war/log/error.log
@@ -11,5 +12,5 @@ log4perl.appender.LOGFILE.layout=PatternLayout
 log4perl.appender.LOGFILE.layout.ConversionPattern=[%r] %F %L %c - %m%n
 
 log4perl.appender.SCREEN=Log::Log4perl::Appender::Screen
-log4perl.appender.SCREEN.stderr = 1
+log4perl.appender.SCREEN.stderr = 0
 log4perl.appender.SCREEN.layout = Log::Log4perl::Layout::SimpleLayout

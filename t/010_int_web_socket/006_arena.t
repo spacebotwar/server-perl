@@ -40,15 +40,16 @@ my $tests = {
 $tester->run_tests($tests);
 
 is(scalar(@arenas), 2, "number of arenas");
+diag($arenas[0]->{server});
 # Join the first room
 my $arena_tester = WSTester->new({
     route       => "/",
-    server      => $config->get('ws_servers/server')."/ws/match/rae",
+    server      => $arenas[0]->{server},
 });
 
 my $tests2 = {
-    "010_arena_status" => {
-        method  => 'arena_status',
+    "010_match_status" => {
+        method  => 'match_status',
         send    => {
         },
         recv    => {

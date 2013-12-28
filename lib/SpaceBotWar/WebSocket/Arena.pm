@@ -24,16 +24,20 @@ sub DEMOLISH {
     $self->log->info("DEMOLISH");
 }
 
-# Return a list of valid arean servers
+# Return a list of valid arena servers
 #
 sub ws_arenas {
     my ($self, $context) = @_;
+
+    my $config = SpaceBotWar->config;
+
+    my $server = $config->get("ws_servers/server");
 
     return {
         code        => 0,
         message     => "Arenas",
         arenas      => [{
-            route       => "/ws/match/gold",
+            server       => "$server/ws/match/rae",
             spectators  => 2,
             start_time  => -3,
             status      => "running",
@@ -47,7 +51,7 @@ sub ws_arenas {
                 programmer  => "Blotto",
             }],
         },{
-            route       => "/ws/match/silver",
+            server      => "$server/ws/match/scott",
             spectators  => 44,
             start_time  => -30.5,
             status      => "running",

@@ -23,10 +23,10 @@ sub DEMOLISH {
     $self->log->info("DEMOLISH");
 }
 
-# Get the arena status
+# Get the match status
 #
 
-sub ws_arena_status {
+sub ws_match_status {
     my ($self, $context) = @_;
 
     return {
