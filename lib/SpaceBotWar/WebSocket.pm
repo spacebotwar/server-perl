@@ -36,9 +36,9 @@ has log => (
     },
 );
 
-has room => (
+has server => (
     is      => 'ro',
-    default => 'lobby'
+    default => 'main'
 );
 
 sub BUILD {
@@ -119,13 +119,13 @@ sub on_establish {
     $self->log->debug("Establish");
 
     my $context = SpaceBotWar::WebSocket::Context->new({
-        room        => $self->room,
+        server      => $self->server,
         connection  => $connection,
         content     => {},
     });
     $self->log->debug("Establish");
     my $reply = {
-        room        => $self->room,
+        server      => $self->server,
         route       => '/',
         content     => $self->on_connect($context),
     };
@@ -191,7 +191,7 @@ sub on_establish {
                 eval "require $route";
                 my $obj = $route->new({});
                 my $context = SpaceBotWar::WebSocket::Context->new({
-                    room            => $self->room,
+                    server          => $self->server,
                     connection      => $connection,
                     content         => $content,
                     client_code     => $client_code,
@@ -205,7 +205,7 @@ sub on_establish {
                         $reply->{msg_id} = $content->{msg_id}
                     }
                     $reply = {
-                        room        => $self->room,
+                        server      => $self->server,
                         route       => $path,
                         content     => $reply,
                     };
@@ -244,7 +244,7 @@ sub report_error {
 
     my $msg = {
         route   => $path,
-        room    => $self->room,
+        server  => $self->server,
         content => {
             code        => $error->[0],
             message     => $error->[1],

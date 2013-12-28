@@ -12,10 +12,8 @@
     "ws_servers"    : {
         "server"        : "ws://spacebotwar.co.uk:5000",
         "start"         : "ws://spacebotwar.co.uk:5000/ws/start",
-        "game"          : "ws://spacebotwar.co.uk:5000/ws/game",
+        "lobby"         : "ws://spacebotwar.co.uk:5000/ws/lobby",
         "arena"         : "ws://spacebotwar.co.uk:5000/ws/arena",
-        "match_gold"    : "ws://spacebotwar.co.uk:5000/ws/match/gold",
-        "match_silver"  : "ws://spacebotwar.co.uk:5000/ws/match/silver",
     },
     "secret"        : "a random code",
     "email_secret"  : "another random code",

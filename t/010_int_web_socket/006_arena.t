@@ -15,7 +15,7 @@ my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
 my $tester = WSTester->new({
-    route       => "/lobby/",
+    route       => "/",
     server      => $config->get('ws_servers/arena'),
 });
 
@@ -42,8 +42,8 @@ $tester->run_tests($tests);
 is(scalar(@arenas), 2, "number of arenas");
 # Join the first room
 my $arena_tester = WSTester->new({
-    route       => "/gold/",
-    server      => $config->get('ws_servers/match_gold'),
+    route       => "/",
+    server      => $config->get('ws_servers/server')."/ws/match/rae",
 });
 
 my $tests2 = {

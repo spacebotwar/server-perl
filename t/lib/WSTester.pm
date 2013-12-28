@@ -59,7 +59,7 @@ sub run_tests {
 
             $connection = eval { shift->recv };
             if ($@) {
-                BAIL_OUT("Cannot connect to server");
+                BAIL_OUT("Cannot connect to server [".$self->server."]");
             }
 
             $connection->on(finish => sub {

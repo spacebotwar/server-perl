@@ -19,7 +19,7 @@ my $config  = SpaceBotWar->config;
 #   Note that the 'client_code' and the 'msg_id' message fields are handled by WSTester
 #
 my $tester = WSTester->new({
-    route       => "/lobby/",
+    route       => "/",
     server      => $config->get('ws_servers/start'),
 });
 
@@ -61,7 +61,7 @@ print STDERR "CLIENT_CODE external : [$client_code]\n";
 
 my $tester2 = WSTester->new({
     route       => "/test/",
-    server      => $config->get('ws_servers/game'),
+    server      => $config->get('ws_servers/server')."/ws/match/rae",
 });
 
 my $tests2 = {

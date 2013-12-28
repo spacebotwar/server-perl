@@ -30,7 +30,7 @@ sub DEMOLISH {
     $self->log->info("DEMOLISH");
 }
 
-# Return a list of valid arean rooms
+# Return a list of valid arean servers
 #
 sub ws_arenas {
     my ($self, $context) = @_;
@@ -73,7 +73,7 @@ sub ws_arenas {
 
 
 
-# A user has joined the room
+# A user has joined the server
 #
 sub on_connect {
     my ($self, $context) = @_;

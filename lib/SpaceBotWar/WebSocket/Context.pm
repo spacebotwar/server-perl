@@ -3,7 +3,7 @@ package SpaceBotWar::WebSocket::Context;
 use Moose;
 use namespace::autoclean;
 
-has 'room' => (
+has 'server' => (
     is      => 'rw',
     isa     => 'Str',
 );

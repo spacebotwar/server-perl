@@ -17,7 +17,7 @@ my $client_code = "illegal client code";
 my $new_client_code;
 
 my $tester = WSTester->new({
-    route       => "/lobby/",
+    route       => "/",
     server      => $config->get('ws_servers/start'),
 });
 
@@ -95,7 +95,7 @@ my $user = $db->resultset('User')->create({
     email       => 'me@example.com',
 });
 
-$tester->route('/lobby/');
+$tester->route('/');
 $tester->run_tests($test_setup);
 
 $tester->route('/user/');
