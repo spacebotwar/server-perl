@@ -36,6 +36,10 @@ has log => (
     },
 );
 
+has room => (
+    is      => 'ro',
+    default => 'lobby'
+);
 
 sub BUILD {
     my ($self) = @_;
@@ -114,18 +118,16 @@ sub on_establish {
 
     $self->log->debug("Establish");
 
-    my $room = $self->{room};
-    
     my $context = SpaceBotWar::WebSocket::Context->new({
-        room            => $room,
-        connection      => $connection,
-        content         => {},
+        room        => $self->room,
+        connection  => $connection,
+        content     => {},
     });
     $self->log->debug("Establish");
     my $reply = {
-        room    => $room,
-        route   => '/',
-        content => $self->on_connect($context),
+        room        => $self->room,
+        route       => '/',
+        content     => $self->on_connect($context),
     };
     $self->log->debug("Establish");
     if ($reply) {
@@ -155,11 +157,15 @@ sub on_establish {
             $self->log->debug("Establish");
             my $path    = $json_msg->{route};
             my $content = $json_msg->{content} || {};
+
+            # If we have a client_code (effectively a session ID) then validate and cache it
             if (defined $content->{client_code}) {
                 if (not defined $client_code or $content->{client_code} ne $client_code->id) {
                     $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
                 }
             }
+            
+            # If a user is logged in, cache the User object
             if (defined $client_code and defined $client_code->user_id) {
                 if (not defined $user or $client_code->user_id != $user->id) {
                     $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
@@ -185,10 +191,10 @@ sub on_establish {
                 eval "require $route";
                 my $obj = $route->new({});
                 my $context = SpaceBotWar::WebSocket::Context->new({
-                    room            => $room,
+                    room            => $self->room,
                     connection      => $connection,
                     content         => $content,
-                    client_code         => $client_code,
+                    client_code     => $client_code,
                     user            => $user,
                 });
                 $self->log->debug("Call [$obj][$method]");
@@ -199,9 +205,9 @@ sub on_establish {
                         $reply->{msg_id} = $content->{msg_id}
                     }
                     $reply = {
-                        room    => $room,
-                        route   => $path,
-                        content => $reply,
+                        room        => $self->room,
+                        route       => $path,
+                        content     => $reply,
                     };
 
                     $self->render_json($context, $reply);
@@ -220,7 +226,7 @@ sub on_establish {
                 );
             }
             if (@error) {
-                $self->report_error($connection, \@error);
+                $self->report_error($connection, \@error, $path, $msg_id);
 
            }
        }
@@ -234,11 +240,11 @@ sub on_establish {
 }
 
 sub report_error {
-    my ($self, $connection, $error) = @_;
+    my ($self, $connection, $error, $path, $msg_id) = @_;
 
     my $msg = {
         route   => $path,
-        room    => $room,
+        room    => $self->room,
         content => {
             code        => $error->[0],
             message     => $error->[1],
