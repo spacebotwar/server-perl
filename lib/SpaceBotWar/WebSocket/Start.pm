@@ -8,14 +8,6 @@ has 'timer' => (
     is      => 'rw',
 );
 
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
-
 sub BUILD {
     my ($self) = @_;
 

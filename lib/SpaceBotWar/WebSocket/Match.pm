@@ -8,13 +8,6 @@ has 'timer' => (
     is      => 'rw',
 );
 
-has log => (
-    is        => 'rw',
-    default => sub {
-        return Log::Log4perl->get_logger("SpaceBotWar::WebSocket");
-    },
-);
-
 sub BUILD {
     my ($self) = @_;
     
