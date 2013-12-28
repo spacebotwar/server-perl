@@ -220,20 +220,9 @@ sub on_establish {
                 );
             }
             if (@error) {
-                my $msg = {
-                    route   => $path,
-                    room    => $room,
-                    content => {
-                        code        => $error[0],
-                        message     => $error[1],
-                        data        => $error[2],
-                        msg_id      => $msg_id,
-                    },
-                };
-                $msg = JSON->new->encode($msg);
-                $self->log->info("SEND: $msg");
-                $connection->send($msg);
-            }
+                $self->report_error($connection, \@error);
+
+           }
        }
    );
    $connection->on(
@@ -244,6 +233,24 @@ sub on_establish {
    );
 }
 
+sub report_error {
+    my ($self, $connection, $error) = @_;
+
+    my $msg = {
+        route   => $path,
+        room    => $room,
+        content => {
+            code        => $error->[0],
+            message     => $error->[1],
+            data        => $error->[2],
+            msg_id      => $msg_id,
+        },
+    };
+    $msg = JSON->new->encode($msg);
+    $self->log->info("SEND: $msg");
+    $connection->send($msg);
+}
+ 
 sub call {
     my ($self, $env) = @_;
 
