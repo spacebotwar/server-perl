@@ -60,20 +60,28 @@ The API call is split into several components.
 
 ###Connection
 
-Each connection requires a separate Web Socket Connection. e.g. **ws://spacebotwar.com/ws/chat** is
-the connection to the chat system. There is also a **game** and an **arena** system. You may have a
-Web Socket connection into more than one of these at the same time.
+A Connection is to a specific **server**, there are three functional areas in Space Bot War,
+one that controls the game, one for the chat system, one for the system that competes players
+in matches. These functional areas are each served by several servers and servers are free to
+be added and removed as needed. To access these areas you make a connection as follows.
 
-You should generally start with a connection to **ws://spacebotwar.com/ws/start** which will give
-you a list of the web socket connections to the other areas.
+#### Start
 
-###Room
+Connect to the **/ws/start** server which will allow you to log on and to obtain the server
+names for all the servers controlling the operation of the game.
 
-A Connection will allow you to enter one or more **rooms** which are just convenient localities to
-separate the total environment into smaller managable sections. For example in the **chat** system
-it would be hard to follow conversations if everyone was in the same room. On making a connection
-you should join the **lobby** which is a room that is always available and from which you can obtain
-a list of all other rooms that can be joined.
+#### Lobby
+
+The Lobby is the entry point to the chat system and is always on **/ws/lobby** server. From here
+you can obtain a list of all other chat servers.
+
+#### Arena
+
+The Arena is where matches between competitors is organized. Connect to **/ws/arena** to get a
+list of all servers which are currently available.
+
+Each of these three areas requires a separate Web Socket connection. You may run one connection
+to each functional area at a time.
 
 ###Route
 
@@ -84,10 +92,9 @@ group commands with similar functionality. e.g. user account commands are **/use
 
 ###Putting it together
 
-Putting the connection, the Room and the Route together.
+Putting the connection and the Route together.
 
-  * Connection - **ws://spacebotwar.com**
-  * Room - **/chat/**
+  * Connection - **ws://spacebotwar.com/ws/start**
   * Route - **/general/post_message**
 
 Gives the connection string of **ws://spacebotwar.com/chat/general/post_message**
@@ -98,11 +105,13 @@ Web Socket Message Structure
 A web-socket message has a JSON encoded string as it's payload. This is an example of a server response.
 
 {% highlight JSON %}
-{ "room" : "zone_1", "route" : "/user/register_status", "content" : { "code" : "0", "message" : "Registered" } }
+{ "server" : "Kingsley", "route" : "/user/register", "content" : { "code" : "0", "message" : "Registered" } }
 {% endhighlight %}
 
-To help to distinguish between client or server messages we will include either **Server** or **Client**
-in the header for each section. e.g.
+The **server** identifies which server the response came from. The **route** identifies the message and
+the **content** is the message payload.
+
+This might be documented as follows...
 
 ###Client : Register
 

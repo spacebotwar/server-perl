@@ -39,6 +39,9 @@
     
       <h3><a href="/api/arena">Arena</a></h3>
     
+    
+      <h3><a href="/api/match">Match</a></h3>
+    
   
   </h2>
   <hr/>
@@ -144,13 +147,21 @@
 
 <h3 id="connection">Connection</h3>
 
-<p>Each connection requires a separate Web Socket Connection. e.g. <strong>ws://spacebotwar.com/ws/chat</strong> is the connection to the chat system. There is also a <strong>game</strong> and an <strong>arena</strong> system. You may have a Web Socket connection into more than one of these at the same time.</p>
+<p>A Connection is to a specific <strong>server</strong>, there are three functional areas in Space Bot War, one that controls the game, one for the chat system, one for the system that competes players in matches. These functional areas are each served by several servers and servers are free to be added and removed as needed. To access these areas you make a connection as follows.</p>
 
-<p>You should generally start with a connection to <strong>ws://spacebotwar.com/ws/start</strong> which will give you a list of the web socket connections to the other areas.</p>
+<h4 id="start">Start</h4>
 
-<h3 id="room">Room</h3>
+<p>Connect to the <strong>/ws/start</strong> server which will allow you to log on and to obtain the server names for all the servers controlling the operation of the game.</p>
 
-<p>A Connection will allow you to enter one or more <strong>rooms</strong> which are just convenient localities to separate the total environment into smaller managable sections. For example in the <strong>chat</strong> system it would be hard to follow conversations if everyone was in the same room. On making a connection you should join the <strong>lobby</strong> which is a room that is always available and from which you can obtain a list of all other rooms that can be joined.</p>
+<h4 id="lobby">Lobby</h4>
+
+<p>The Lobby is the entry point to the chat system and is always on <strong>/ws/lobby</strong> server. From here you can obtain a list of all other chat servers.</p>
+
+<h4 id="arena">Arena</h4>
+
+<p>The Arena is where matches between competitors is organized. Connect to <strong>/ws/arena</strong> to get a list of all servers which are currently available.</p>
+
+<p>Each of these three areas requires a separate Web Socket connection. You may run one connection to each functional area at a time.</p>
 
 <h3 id="route">Route</h3>
 
@@ -158,12 +169,10 @@
 
 <h3 id="putting_it_together">Putting it together</h3>
 
-<p>Putting the connection, the Room and the Route together.</p>
+<p>Putting the connection and the Route together.</p>
 
 <ul>
-<li>Connection - <strong>ws://spacebotwar.com</strong></li>
-
-<li>Room - <strong>/chat/</strong></li>
+<li>Connection - <strong>ws://spacebotwar.com/ws/start</strong></li>
 
 <li>Route - <strong>/general/post_message</strong></li>
 </ul>
@@ -173,9 +182,11 @@
 <h2 id="web_socket_message_structure">Web Socket Message Structure</h2>
 
 <p>A web-socket message has a JSON encoded string as it’s payload. This is an example of a server response.</p>
-<div class='highlight'><pre><code class='json'><span class='p'>{</span> <span class='nt'>&quot;room&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;zone_1&quot;</span><span class='p'>,</span> <span class='nt'>&quot;route&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;/user/register_status&quot;</span><span class='p'>,</span> <span class='nt'>&quot;content&quot;</span> <span class='p'>:</span> <span class='p'>{</span> <span class='nt'>&quot;code&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;0&quot;</span><span class='p'>,</span> <span class='nt'>&quot;message&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;Registered&quot;</span> <span class='p'>}</span> <span class='p'>}</span>
+<div class='highlight'><pre><code class='json'><span class='p'>{</span> <span class='nt'>&quot;server&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;Kingsley&quot;</span><span class='p'>,</span> <span class='nt'>&quot;route&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;/user/register&quot;</span><span class='p'>,</span> <span class='nt'>&quot;content&quot;</span> <span class='p'>:</span> <span class='p'>{</span> <span class='nt'>&quot;code&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;0&quot;</span><span class='p'>,</span> <span class='nt'>&quot;message&quot;</span> <span class='p'>:</span> <span class='s2'>&quot;Registered&quot;</span> <span class='p'>}</span> <span class='p'>}</span>
 </code></pre></div>
-<p>To help to distinguish between client or server messages we will include either <strong>Server</strong> or <strong>Client</strong> in the header for each section. e.g.</p>
+<p>The <strong>server</strong> identifies which server the response came from. The <strong>route</strong> identifies the message and the <strong>content</strong> is the message payload.</p>
+
+<p>This might be documented as follows</p>
 
 <h3 id="client__register">Client : Register</h3>
 

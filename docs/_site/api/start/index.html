@@ -39,6 +39,9 @@
     
       <h3><a href="/api/arena">Arena</a></h3>
     
+    
+      <h3><a href="/api/match">Match</a></h3>
+    
   
   </h2>
   <hr/>
@@ -97,11 +100,13 @@
     </div>
 
     <div class="eleven columns content">
-      <h1 id="start_lobby">Start Lobby</h1>
+      <h1 id="start">Start</h1>
 
-<p>All methods in this section can be carried out by a connection to the <strong>/start/lobby</strong> route.</p>
+<p>All methods in this section can be carried out by a connection to the <strong>/ws/start</strong> server.</p>
 
-<p>The Start Lobby should be the first place you connect to on the game server. It will give you the names of other routes and rooms which are currently active in the game. It also has the functionality to allow you to log into your account.</p>
+<p>Each method appends to the route <strong>/</strong> e.g. ‘login’ method would be on route <strong>/login</strong></p>
+
+<p>The Start Server should be the first place you connect to on the game server. It will give you the names of other servers which are currently active in the game. It also has the functionality to allow you to log into your account.</p>
 <hr />
 <h1 id="client_code">Client Code</h1>
 
@@ -113,20 +118,20 @@
 
 <p>In the following API calls, if it specifies a Client Code then it is mandatory. If you don’t supply a Client Code the call will be rejected.</p>
 <hr />
-<h1 id="server__lobby">Server : lobby</h1>
+<h1 id="server__connect">Server : connect</h1>
 
-<p>On making a Web Socket connection, the server will send a <strong>lobby</strong> message indicating the current status of the room. It may also send an update whenever the room status changes.</p>
+<p>On making a Web Socket connection, the server will send a <strong>connect</strong> message indicating the current status of the room. It may also send an update whenever the server status changes.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;code&quot;</span>          <span class='p'>:</span> <span class='mi'>0</span><span class='p'>,</span>
-    <span class='nt'>&quot;message&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;Welcome to the Game Lobby&quot;</span><span class='p'>,</span>
-    <span class='nt'>&quot;data&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;lobby&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;message&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;Welcome to the Space Bot War game server.&quot;</span><span class='p'>,</span>
+    <span class='nt'>&quot;data&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;server&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="code">code</h3>
+<h2 id="code">code</h2>
 
-<p>The numeric code representing the status of the <strong>lobby</strong> where <strong>0</strong> represents success and any other value indicates a fault.</p>
+<p>The numeric code representing the status of the <strong>server</strong> where <strong>0</strong> represents success and any other value indicates a fault.</p>
 
-<h3 id="message">message</h3>
+<h2 id="message">message</h2>
 
 <p>A human readable message, for example a message to the effect that the server is off-line.</p>
 
@@ -136,23 +141,25 @@
 <hr />
 <h1 id="client__get_client_code">Client : get_client_code</h1>
 
+<p>This is on the route <strong>/get_client_code</strong></p>
+
 <p>Get a new Client Code. Note you should only do this if you don’t already have a Client Code. e.g. if this is the first time on this computer, or with this Web Browser. If you do have one (even if it is timed out) you should reuse it.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
     <span class='nt'>&quot;client_code&quot;</span>     <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="msg_id_optional">msg_id (optional)</h3>
+<h2 id="msg_id_optional">msg_id (optional)</h2>
 
 <p>An <strong>ID</strong> to identify this message. If used the server reply will contain the same message ID. This can be useful if you wish to link the server response to the client request.</p>
 
-<h3 id="client_code_optional">client_code (optional)</h3>
+<h2 id="client_code_optional">client_code (optional)</h2>
 
 <p>You can validate/refresh your existing client code. If valid the server will return the same Client Code. If not valid it will return a new one.</p>
 
 <p>If you don’t supply a Client code, then you will get a new one.</p>
 
-<h3 id="response">RESPONSE</h3>
+<h2 id="response">RESPONSE</h2>
 
 <p>The server will respond with a <strong>Server : get_client_code</strong> message.</p>
 <hr />
@@ -168,22 +175,24 @@
 </code></pre></div>
 <p>The <strong>code</strong>, <strong>message</strong> and <strong>msg_id</strong> are the standard server response.</p>
 
-<h3 id="client_code_2">client_code</h3>
+<h2 id="client_code_2">client_code</h2>
 
 <p>This is the Client Code you should use from now on with this browser/computer combination. Even if the session times out the Client Code will still be valid for later sessions and you should not request another one.</p>
 <hr />
 <h1 id="client__get_radius">Client : get_radius</h1>
+
+<p>This is on the route <strong>/get_radius</strong></p>
 
 <p>Get the API keys for the Radius login (note, Radius login is not yet implemented)</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>        <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="msg_id_optional_2">msg_id (optional)</h3>
+<h2 id="msg_id_optional_2">msg_id (optional)</h2>
 
 <p>An <strong>ID</strong> to identify this message. If used the server reply will contain the same message ID. This can be useful if you wish to link the server response to the client request. (I’m probably not going to mention this again, take it as read)</p>
 
-<h3 id="response_2">RESPONSE</h3>
+<h2 id="response_2">RESPONSE</h2>
 
 <p>The server will respond with a <strong>Server:: get_radius</strong> message.</p>
 <hr />
@@ -197,11 +206,13 @@
     <span class='nt'>&quot;radius_api_key&quot;</span>    <span class='p'>:</span> <span class='s2'>&quot;78855680-671c-4c70-b294-3e392a0a7c80&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="radius_api_key">radius_api_key</h3>
+<h2 id="radius_api_key">radius_api_key</h2>
 
 <p>This is the key that should be sent to the Radius Social login site.</p>
 <hr />
 <h1 id="client__register">Client : register</h1>
+
+<p>This is on the route <strong>/register</strong></p>
 
 <p>Register a new account with the server.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
@@ -212,23 +223,21 @@
     <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="client_code_required">client_code (required)</h3>
-
-<h3 id="username_required">username (required)</h3>
+<h2 id="username_required">username (required)</h2>
 
 <p>This is the nickname you will be known as and will be part of your login credentials. It should be at least three characters long.</p>
 
-<h3 id="email_required">email (required)</h3>
+<h2 id="email_required">email (required)</h2>
 
 <p>Your email address, this will be used to help you recover your password should your forget it.</p>
 
 <p>Your email address will need to be verified before you complete the registration process.</p>
 
-<h3 id="password_required">password (required)</h3>
+<h2 id="password_required">password (required)</h2>
 
 <p>The password you will use to log in. It must be at least five characters long, should include at least of of the following - Uppercase character, Lowercase character, Number.</p>
 
-<h3 id="response_3">RESPONSE</h3>
+<h2 id="response_3">RESPONSE</h2>
 
 <p>The server will respond with a <strong>Server : register</strong> message.</p>
 <hr />
@@ -240,6 +249,8 @@
 <hr />
 <h1 id="client__forgot_password">Client : forgot_password</h1>
 
+<p>This is on the route <strong>/forgot_password</strong></p>
+
 <p>Request the server to send an email which will allow access to an account where the password has been forgotten.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
@@ -248,15 +259,15 @@
     <span class='nt'>&quot;email&quot;</span>             <span class='p'>:</span> <span class='s2'>&quot;jb@mi5.gov.co.uk&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="username_optional">username (optional)</h3>
+<h2 id="username_optional">username (optional)</h2>
 
-<h3 id="email_optional">email (optional)</h3>
+<h2 id="email_optional">email (optional)</h2>
 
 <p>One or other, but not both, of <strong>username</strong> or <strong>email</strong> should be provided in order to identify the account.</p>
 
 <p>If they are verified, then an email will be sent to the registered email address with details of how to log in.</p>
 
-<h3 id="response_4">RESPONSE</h3>
+<h2 id="response_4">RESPONSE</h2>
 
 <p>There will be a <strong>Server : forgot_password</strong> response.</p>
 <hr />
@@ -268,6 +279,8 @@
 <hr />
 <h1 id="client__login_with_password">Client : login_with_password</h1>
 
+<p>This is on the route <strong>/login_with_password</strong></p>
+
 <p>Log into the server by giving the username and password</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
@@ -276,15 +289,15 @@
     <span class='nt'>&quot;password&quot;</span>          <span class='p'>:</span> <span class='s2'>&quot;TopS3cret&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="username_required_2">username (required)</h3>
+<h2 id="username_required_2">username (required)</h2>
 
 <p>Your unique username.</p>
 
-<h3 id="password_required_2">password (required)</h3>
+<h2 id="password_required_2">password (required)</h2>
 
 <p>Your password. Note this is case sensitive and must be entered exactly.</p>
 
-<h3 id="response_5">RESPONSE</h3>
+<h2 id="response_5">RESPONSE</h2>
 
 <p>The server will respond with a <strong>Server : login_with_password</strong> message</p>
 <hr />
@@ -298,6 +311,8 @@
 <hr />
 <h1 id="client__login_with_email_code">Client : login_with_email_code</h1>
 
+<p>This is on the route <strong>/login_with_email_code</strong></p>
+
 <p>The email sent as a result of the <strong>Client : forgot_password</strong> message will have a link allowing you to log directly into your account and to then change your password.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
@@ -305,11 +320,11 @@
     <span class='nt'>&quot;email_code&quot;</span>        <span class='p'>:</span> <span class='s2'>&quot;342e883c-ab8e-8782-fe89-9d828db8f9ca-2ea8d&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="email_code_required">email_code (required)</h3>
+<h2 id="email_code_required">email_code (required)</h2>
 
 <p>The code sent in the email.</p>
 
-<h3 id="response_6">RESPONSE</h3>
+<h2 id="response_6">RESPONSE</h2>
 
 <p>The server responds with a <strong>Server : login_with_email_code</strong></p>
 <hr />
@@ -323,13 +338,15 @@
 <hr />
 <h1 id="client__logout">Client : logout</h1>
 
+<p>This is on the route <strong>/logout</strong></p>
+
 <p>The client is logged out of the server.</p>
 <div class='highlight'><pre><code class='json'><span class='p'>{</span>
     <span class='nt'>&quot;msg_id&quot;</span>            <span class='p'>:</span> <span class='mi'>123</span><span class='p'>,</span>
     <span class='nt'>&quot;client_code&quot;</span>       <span class='p'>:</span> <span class='s2'>&quot;1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928&quot;</span><span class='p'>,</span>
 <span class='p'>}</span>
 </code></pre></div>
-<h3 id="response_7">RESPONSE</h3>
+<h2 id="response_7">RESPONSE</h2>
 
 <p>The server will log the user out and respond with a <strong>Server : logout</strong> message.</p>
 <hr />

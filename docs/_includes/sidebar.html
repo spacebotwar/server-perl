@@ -22,6 +22,11 @@
     {% else %}
       <h3><a href="/api/arena">Arena</a></h3>
     {% endif %}
+    {% if page.on_page == "api_match" %}
+      Match
+    {% else %}
+      <h3><a href="/api/match">Match</a></h3>
+    {% endif %}
   {% endif %}
   </h2>
   <hr/>
