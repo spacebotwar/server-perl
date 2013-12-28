@@ -20,3 +20,4 @@ cpanm Plack::Handler::Twiggy
 cpanm Try
 cpanm DBB::mysql
 cpanm MooseX::NonMoose
+cpanm Log::Log4perl

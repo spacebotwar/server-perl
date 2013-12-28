@@ -8,15 +8,22 @@ has 'timer' => (
     is      => 'rw',
 );
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        return Log::Log4perl->get_logger("SpaceBotWar::WebSocket");
+    },
+);
+
 sub BUILD {
     my ($self) = @_;
-
-    print STDERR "BUILD: SpaceBotWar::WebSocket::Match $self\n";
+    
+    $self->log->debug("BUILD");
     my $ws = AnyEvent->timer(
         after       => 0.0,
         interval    => 0.5,
         cb          => sub {
-            print STDERR "TIMER: $self\n";
+            $self->log->debug("TIMER");
         },
     );
     $self->timer($ws);

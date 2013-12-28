@@ -16,16 +16,24 @@ use JSON;
 # the user will be directed to other rooms.
 #
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
 sub BUILD {
     my ($self) = @_;
 
-    print STDERR "BUILD: SpaceBotWar::WebSocket::Start::Lobby $self\n";
+    $self->log->info("BUILD");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
 
-    print STDERR "DEMOLISH: SpaceBotWar::WebSocket::Start::Lobby $self\n";
+    $self->log->info("DEMOLISH");
 }
 
 # Get a new client_code variable.

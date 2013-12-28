@@ -2,6 +2,14 @@ package SpaceBotWar::WebSocket::Start::User;
 
 use Moose;
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
 # This API supports the /user route
 
 # This is the route to the methods that interact with the user
@@ -12,7 +20,7 @@ use Moose;
 sub ws_get_profile {
     my ($self, $context) = @_;
 
-    print STDERR "GET_PROFILE: user [".$context->user->id."] client_code [".$context->client_code->id."]\n";
+    $self->log->debug("GET_PROFILE: user [".$context->user->id."] client_code [".$context->client_code->id."]");
     return {
         code    => 0,
         message => "Success",

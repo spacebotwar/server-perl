@@ -12,8 +12,7 @@ use Module::Find qw(useall);
 use Redis;
 use SpaceBotWar::Cache;
 use SpaceBotWar::DB;
-
-#useall __PACKAGE__;
+use Log::Log4perl;
 
 my $dir = $ENV{SPACEBOTWAR_DIR} || "/data/spacebotwar";
 
@@ -26,6 +25,8 @@ my $_db      = SpaceBotWar::DB->connect(
         AutoCommit          => 1,
     },
 );
+
+Log::Log4perl->init($_config->get('log/conf_file'));
 
 my $_redis = Redis->new(server => $_config->get('redis_server'));
 

@@ -1,5 +1,8 @@
 # config-file-type: JSON 1
 {
+    "log"   : {
+        "conf_file" : "/home/icydee/space-bot-war/log4perl.conf",
+    },
     "db"    : {
         "dsn"       : "DBI:mysql:sbw_icydee",
         "password"  : "sbw",

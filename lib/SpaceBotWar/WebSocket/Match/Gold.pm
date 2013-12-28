@@ -10,16 +10,24 @@ use Carp;
 use UUID::Tiny ':std';
 use JSON;
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
 sub BUILD {
     my ($self) = @_;
-
-    print STDERR "BUILD: SpaceBotWar::WebSocket::Match::Gold $self\n";
+    
+    $self->log->info("BUILD");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
 
-    print STDERR "DEMOLISH: SpaceBotWar::WebSocket::Match::Gold $self\n";
+    $self->log->info("DEMOLISH");
 }
 
 # Get the arena status

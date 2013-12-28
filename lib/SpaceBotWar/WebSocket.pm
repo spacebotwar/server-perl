@@ -16,7 +16,7 @@ use Data::Dumper;
 # It's not ideal to load everything here, but it will do for now.
 # Perhaps we need to use 'pluggable'?
 #
-#use SpaceBotWar;
+use SpaceBotWar;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
@@ -28,25 +28,26 @@ has websocket_server  => (
     },
 );
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
+
 sub BUILD {
     my ($self) = @_;
 
     # every half second, send a status message (for test purposes)
     #
-    print STDERR "BUILD: SpaceBotWar::WebSocket $self\n";
-#    AnyEvent->timer (
-#        after       => 0.1,
-#        interval    => 0.5,
-#        cb          => sub {
-#            #print STDERR "PING: $self\n";
-#        },
-#    );
+    $self->log->debug("Built");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
-
-    print STDERR "DEMOLISH: SpaceBotWar::WebSocket $self\n";
+    $self->log->debug("Demolished");
 }
 
 my $ERROR_ENV = "plack.app.websocket.error";
@@ -88,18 +89,16 @@ sub _respond_via {
 
 
 sub fatal {
-    my ($connection, $msg) = @_;
+    my ($self, $connection, $msg) = @_;
 
-    print STDERR $msg;
-    $connection->send(qw( { "ERROR" : "$@" } ) );
+    $self->log->error($@);
 }
 
 sub render_json {
     my ($self, $context, $json) = @_;
 
     my $sent = JSON->new->encode($json);
-    print STDERR "SEND: [$sent]\n";
-
+    $self->log->info("Sent: [$sent]");
     $context->connection->send($sent);
 }
 
@@ -113,7 +112,7 @@ sub on_connect {
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-#print STDERR "ON EST: $self\n";
+    $self->log->debug("Establish");
 
     my $room = $self->{room};
     
@@ -122,13 +121,13 @@ sub on_establish {
         connection      => $connection,
         content         => {},
     });
-#print STDERR "ON EST: 2\n";
+    $self->log->debug("Establish");
     my $reply = {
         room    => $room,
         route   => '/',
         content => $self->on_connect($context),
     };
-#print STDERR "ON EST: 3\n";
+    $self->log->debug("Establish");
     if ($reply) {
         $self->render_json($context, $reply);
     }
@@ -137,21 +136,22 @@ sub on_establish {
     # Should the web socket care?
     my $user;
     my $client_code;
-#print STDERR "ON EST: 4\n";
+    $self->log->debug("Establish");
     
     $connection->on(
         message => sub {
             my ($connection, $msg) = @_;
 
-            print STDERR "RCVD: $msg\n";
+            $self->log->info("RCVD: $msg");
+
             my $json = JSON->new;
             my $json_msg = eval {$json->decode($msg)};
             if ($@) {
-                print STDERR "ERROR: $@\n";
+                $self->log->error($@);
                 $self->fatal($connection, $@);
             }
             else {
-#print STDERR "GOT HERE!\n";
+                $self->log->debug("Establish");
                 my $path    = $json_msg->{route};
                 my $content = $json_msg->{content} || {};
                 if (defined $content->{client_code}) {
@@ -169,21 +169,18 @@ sub on_establish {
                 eval {
                     my ($route, $method) = $path =~ m{(.*)/([^/]*)};
                     $method = "ws_".$method;
-#print STDERR "ROUTE 1[$route]\n";
                     $route =~ s{/$}{};
                     $route =~ s{^/}{};
-#print STDERR "ROUTE 2[$route]\n";
                     $route =~ s{/}{::};
-#print STDERR "ROUTE 3[$route]\n";
                     $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-#print STDERR "ROUTE 4[$route] self=[$self]\n";
+                    $self->log->debug("route = [$route]");
                     if ($route) {
                         $route = ref($self)."::".$route;
                     }
                     else {
                         $route = ref($self);
                     }
-#print STDERR "ROUTE 5[$route]\n";
+                    $self->log->debug("route = [$route]");
                     eval "require $route";
                     my $obj = $route->new({});
                     my $context = SpaceBotWar::WebSocket::Context->new({
@@ -193,7 +190,7 @@ sub on_establish {
                         client_code         => $client_code,
                         user            => $user,
                     });
-#print STDERR "ROUTE [$obj][$method]\n";
+                    $self->log->debug("Call [$obj][$method]");
                     my $reply = $obj->$method($context);
                     if ($reply) {
                         # Send back the message ID
@@ -233,7 +230,7 @@ sub on_establish {
                         },
                     };
                     $msg = JSON->new->encode($msg);
-                    print STDERR "SEND: $msg\n";
+                    $self->log->info("SEND: $msg");
                     $connection->send($msg);
                 }
             }
@@ -242,7 +239,7 @@ sub on_establish {
    $connection->on(
        finish => sub {
            undef $connection;
-           warn "Bye!!\n";
+           $self->log->info("bye");
        },
    );
 }

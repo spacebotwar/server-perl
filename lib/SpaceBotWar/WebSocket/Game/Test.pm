@@ -2,10 +2,18 @@ package SpaceBotWar::WebSocket::Game::Test;
 
 use Moose;
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
 sub ws_test {
     my ($self, $context) = @_;
 
-    print STDERR "TEST: client_code [".$context->client_code->id."] user [".$context->user->id."]\n";
+    $self->log->debug("TEST: client_code [".$context->client_code->id."] user [".$context->user->id."]");
     return {
         code    => 0,
         message => "Success",

@@ -8,24 +8,24 @@ has 'timer' => (
     is      => 'rw',
 );
 
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
 sub BUILD {
     my ($self) = @_;
 
-    print STDERR "BUILD: SpaceBotWar::WebSocket::Start $self\n";
-#    my $ws = AnyEvent->timer(
-#        after       => 0.0,
-#        interval    => 0.5,
-#        cb          => sub {
-#            print STDERR "TIMER: $self\n";
-#        },
-#    );
-#    $self->timer($ws);
+    $self->log->info("BUILD");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
 
-    print STDERR "DEMOLISH: SpaceBotWar::WebSocket::Start $self\n";
+    $self->log->info("DEMOLISH");
 }
 
 1;

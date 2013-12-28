@@ -226,7 +226,6 @@ sub msg_ships_command {
 sub tick {
     my ($self, $duration) = @_;
 
-    #print STDERR "DURATION: $duration\n";
     my $duration_millisec = $duration * 100;
     if ($self->start_time < 0) {
         # then this is the first time.

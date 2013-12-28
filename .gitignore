@@ -3,3 +3,5 @@
 start_plack.sh
 start_redis.sh
 _config.yml
+log
+log4perl.conf
