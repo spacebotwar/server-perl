@@ -21,18 +21,34 @@ sub DEMOLISH {
 
     print STDERR "DEMOLISH: SpaceBotWar::WebSocket::Match::Gold $self\n";
 }
-sub ws_test {
+
+# Get the arena status
+#
+
+sub ws_arena_status {
     my ($self, $context) = @_;
 
     return {
         code    => 0,
         message => "Success",
-        profile => {
-            username    => 'test_user_1',
-            email       => 'me@example.com',
-        },
+        spectators  => 23,
+        start_time  => -35.5,
+        status      => "running",
+        competitors => [{
+            name        => "Scaredy Pants",
+            rank        => 37,
+            programmer  => "Dr Death",
+            health      => "34",
+        },{
+            name        => "Hunter",
+            rank        => 42,
+            programmer  => "Blotto",
+            health      => "12",
+        }],
     };
 }
+
+
 
 
 # A user has joined the room

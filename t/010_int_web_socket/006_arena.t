@@ -14,29 +14,52 @@ use WSTester;
 my $db      = SpaceBotWar->db;
 my $config  = SpaceBotWar->config;
 
-# Testing async replies is tricky.
-# All the 'tricky' bits have been factored out into the WSTester library.
-#   Note that the 'client_code' and the 'msg_id' message fields are handled by WSTester
-#
 my $tester = WSTester->new({
-    route       => "/gold/",
-    server      => $config->get('ws_servers/match_gold'),
+    route       => "/lobby/",
+    server      => $config->get('ws_servers/arena'),
 });
 
-my $client_code;
+my @arenas;
 my $tests = {
-    "000_test" => {
-        method  => 'test',
+    "000_arenas" => {
+        method  => 'arenas',
         send    => {
         },
         recv    => {
             code    => 0,
-            message => "Success",
+            message => "Arenas",
+        },
+        callback => sub {
+            my ($data) = @_;
+            @arenas = @{$data->{content}{arenas}};
+            is(scalar(@arenas), 2, "number of arenas");
         },
     },
 };
 
 $tester->run_tests($tests);
+
+is(scalar(@arenas), 2, "number of arenas");
+# Join the first room
+my $arena_tester = WSTester->new({
+    route       => "/gold/",
+    server      => $config->get('ws_servers/match_gold'),
+});
+
+my $tests2 = {
+    "010_arena_status" => {
+        method  => 'arena_status',
+        send    => {
+        },
+        recv    => {
+            code    => 0,
+            status  => "running",
+            start_time  => -35.5,
+        },
+    },
+};
+
+$arena_tester->run_tests($tests2);
 
 done_testing();
 

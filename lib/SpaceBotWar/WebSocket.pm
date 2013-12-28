@@ -27,13 +27,13 @@ sub BUILD {
     # every half second, send a status message (for test purposes)
     #
     print STDERR "BUILD: SpaceBotWar::WebSocket $self\n";
-    AnyEvent->timer (
-        after       => 0.1,
-        interval    => 0.5,
-        cb          => sub {
-            #print STDERR "PING: $self\n";
-        },
-    );
+#    AnyEvent->timer (
+#        after       => 0.1,
+#        interval    => 0.5,
+#        cb          => sub {
+#            #print STDERR "PING: $self\n";
+#        },
+#    );
 }
 
 sub DEMOLISH {

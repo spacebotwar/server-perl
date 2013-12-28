@@ -105,8 +105,12 @@ sub run_tests {
                     my $msg_id = $content->{msg_id} || '';
                     if ($msg_id eq $key) {
                         for my $r_key (%{$test->{recv}}) {
-
-                            is_deeply($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
+                            if (ref $content->{$r_key} eq "HASH") {
+                                is_deeply($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
+                            }
+                            else {
+                                is($content->{$r_key}, $test->{recv}{$r_key}, "$msg_id - $r_key - is correct");
+                            }
                         }
                     }
                     else {
