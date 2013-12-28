@@ -1,9 +1,9 @@
 package SpaceBotWar::WebSocket;
 
-use strict;
-use warnings;
+use Moose;
+use MooseX::NonMoose;
 
-use parent qw(Plack::Component);
+extends 'Plack::Component';
 use Carp;
 use Plack::Response;
 use AnyEvent;
@@ -20,6 +20,13 @@ use Data::Dumper;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
+
+has websocket_server  => (
+    is        => 'ro',
+    default => sub {
+        return AnyEvent::WebSocket::Server->new();
+    },
+);
 
 sub BUILD {
     my ($self) = @_;
@@ -43,13 +50,6 @@ sub DEMOLISH {
 }
 
 my $ERROR_ENV = "plack.app.websocket.error";
-
-sub new {
-    my ($class, @args) = @_;
-    my $self = $class->SUPER::new(@args);
-    $self->{websocket_server} = AnyEvent::WebSocket::Server->new();
-    return $self;
-}
 
 sub on_error {
     my ($self, $env) = @_;

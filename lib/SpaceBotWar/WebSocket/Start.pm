@@ -1,7 +1,6 @@
 package SpaceBotWar::WebSocket::Start;
 
 use Moose;
-use MooseX::NonMoose;
 
 extends 'SpaceBotWar::WebSocket';
 
