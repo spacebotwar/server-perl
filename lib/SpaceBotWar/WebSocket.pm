@@ -13,14 +13,11 @@ use Plack::App::WebSocket::Connection;
 use JSON;
 use Data::Dumper;
 
-# It's not ideal to load everything here, but it will do for now.
-# Perhaps we need to use 'pluggable'?
-#
 use SpaceBotWar;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
-
+# An AnyEvent Websocket server.
 has websocket_server  => (
     is        => 'ro',
     default => sub {
@@ -28,6 +25,7 @@ has websocket_server  => (
     },
 );
 
+# log4pel logger
 has log => (
     is        => 'rw',
     default => sub {
@@ -36,10 +34,18 @@ has log => (
     },
 );
 
+# The 'name' of the server. It may be useful later...
 has server => (
     is      => 'ro',
     default => 'main'
 );
+
+# A hash of all clients that are connected to this server
+has connections => (
+    is      => 'rw',
+    default => sub { {} },
+);
+
 
 sub BUILD {
     my ($self) = @_;
@@ -54,50 +60,16 @@ sub DEMOLISH {
     $self->log->debug("Demolished");
 }
 
-my $ERROR_ENV = "plack.app.websocket.error";
-
-sub on_error {
-    my ($self, $env) = @_;
-
-    my $res = Plack::Response->new;
-    $res->content_type("text/plain");
-    if (!defined($env->{$ERROR_ENV})) {
-        $res->status(500);
-        $res->body("Unknown error");
-    }
-    elsif ($env->{$ERROR_ENV} eq "not supported by the PSGI server") {
-        $res->status(500);
-        $res->body("The server does not support WebSocket.");
-    }
-    elsif ($env->{$ERROR_ENV} eq "invalid request") {
-        $res->status(400);
-        $res->body("The request is invalid for a WebSocket request.");
-    }
-    else {
-        $res->status(500);
-        $res->body("Unknown error: $env->{$ERROR_ENV}");
-    }
-    $res->content_length(length($res->body));
-    return $res->finalize;
-}
-
-sub _respond_via {
-    my ($responder, $psgi_res) = @_;
-    if (ref($psgi_res) eq "CODE") {
-        $psgi_res->($responder);
-    }
-    else {
-        $responder->($psgi_res);
-    }
-}
-
-
+# A fatal error has occurred and the connection cannot be made
+#
 sub fatal {
     my ($self, $connection, $msg) = @_;
 
     $self->log->error($@);
 }
 
+# Send a message to the one client in the 'context'
+# 
 sub render_json {
     my ($self, $context, $json) = @_;
 
@@ -106,6 +78,24 @@ sub render_json {
     $context->connection->send($sent);
 }
 
+# Broadcast the same message to every connected client
+# 
+sub broadcast_json {
+    my ($self, $json) = @_;
+
+    my $sent = JSON->new->encode($json);
+    my $clients = keys %{$self->connections};
+    $self->log->info("BCAST: [$self] [$sent] connections=[$clients]");
+    my $i = 0;
+    foreach my $con_key (keys %{$self->connections}) {
+        my $connection = $self->connections->{$con_key};
+        $self->log->info("BROADCAST: [$connection][$sent]");
+        $connection->send($sent);
+    }
+}
+
+# What do we do on a client making a connection to the server?
+# 
 sub on_connect {
     my ($self, $context) = @_;
 
@@ -113,10 +103,11 @@ sub on_connect {
 }
 
 # Establish a connection
+# 
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-    $self->log->debug("Establish");
+    $self->log->info("Establish: [$connection]");
 
     my $context = SpaceBotWar::WebSocket::Context->new({
         server      => $self->server,
@@ -124,6 +115,13 @@ sub on_establish {
         content     => {},
     });
     $self->log->debug("Establish");
+    
+    # keep a track of everyone connected to this server
+    # 
+    my $con_ref = $self->connections;
+    $con_ref->{$connection} = $connection;
+    $self->log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
+                
     my $reply = {
         server      => $self->server,
         route       => '/',
@@ -230,15 +228,19 @@ sub on_establish {
 
            }
        }
-   );
-   $connection->on(
-       finish => sub {
-           undef $connection;
-           $self->log->info("bye");
-       },
-   );
+    );
+    $connection->on(
+        finish => sub {
+            delete $con_ref->{$connection};
+            $self->log->info("FINISH: there are ".scalar(keys %{$self->connections}). " connections");
+            undef $connection;
+            $self->log->info("bye");
+        },
+    );
 }
 
+# Report an error in a consistent manner back to the client
+# 
 sub report_error {
     my ($self, $connection, $error, $path, $msg_id) = @_;
 
@@ -256,7 +258,11 @@ sub report_error {
     $self->log->info("SEND: $msg");
     $connection->send($msg);
 }
- 
+
+my $ERROR_ENV = "plack.app.websocket.error";
+
+# This is where all the work gets done. 
+#
 sub call {
     my ($self, $env) = @_;
 
@@ -279,5 +285,42 @@ sub call {
         });
     };
 }
+
+sub _respond_via {
+    my ($responder, $psgi_res) = @_;
+    if (ref($psgi_res) eq "CODE") {
+        $psgi_res->($responder);
+    }
+    else {
+        $responder->($psgi_res);
+    }
+}
+
+
+sub on_error {
+    my ($self, $env) = @_;
+
+    my $res = Plack::Response->new;
+    $res->content_type("text/plain");
+    if (!defined($env->{$ERROR_ENV})) {
+        $res->status(500);
+        $res->body("Unknown error");
+    }
+    elsif ($env->{$ERROR_ENV} eq "not supported by the PSGI server") {
+        $res->status(500);
+        $res->body("The server does not support WebSocket.");
+    }
+    elsif ($env->{$ERROR_ENV} eq "invalid request") {
+        $res->status(400);
+        $res->body("The request is invalid for a WebSocket request.");
+    }
+    else {
+        $res->status(500);
+        $res->body("Unknown error: $env->{$ERROR_ENV}");
+    }
+    $res->content_length(length($res->body));
+    return $res->finalize;
+}
+
 
 1;
