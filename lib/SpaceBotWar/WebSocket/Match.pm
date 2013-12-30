@@ -5,8 +5,7 @@ extends 'SpaceBotWar::WebSocket';
 
 use AnyEvent;
 use SpaceBotWar;
-use SpaceBotWar::ClientCode;
-use SpaceBotWar::EmailCode;
+use SpaceBotWar::Game::Arena;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
@@ -25,13 +24,21 @@ has game_time => (
     default => -10,
 );
 
+has arena => (
+    is      => 'rw',
+    default => sub {
+        return SpaceBotWar::Game::Arena->new({});
+    },
+);
+
 sub BUILD {
     my ($self) = @_;
     
     $self->log->info("BUILD $self");
     my $ws = AnyEvent->timer(
         after       => 0.0,
-        interval    => 2.0,
+        # should be every 0.5 seconds, but slow it down during debugging!
+        interval    => 5.0,
         cb          => sub {
             $self->_tick;
         },
@@ -67,6 +74,7 @@ sub _tick {
     }
     elsif ($self->status eq 'running') {
         # The match is in progress
+        $self->tick;
 
         # When the match is over...
         if ($self->game_time > 100) {
@@ -88,6 +96,24 @@ sub _tick {
     $msg = {
         game_time   => $self->game_time,
         status      => $self->status,
+    };
+    $self->broadcast_json($msg);
+}
+
+
+# Tick the arena, broadcast the current state
+# to all the clients
+#
+sub tick {
+    my ($self) = @_;
+
+    $self->arena->tick(5);
+
+    my $msg = {
+        code        => 0,
+        message     => 'Match Status',
+        spectators  => $self->number_of_clients,
+        arena       => $self->arena->dynamic_to_hash,
     };
     $self->broadcast_json($msg);
 }

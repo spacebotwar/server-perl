@@ -94,6 +94,15 @@ sub broadcast_json {
     }
 }
 
+# Return the number of clients connected to this room
+#
+sub number_of_clients {
+    my ($self) = @_;
+
+    return scalar(keys %{$self->connections});
+}
+
+
 # What do we do on a client making a connection to the server?
 # 
 sub on_connect {
