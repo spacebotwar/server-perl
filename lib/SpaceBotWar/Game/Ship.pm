@@ -185,6 +185,7 @@ around 'orientation' => sub {
     my ($orig, $self, $angle) = @_;
 
     return $self->$orig unless defined $angle;
+    $self->log->debug("set orientation to $angle");
 
     while ($angle > 2*PI) {
         $angle -= 2*PI;
@@ -192,6 +193,7 @@ around 'orientation' => sub {
     while ($angle < 0) {
         $angle += 2*PI;
     }
+    $self->log->debug("set angle       to $angle");
     $self->$orig($angle);
 };
 

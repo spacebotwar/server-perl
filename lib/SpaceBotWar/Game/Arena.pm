@@ -3,9 +3,10 @@ package SpaceBotWar::Game::Arena;
 # An arena contaning many ships
 
 use Moose;
-use SpaceBotWar::Ship;
 use namespace::autoclean;
 use Data::Dumper;
+
+use SpaceBotWar::Game::Ship;
 
 use constant PI => 3.14159;
 
@@ -13,7 +14,7 @@ use constant PI => 3.14159;
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Ship]',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship]',
     default => sub { [] },
 );
 
@@ -40,13 +41,8 @@ has 'height' => (
 # 
 has 'start_time' => (
     is      => 'rw',
-    isa     => 'Int',
-    default => -1,
-);
-has 'end_time' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => -1,
+    isa     => 'Num',
+    default => 0,
 );
 # The duration (in milliseconds) from each calculation
 #
@@ -83,11 +79,11 @@ has log => (
 sub BUILD {
     my ($self) = @_;
 
-    $self->initiate;
+    $self->_initiate;
 }
 
 # Set initial ship positions.
-sub initiate {
+sub _initiate {
     my ($self) = @_;
     
     my $ship_layout = {
@@ -111,14 +107,15 @@ sub initiate {
             x               => $ship_ref->{x},
             y               => $ship_ref->{y},
             thrust_forward  => 0,
+            thrust_sideway  => 0,
+            thrust_reverse  => 0,
             orientation     => $ship_ref->{direction},
-            rotation        => $ship_ref->{direction},
+            rotation        => 0,
         });
         push @ships, $ship;
     }
     $self->ships(\@ships);
-    $self->start_time(-1);
-    $self->end_time(-1);
+    $self->start_time(0);
 }
 
 before 'status' => sub {
@@ -126,7 +123,7 @@ before 'status' => sub {
 
     if (defined $val) {
         if ($val eq 'init') {
-            $self->initiate;            
+            $self->_initiate;            
         }
     }
 };
@@ -140,15 +137,8 @@ sub tick {
     my ($self, $duration) = @_;
 
     my $duration_millisec = $duration * 100;
-    if ($self->start_time < 0) {
-        # then this is the first time.
-        $self->start_time(0);
-        $self->end_time($duration_millisec);
-    }
-    else {
-        $self->start_time($self->start_time + $duration_millisec);
-        $self->end_time($self->end_time + $duration_millisec);
-    }
+    $self->start_time($self->start_time + $duration / 10);
+
     # In practice, on each tick, we give the current actual position of all
     # ships and the thrust and rotation (as we currently know it)
     #
@@ -172,62 +162,67 @@ sub tick {
     # the command were received at the start of the previous tick period.
     # 
 
-    # We should do this with status changes
-    if ($self->start_time < 5000) {
-        # during the first 10 seconds, we don't allow ship movement
-    }
-    elsif ($self->start_time > 30000) {
-        $self->status('init');
-    }
-    else {
-        # This is where the server interprets the player requests and adjusts them
-        # to ensure they do not break game rules
-        #
-        foreach my $ship (@{$self->ships}) {
-            # Safety net
-            $ship->thrust_forward($ship->max_thrust_forward) if $ship->thrust_forward > $ship->max_thrust_forward;
-            $ship->thrust_sideway($ship->max_thrust_sideway) if $ship->thrust_sideway > $ship->max_thrust_sideway;
-            $ship->thrust_reverse($ship->max_thrust_reverse) if $ship->thrust_reverse > $ship->max_thrust_reverse;
-            $ship->rotation($ship->max_rotation) if $ship->rotation > $ship->max_rotation;
-            $ship->rotation(0-$ship->max_rotation) if $ship->rotation < 0-$ship->max_rotation;
+    # This is where the server interprets the player requests and adjusts them
+    # to ensure they do not break game rules
+    #
+    foreach my $ship (@{$self->ships}) {
+        # No longer check for limits here, all done in the Ship module!
+            
+        # Calculate the final position based on thrust and direction
+        my $distance = $ship->speed * $duration_millisec / 1000;
+        my $delta_x = $distance * cos($ship->direction);
+        my $delta_y = $distance * sin($ship->direction);
+        my $end_x = int($ship->x + $delta_x);
+        my $end_y = int($ship->y + $delta_y);
     
-            # Calculate the final position based on thrust and direction
-            my $distance = $ship->speed * $duration_millisec / 1000;
-            my $delta_x = $distance * cos($ship->direction);
-            my $delta_y = $distance * sin($ship->direction);
-            my $end_x = int($ship->x + $delta_x);
-            my $end_y = int($ship->y + $delta_y);
+        # check for limits.
+        $end_x = $self->width   if $end_x > $self->width;
+        $end_x = 0              if $end_x < 0;
+        $end_y = $self->height  if $end_y > $self->height;
+        $end_y = 0              if $end_y < 0;
     
-            # check for limits.
-            $end_x = $self->width   if $end_x > $self->width;
-            $end_x = 0              if $end_x < 0;
-            $end_y = $self->height  if $end_y > $self->height;
-            $end_y = 0              if $end_y < 0;
+        # Check for collisions, in which case come to an early halt
     
-            # Check for collisions, in which case come to an early halt
+        # Check for hits by missiles. In which case cause damage
     
-            # Check for hits by missiles. In which case cause damage
-    
-            $ship->x($end_x);
-            $ship->y($end_y);
-    
-            # angle of rotation over the tick.
-            my $angle_rad = $ship->rotation * $duration_millisec / 1000;
-            $ship->orientation($ship->orientation+$angle_rad);
-        }
+        $ship->x($end_x);
+        $ship->y($end_y);
+   
+        # angle of rotation over the tick.
+        my $angle_rad = $ship->rotation * $duration_millisec / 1000;
+        $ship->orientation($ship->orientation+$angle_rad);
     }
 }
 
-# Create a hash representation of the object
+# Create a hash representation of the changing data in the object
+# Omit static information that can be read once, and cached, in
+# order to reduce the size of the frequent data.
 #
-sub to_hash {
+sub dynamic_to_hash {
     my ($self) = @_;
 
     my @ships_ref;
     foreach my $ship (@{$self->ships}) {
-        push @ships_ref, $ship->to_hash;
+        push @ships_ref, $ship->dynamic_to_hash;
     }
     return {
+        status  => $self->status,
+        time    => $self->start_time,
+        ships   => \@ships_ref,
+    };
+}
+
+# Everything about the arena, cache the static bits
+# 
+sub all_to_hash {
+    my ($self) = @_;
+
+    my @ships_ref;
+    foreach my $ship (@{$self->ships}) {
+        push @ships_ref, $ship->all_to_hash;
+    }
+    return {
+        status  => $self->status,
         width   => $self->width,
         height  => $self->height,
         time    => $self->start_time,
