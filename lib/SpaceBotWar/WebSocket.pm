@@ -81,7 +81,13 @@ sub render_json {
 # Broadcast the same message to every connected client
 # 
 sub broadcast_json {
-    my ($self, $json) = @_;
+    my ($self, $route, $content) = @_;
+
+    my $json = {
+        server  => $self->server,
+        route   => $route,
+        content => $content,
+    };
 
     my $sent = JSON->new->encode($json);
     my $clients = keys %{$self->connections};

@@ -74,7 +74,7 @@ has log => (
     },
 );
 
-# Create an Arena with random ships
+# Create an Arena with standard ships
 #
 sub BUILD {
     my ($self) = @_;
@@ -128,6 +128,13 @@ before 'status' => sub {
     }
 };
 
+# Accept a players move
+#
+sub accept_move {
+    my ($self, $owner_id, $data) = @_;
+
+    
+}
 
 
 # Update the arena by $duration (10ths of a second)
@@ -138,6 +145,13 @@ sub tick {
 
     my $duration_millisec = $duration * 100;
     $self->start_time($self->start_time + $duration / 10);
+
+    if ($self->status eq 'starting' and $self->start_time >= 0) {
+        $self->status('running');
+    }
+    if ($self->status ne 'running') {
+        return;
+    }
 
     # In practice, on each tick, we give the current actual position of all
     # ships and the thrust and rotation (as we currently know it)
@@ -162,9 +176,6 @@ sub tick {
     # the command were received at the start of the previous tick period.
     # 
 
-    # This is where the server interprets the player requests and adjusts them
-    # to ensure they do not break game rules
-    #
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
             
@@ -213,7 +224,8 @@ sub dynamic_to_hash {
 }
 
 # Everything about the arena, cache the static bits
-# 
+# Ideally send this once to each client at the start.
+#
 sub all_to_hash {
     my ($self) = @_;
 

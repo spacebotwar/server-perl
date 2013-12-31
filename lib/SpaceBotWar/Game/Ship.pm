@@ -271,8 +271,17 @@ sub all_to_hash {
 sub dynamic_to_hash {
     my ($self) = @_;
 
+    #TODO TODO TODO
+    #THIS IS TEST CODE ONLY, REMOVE BEFORE PRODUCTION!
+    $self->x($self->x + 1);
+    $self->y($self->y - 2);
+    $self->orientation($self->orientation - 0.1);
+
+
+
     return {
         id              => $self->id,
+        owner_id        => $self->owner_id,
         x               => decpoint($self->x),
         y               => decpoint($self->y),
         direction       => decpoint($self->direction),
