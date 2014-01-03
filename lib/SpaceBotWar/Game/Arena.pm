@@ -19,24 +19,13 @@ has 'ships' => (
 );
 
 
-# NOTE: I prefer a circular arena, but we will stick with
-# rectangular for now!
-
-
-# The width of the arena (in pixels)
-#
-has 'width' => (
+# This size (radius) of the arena (in pixels)
+has radius  => (
     is      => 'rw',
     isa     => 'Int',
-    default => 500,
+    default => 1000,
 );
-# The height of the arena (in pixels)
-#
-has 'height' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => 500,
-);
+
 # The 'time' (in seconds) from when the Tournament was started
 # 
 has 'start_time' => (
@@ -74,6 +63,10 @@ has log => (
     },
 );
 
+# An arena is assumed to be a circle of radius $self->radius
+# with the x,y origin in the centre.
+
+
 # Create an Arena with standard ships
 #
 sub BUILD {
@@ -87,10 +80,9 @@ sub _initiate {
     my ($self) = @_;
     
     my $ship_layout = {
-       
-        1   => { x => 150, y => 150, direction => PI/4 },
-        2   => { x => 100, y => 150, direction => PI/4 },
-        3   => { x => 150, y => 100, direction => PI/4 },
+        1   => { x => -350, y => -350, direction => PI/4 },
+        2   => { x => -400, y => -350, direction => PI/4 },
+        3   => { x => -350, y => -400, direction => PI/4 },
         4   => { x => 350, y => 350, direction => PI/4 + PI },
         5   => { x => 400, y => 350, direction => PI/4 + PI },
         6   => { x => 350, y => 400, direction => PI/4 + PI },
@@ -153,6 +145,8 @@ sub tick {
         return;
     }
 
+
+
     # In practice, on each tick, we give the current actual position of all
     # ships and the thrust and rotation (as we currently know it)
     #
@@ -176,6 +170,8 @@ sub tick {
     # the command were received at the start of the previous tick period.
     # 
 
+    my $radius_squared = $self->radius * $self->radius;
+
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
             
@@ -187,10 +183,12 @@ sub tick {
         my $end_y = int($ship->y + $delta_y);
     
         # check for limits.
-        $end_x = $self->width   if $end_x > $self->width;
-        $end_x = 0              if $end_x < 0;
-        $end_y = $self->height  if $end_y > $self->height;
-        $end_y = 0              if $end_y < 0;
+        if ($end_x * $end_x + $end_y * $end_y > $radius_squared) {
+            # Then outside the bounds of the arena, bring it back.
+            my $angle = atan2($end_y, $end_x);
+            $end_x = cos($angle) * 1000;
+            $end_y = sin($angle) * 1000;
+        }
     
         # Check for collisions, in which case come to an early halt
     
