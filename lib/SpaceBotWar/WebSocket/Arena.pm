@@ -15,7 +15,7 @@ use JSON;
 sub BUILD {
     my ($self) = @_;
 
-    $self->log->info("BUILD");
+    $self->log->info("BUILD ARENA######");
 }
 
 sub DEMOLISH {

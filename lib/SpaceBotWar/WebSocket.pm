@@ -52,12 +52,11 @@ sub BUILD {
 
     # every half second, send a status message (for test purposes)
     #
-    $self->log->debug("Built");
+    $self->log->debug("BUILD WEBSOCKET ####### $self");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
-    $self->log->debug("Demolished");
 }
 
 # A fatal error has occurred and the connection cannot be made
@@ -78,6 +77,21 @@ sub render_json {
     $context->connection->send($sent);
 }
 
+# Send a message to one client, without the context
+#
+sub send_json {
+    my ($self, $connection, $route, $json) = @_;
+
+    my $msg = {
+        server      => $self->server,
+        route       => $route,
+        content     => $json,
+    };
+    my $sent = JSON->new->encode($msg);
+    $self->log->info("SEND: [$connection][$sent]");
+    $connection->send($sent);
+}
+ 
 # Broadcast the same message to every connected client
 # 
 sub broadcast_json {
@@ -194,15 +208,19 @@ sub on_establish {
                 $route =~ s{/}{::};
                 $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
                 $self->log->debug("route = [$route]");
+                my $obj;
                 if ($route) {
+                    $self->log->debug("ROUTE... [$route]");
                     $route = ref($self)."::".$route;
+                    eval "require $route";
+                    $obj = $route->new({});
                 }
                 else {
-                    $route = ref($self);
+                    $self->log->debug("ROUTE... [SELF!]");
+                    $route = $self;
+                    $obj = $self;
                 }
                 $self->log->debug("route = [$route]");
-                eval "require $route";
-                my $obj = $route->new({});
                 my $context = SpaceBotWar::WebSocket::Context->new({
                     server          => $self->server,
                     connection      => $connection,
@@ -280,6 +298,14 @@ my $ERROR_ENV = "plack.app.websocket.error";
 #
 sub call {
     my ($self, $env) = @_;
+
+    if ($env->{"psgi.run_once"}) {
+        $self->log->debug("RUNNING IN A NON-PERSISTENT ENVIRONMENT");
+    }
+    else {
+        $self->log->debug("RUNNING IN A PERSISTENT ENVIRONMENT");
+    }
+
 
     if (!$env->{"psgi.streaming"} || !$env->{"psgi.nonblocking"} || !$env->{"psgix.io"}) {
         $env->{$ERROR_ENV} = "not supported by the PSGI server";

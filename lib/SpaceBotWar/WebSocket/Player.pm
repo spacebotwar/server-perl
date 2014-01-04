@@ -9,28 +9,32 @@ use SpaceBotWar::Game::Arena;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
-
-# Web client connections to the players
-# TODO I'm not too happy having client and connection for each player.
-# may want to refactor this at some point.
-
-has client_a => (
-    is          => 'rw',
-);
-has client_b => (
-    is          => 'rw',
-);
-has connection_a => (
-    is      => 'rw',
-);
-has connection_b => (
-    is      => 'rw',
-);
-
+use Data::Dumper;
 
 # this Web Socket server sends moves back to the client
 # (the game server) based on the current position of the ships
 #
+
+has counter => (
+    is          => 'rw',
+    default     => 0,
+);
+
+sub BUILD {
+    my ($self) = @_;
+
+    # every half second, send a status message (for test purposes)
+    #
+    $self->log->debug("BUILD: PLAYER####### $self");
+}
+
+sub DESTROY {
+    my ($self) = @_;
+
+    $self->log->debug("DESTROY: PLAYER #### $self");
+}
+
+
 
 
 # Initialise a player (get the code for the player)
@@ -45,19 +49,14 @@ sub ws_init_players {
 sub ws_next_move {
     my ($self, $context) = @_;
 
-    # Flatten the arena into the match
-    my $msg = {
+    $self->counter($self->counter + 1);
+
+    $self->log->debug("PLAYER RECV: ");
+    return {
         code        => 0,
-        message     => "Success",
+        message     => 'Next Move',
+        data        => $self->counter,
     };
-
-
-
-
-    my $arena_hash = $self->arena->all_to_hash;
-    @$msg{keys %$arena_hash} = values %$arena_hash;
-    return $msg;
-
 }
 
 # A user has joined the server

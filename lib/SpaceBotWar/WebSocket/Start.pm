@@ -18,13 +18,19 @@ use JSON;
 sub BUILD {
     my ($self) = @_;
 
-    $self->log->info("BUILD");
+    $self->log->info("BUILD START ###### $self");
+}
+
+sub DESTROY {
+    my ($self) = @_;
+
+    $self->log->debug("DESTROY: START #### $self");
 }
 
 sub DEMOLISH {
     my ($self) = @_;
 
-    $self->log->info("DEMOLISH");
+    $self->log->info("DEMOLISH: START #### $self");
 }
 
 # Get a new client_code variable.

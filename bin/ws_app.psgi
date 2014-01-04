@@ -31,13 +31,14 @@ my $app = builder {
     mount "/ws/chat/bronte"     => SpaceBotWar::WebSocket::Chat->new({  server => 'Bronte'      })->to_app;
     mount "/ws/chat/Carroll"    => SpaceBotWar::WebSocket::Chat->new({  server => 'Carroll'     })->to_app;
 
+    # private servers to run the code that is used in matches.
+    mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
+
     # The 'arena' where you go to find out what matches are being run
     mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
     mount "/ws/match/rae"       => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
-    mount "/ws/match/scott"     => SpaceBotWar::WebSocket::Match->new({ server => 'Scott'       })->to_app;
+#    mount "/ws/match/scott"     => SpaceBotWar::WebSocket::Match->new({ server => 'Scott'       })->to_app;
 
-    # private servers to run the code that is used in matches.
-    mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
 };
 $app;
 

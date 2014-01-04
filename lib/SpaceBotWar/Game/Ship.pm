@@ -152,7 +152,7 @@ around 'thrust_sideway' => sub {
 
     return $self->$orig unless defined $speed;
 
-    $self->log->debug("thrust_sideways = $speed");
+#    $self->log->debug("thrust_sideways = $speed");
     my $max_speed = $self->max_thrust_sideway;
     if ($speed > $max_speed) {
         $speed = $max_speed;
@@ -185,7 +185,7 @@ around 'orientation' => sub {
     my ($orig, $self, $angle) = @_;
 
     return $self->$orig unless defined $angle;
-    $self->log->debug("set orientation to $angle");
+#    $self->log->debug("set orientation to $angle");
 
     while ($angle > 2*PI) {
         $angle -= 2*PI;
@@ -193,7 +193,7 @@ around 'orientation' => sub {
     while ($angle < 0) {
         $angle += 2*PI;
     }
-    $self->log->debug("set angle       to $angle");
+#    $self->log->debug("set angle       to $angle");
     $self->$orig($angle);
 };
 
@@ -224,7 +224,7 @@ sub speed {
 
     my $forward = $self->thrust_forward - $self->thrust_reverse;
     my $speed = sqrt($forward * $forward + $self->thrust_sideway * $self->thrust_sideway);
-    $self->log->debug("forward [".$self->thrust_forward."] reverse [".$self->thrust_reverse."] sideway [".$self->thrust_sideway."] speed [".$speed."]");
+#    $self->log->debug("forward [".$self->thrust_forward."] reverse [".$self->thrust_reverse."] sideway [".$self->thrust_sideway."] speed [".$speed."]");
     return $speed;
 }
 
