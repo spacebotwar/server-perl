@@ -14,11 +14,6 @@ has timer => (
     is      => 'rw',
 );
 
-has game_time => (
-    is      => 'rw',
-    default => -10,
-);
-
 has arena => (
     is      => 'rw',
     default => sub {
