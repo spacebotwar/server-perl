@@ -51,11 +51,28 @@ sub ws_next_move {
 
     $self->counter($self->counter + 1);
 
-    $self->log->debug("PLAYER RECV: ");
+    my $player_id = $context->content->{player};
+    my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->content->{ships}};
+
+    my @ship_moves;
+    foreach my $ship (@my_ships) {
+        my $move = {
+            ship_id         => $ship->{id},
+            thrust_forward  => int(rand(60)),
+            thrust_sideway  => int(rand(10)),
+            thrust_reverse  => int(rand(20)),
+            rotation        => rand(2) - 1,
+        };
+        push @ship_moves, $move;
+    }
+
+    $self->log->info(Dumper(\@my_ships));
     return {
         code        => 0,
         message     => 'Next Move',
-        data        => $self->counter,
+        data        => {
+            ships   => \@ship_moves,
+        },
     };
 }
 

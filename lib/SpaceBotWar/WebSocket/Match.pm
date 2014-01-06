@@ -82,8 +82,7 @@ sub tick {
     # transmit the status to each player
     foreach my $id (0..1) {
         if ($self->player_connections->[$id]) {
-            $self->log->debug("########## Sending player status [$self][$id]");
-            $msg->{player} = $id;
+            $msg->{player} = $id + 1;
             $self->send_json($self->player_connections->[$id], '/next_move', $msg);
         }
     }
@@ -99,35 +98,53 @@ sub tick {
 sub ws_start_match {
     my ($self, $context) = @_;
 
+    $self->arena->status('init');
+    $self->log->info("@@@@@@@@ START MATCH @@@@@@@@");
+
+    my @player_clients;
+    my @player_connections;
+
     foreach my $id (0..1) {
-        # Close existing connections
-        if ($self->player_connections->[$id]) {
-            $self->player_connections->[$id]->close;
-        }
         # at some point the server will be configurable
         my $server = SpaceBotWar->config->get('ws_servers/player');
-        $self->player_clients->[$id] = AnyEvent::WebSocket::Client->new;
+        $player_clients[$id] = AnyEvent::WebSocket::Client->new;
         $self->log->info("Connect to player $server");
-        $self->player_clients->[$id]->connect($server)->cb(sub {
+        $player_clients[$id]->connect($server)->cb(sub {
 
-            $self->player_connections->[$id] = eval { shift->recv };
+            $player_connections[$id] = eval { shift->recv };
             if ($@) {
                 $self->log->error("Cannot connect to server [$server] id [$id]");
             }
             else {
-                $self->player_connections->[$id]->on(finish => sub {
-                    $self->log->info("Connection finished. [$server] id [$id]");
+                $player_connections[$id]->on(finish => sub {
+                    $self->log->info("@@ CONNECTION FINISHED @@. [$server] id [$id]");
                 });
 
-                $self->player_connections->[$id]->on(each_message => sub {
+                $player_connections[$id]->on(each_message => sub {
                     my ($connection, $message) = @_;
                     my $json = JSON->new->decode($message->body);
 
-                    $self->log->debug("Received player message... [".$message->body."]");
+                    $self->log->info("<<<< RECEIVED PLAYER MESSAGE >>>>... [".$message->body."]");
+                    my $msg = JSON->new->decode($message->body);
+                    # TODO: We need to do some validation on the received data at some point...
+                    #
+                    my $data = $msg->{content}{data};
+                    if ($data) {
+                        eval {
+                            $self->arena->accept_move($id+1, $data);
+                        };
+                        if ($@) {
+                            $self->log->error($@);
+                        }
+                    }
                 });
             }
         });
     }
+    $self->player_connections(\@player_connections);
+    $self->player_clients(\@player_clients);
+
+    $self->log->info("@@ end of ws_start_match @@");
 }
 
 

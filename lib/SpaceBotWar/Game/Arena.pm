@@ -5,6 +5,7 @@ package SpaceBotWar::Game::Arena;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Log::Log4perl;
 
 use SpaceBotWar::Game::Ship;
 
@@ -33,13 +34,6 @@ has 'start_time' => (
     isa     => 'Num',
     default => 0,
 );
-# The duration (in milliseconds) from each calculation
-#
-has 'duration' => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => 500,
-);
 # Competitors
 #
 has 'competitors' => (
@@ -54,7 +48,7 @@ has 'status' => (
     default => 'starting',
 );
 
-# log4pel logger
+# log4perl logger
 has log => (
     is        => 'rw',
     default => sub {
@@ -72,11 +66,11 @@ has log => (
 sub BUILD {
     my ($self) = @_;
 
-    $self->_initiate;
+    $self->_initialize;
 }
 
 # Set initial ship positions.
-sub _initiate {
+sub _initialize {
     my ($self) = @_;
     
     my $ship_layout = {
@@ -107,7 +101,8 @@ sub _initiate {
         push @ships, $ship;
     }
     $self->ships(\@ships);
-    $self->start_time(0);
+    $self->start_time(-5);
+    $self->status('starting');
 }
 
 before 'status' => sub {
@@ -115,17 +110,34 @@ before 'status' => sub {
 
     if (defined $val) {
         if ($val eq 'init') {
-            $self->_initiate;            
+            $self->_initialize;            
         }
     }
 };
 
 # Accept a players move
-#
+#   thrust_forward
+#   thrust_sideway
+#   thrust_reverse
+#   rotation
 sub accept_move {
     my ($self, $owner_id, $data) = @_;
 
-    
+#    $self->log->info("ACCEPT MOVE: ".Dumper($data));
+    if ($data->{ships}) {
+        foreach my $ship_data (@{$data->{ships}}) {
+
+#$self->log->info("SET SHIP SPEED: ".Dumper($ship_data));
+
+        my ($ship) = grep {$_->id == $ship_data->{ship_id}} @{$self->{ships}};
+        confess [1000, "Cannot find ship with id [".$ship_data->{id}."]" ] if not defined $ship;
+        confess [1000, "Can only control your own ships! [".$ship_data->{id}."]" ] if $ship->owner_id != $owner_id;
+        $ship->thrust_forward($ship_data->{thrust_forward});
+        $ship->thrust_reverse($ship_data->{thrust_reverse});
+        $ship->thrust_sideway($ship_data->{thrust_sideway});
+        $ship->rotation($ship_data->{rotation});
+        }
+    }
 }
 
 
@@ -142,7 +154,7 @@ sub tick {
         $self->status('running');
     }
     if ($self->status ne 'running') {
-        return;
+#        return;
     }
 
 
@@ -174,7 +186,7 @@ sub tick {
 
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
-            
+        $self->log->info("SHIP CALC: ".$ship." thrust_forward=[".$ship->thrust_forward."] speed=[".$ship->speed."]");            
         # Calculate the final position based on thrust and direction
         my $distance = $ship->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($ship->direction);

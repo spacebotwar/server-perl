@@ -25,7 +25,7 @@ has websocket_server  => (
     },
 );
 
-# log4pel logger
+# log4perl logger
 has log => (
     is        => 'rw',
     default => sub {
@@ -265,7 +265,7 @@ sub on_establish {
     $connection->on(
         finish => sub {
             delete $con_ref->{$connection};
-            $self->log->info("FINISH: there are ".scalar(keys %{$self->connections}). " connections");
+            $self->log->info("FINISH: [$self] there are ".scalar(keys %{$self->connections}). " connections");
             undef $connection;
             $self->log->info("bye");
         },
