@@ -26,5 +26,14 @@ has 'user' => (
 #    isa     => 'Maybe[SpaceBotWar::DB::Result::User]',
 );
 
+
+# Get a parameter from the input.
+#
+sub param {
+    my ($self, $arg) = @_;
+
+    return ($self->content->{$arg});
+}
+
 __PACKAGE__->meta->make_immutable;
 

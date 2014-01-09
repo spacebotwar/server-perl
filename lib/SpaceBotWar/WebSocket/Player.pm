@@ -20,13 +20,23 @@ has counter => (
     default     => 0,
 );
 
+# A scratchpad, in which the game state is held
+#
+has scratchpad => (
+    is          => 'rw',
+    default     => sub ( {} ),
+}
+
+
+
 sub BUILD {
     my ($self) = @_;
 
-    # every half second, send a status message (for test purposes)
-    #
     $self->log->debug("BUILD: PLAYER####### $self");
 }
+
+
+
 
 sub DESTROY {
     my ($self) = @_;
@@ -37,16 +47,48 @@ sub DESTROY {
 
 
 
-# Initialise a player (get the code for the player)
+# Initialise a program (get the code for the program)
 # 
-sub ws_init_players {
+sub ws_init_program {
     my ($self, $context) = @_;
 
+    my $program_id = $context->param('program_id');
+
+    # We would get this from the file system, or GIT
+
+    return {
+        code        => 0,
+        message     => 'Program',
+        program     => {
+            id          => 456,
+            name        => "Thunderball",
+            author      => 'icydee',
+            author_id   => 123,
+            created     => '2013-01-01 00:00:00',
+            cloned_from => 'foo',
+        }
+    };
 }
 
-# Get the next move for the player
+
+
+# Receive the initial state of the game
 #
-sub ws_next_move {
+sub ws_start_state
+    my ($self, $context) = @_;
+
+    $self->scratchpad->{competitors} = $context->param('competitors');
+    $self->scratchpad->{ships_static} = $context->param('ships');
+
+    return;
+}
+
+
+
+
+# Update with the latest game state of the match
+#
+sub ws_game_state {
     my ($self, $context) = @_;
 
     $self->counter($self->counter + 1);
@@ -76,6 +118,9 @@ sub ws_next_move {
     };
 }
 
+
+
+
 # A user has joined the server
 #
 sub on_connect {
@@ -83,7 +128,7 @@ sub on_connect {
 
     return {
         code        => 0,
-        message     => 'Welcome',
+        message     => "Welcome to ".$self->server,
         data        => 'player',
     };
 }

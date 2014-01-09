@@ -83,7 +83,7 @@ sub tick {
     foreach my $id (0..1) {
         if ($self->player_connections->[$id]) {
             $msg->{player} = $id + 1;
-            $self->send_json($self->player_connections->[$id], '/next_move', $msg);
+            $self->send_json($self->player_connections->[$id], '/game_state', $msg);
         }
     }
 
