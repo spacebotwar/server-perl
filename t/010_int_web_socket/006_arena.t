@@ -60,7 +60,7 @@ my $tests2 = {
     },
 };
 
-$arena_tester->run_tests($tests2);
+#$arena_tester->run_tests($tests2);
 
 done_testing();
 

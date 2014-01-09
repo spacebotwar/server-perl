@@ -126,16 +126,20 @@ sub ws_start_match {
 
                     $self->log->info("<<<< RECEIVED PLAYER MESSAGE >>>>... [".$message->body."]");
                     my $msg = JSON->new->decode($message->body);
-                    # TODO: We need to do some validation on the received data at some point...
-                    #
-                    my $data = $msg->{content}{data};
-                    if ($data) {
-                        eval {
-                            $self->arena->accept_move($id+1, $data);
-                        };
-                        if ($@) {
-                            $self->log->error($@);
-                        }
+
+                    # Game State received
+                    if ($msg->{route} eq '/game_state') {
+                       # TODO: We need to do some validation on the received data at some point...
+                       #
+                       my $data = $msg->{content}{data};
+                       if ($data) {
+                           eval {
+                               $self->arena->accept_move($id+1, $data);
+                           };
+                           if ($@) {
+                               $self->log->error($@);
+                           }
+                       }
                     }
                 });
             }

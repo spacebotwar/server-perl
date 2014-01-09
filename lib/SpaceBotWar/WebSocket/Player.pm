@@ -10,6 +10,7 @@ use Carp;
 use UUID::Tiny ':std';
 use JSON;
 use Data::Dumper;
+use Math::Round qw(nearest round);
 
 # this Web Socket server sends moves back to the client
 # (the game server) based on the current position of the ships
@@ -24,9 +25,8 @@ has counter => (
 #
 has scratchpad => (
     is          => 'rw',
-    default     => sub ( {} ),
-}
-
+    default     => sub { return {}; },
+);
 
 
 sub BUILD {
@@ -74,7 +74,7 @@ sub ws_init_program {
 
 # Receive the initial state of the game
 #
-sub ws_start_state
+sub ws_start_state {
     my ($self, $context) = @_;
 
     $self->scratchpad->{competitors} = $context->param('competitors');
@@ -84,8 +84,6 @@ sub ws_start_state
 }
 
 
-
-
 # Update with the latest game state of the match
 #
 sub ws_game_state {
@@ -93,17 +91,19 @@ sub ws_game_state {
 
     $self->counter($self->counter + 1);
 
-    my $player_id = $context->content->{player};
-    my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->content->{ships}};
+    my $player_id = $context->param('player');
+
+    $self->log->debug(Dumper $context->content);
+    my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->param('ships')};
 
     my @ship_moves;
     foreach my $ship (@my_ships) {
         my $move = {
             ship_id         => $ship->{id},
-            thrust_forward  => int(rand(60)),
-            thrust_sideway  => int(rand(10)),
-            thrust_reverse  => int(rand(20)),
-            rotation        => rand(2) - 1,
+            thrust_forward  => round(rand(60)),
+            thrust_sideway  => round(int(rand(10))),
+            thrust_reverse  => round(int(rand(20))),
+            rotation        => nearest(0.01, rand(2) - 1),
         };
         push @ship_moves, $move;
     }
@@ -111,7 +111,7 @@ sub ws_game_state {
     $self->log->info(Dumper(\@my_ships));
     return {
         code        => 0,
-        message     => 'Next Move',
+        message     => 'Game State',
         data        => {
             ships   => \@ship_moves,
         },

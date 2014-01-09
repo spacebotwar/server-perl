@@ -18,7 +18,7 @@ use SpaceBotWar;
         my $content = {
         };
         my $key = 123;
-        my $route = "/next_move";
+        my $route = "/game_state";
 
         my $cv = AnyEvent->condvar;
         # We need to time-out if the connection fails to respond correctly.

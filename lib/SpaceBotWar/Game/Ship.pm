@@ -212,7 +212,7 @@ sub direction {
     my ($self) = @_;
 
     my $forward = $self->thrust_forward - $self->thrust_reverse;
-    my $delta_theta = asin($self->thrust_sideway);
+    my $delta_theta = atan2($self->thrust_forward, $self->thrust_sideway);
     my $direction = $self->orientation + $delta_theta;
     return $direction;
 }
