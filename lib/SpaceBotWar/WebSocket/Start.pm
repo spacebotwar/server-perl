@@ -122,7 +122,7 @@ sub ws_login_with_password {
     return {
         code        => 0,
         message     => 'Welcome',
-        username    => $user->name,
+        username    => $user->username,
     };
 }
 

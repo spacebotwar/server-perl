@@ -118,7 +118,7 @@ my $tests = {
 };
 
 my $users = $db->resultset('User')->search({
-    name        => ' test_user_1',
+    username    => ' test_user_1',
 });
 while (my $user = $users->next) {
     $user->delete;
@@ -126,7 +126,7 @@ while (my $user = $users->next) {
 
 
 my $user = $db->resultset('User')->create({
-    name        => ' test_user_1',
+    username    => ' test_user_1',
     password    => 'Yop_s3cr3t',
     email       => 'me@example.com',
 });

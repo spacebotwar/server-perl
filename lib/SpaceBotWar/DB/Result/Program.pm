@@ -12,7 +12,7 @@ __PACKAGE__->add_columns(
     commit_key              => { data_type => 'varchar',    size => 40  },
     name                    => { data_type => 'varchar',    size => 30,     is_nullable => 0    },
     owner_id                => { data_type => 'int',        is_nullable => 0    },
-    status                  => { data_type => 'varchar'     size => 20 },
+    status                  => { data_type => 'varchar',    size => 20 },
     league                  => { data_type => 'int',        },
     rank                    => { data_type => 'int',        },
     parent_program          => { data_type => 'int',        is_nullable => 1    },

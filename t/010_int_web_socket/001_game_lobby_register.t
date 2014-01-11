@@ -155,7 +155,7 @@ my $tests = {
         },
         callback    => sub {
             my ($user) = $db->resultset('User')->search({
-                name    => 'james_bond',
+                username    => 'james_bond',
             });
             $user->delete;
         },

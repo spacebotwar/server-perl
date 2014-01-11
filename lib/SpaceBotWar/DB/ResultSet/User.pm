@@ -17,7 +17,7 @@ sub assert_username_available {
     confess [1001, 'Username must be at least 3 characters long', $username] if length($username) < 3;
 
     my ($row) = $self->search({
-        name    => $username,
+        username    => $username,
     });
     confess [1001, 'Username not available', $username] if $row;
     return 1;
@@ -59,7 +59,7 @@ sub assert_create {
     my $csh = Crypt::SaltedHash->new->add($args->{password})->generate;
 
     my $user = $self->create({
-        name        => $args->{username},
+        username    => $args->{username},
         password    => $csh,
         email       => $args->{email},
     });
@@ -79,7 +79,7 @@ sub assert_login_with_password {
     confess [1001, 'password is missing' ]      if not defined $args->{password};
 
     my ($user) = $self->search({
-        name    => $args->{username},
+        username    => $args->{username},
     });
     confess [1001, 'Incorrect credentials 1']     if not defined $user;
     confess [1001, 'Incorrect credentials 2']     if not $user->check_password($args->{password});

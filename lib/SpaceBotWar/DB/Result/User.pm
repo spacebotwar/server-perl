@@ -10,7 +10,7 @@ extends 'SpaceBotWar::DB::Result';
 
 __PACKAGE__->table('user');
 __PACKAGE__->add_columns(
-    name                    => { data_type => 'varchar',    size => 30,     is_nullable => 0    },
+    username                => { data_type => 'varchar',    size => 30,     is_nullable => 0    },
     password                => { data_type => 'char',       size => 43                          },
     email                   => { data_type => 'varchar',    size => 255,    is_nullable => 1    },
     password_recovery_key   => { data_type => 'varchar',    size => 36,     is_nullable => 1    },

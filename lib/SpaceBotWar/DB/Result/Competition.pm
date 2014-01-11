@@ -1,4 +1,4 @@
-package SpaceBotWar::DB::Result::Match;
+package SpaceBotWar::DB::Result::Competition;
 
 use Moose;
 use namespace::autoclean;
@@ -7,7 +7,7 @@ use utf8;
 no warnings qw(uninitialized);
 extends 'SpaceBotWar::DB::Result';
 
-__PACKAGE__->table('match');
+__PACKAGE__->table('competition');
 __PACKAGE__->add_columns(
     program_a               => { data_type => 'int',        is_nullable => 0 },
     program_b               => { data_type => 'int',        is_nullable => 0 },
