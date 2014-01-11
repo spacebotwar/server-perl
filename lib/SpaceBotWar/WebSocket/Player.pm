@@ -54,6 +54,11 @@ sub ws_init_program {
 
     my $program_id = $context->param('program_id');
 
+
+    # Read the program into a string.
+
+    
+
     # We would get this from the file system, or GIT
 
     return {
