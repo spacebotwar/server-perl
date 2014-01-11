@@ -4,13 +4,87 @@
  <title>The blog of Iain C Docherty</title>
  <link href="http://spacebotwar.com:4000/atom.xml" rel="self"/>
  <link href="http://spacebotwar.com:4000"/>
- <updated>2013-12-30T21:47:51+00:00</updated>
+ <updated>2014-01-10T23:02:16+00:00</updated>
  <id>http://spacebotwar.com:4000</id>
  <author>
    <name>Iain C Docherty</name>
    <email>spacebotwar@iain-docherty.com</email>
  </author>
 
+ 
+ <entry>
+   <title>Testing Fleet Programs</title>
+   <link href="http://spacebotwar.com:4000/blog/2014/01/10/testing.html"/>
+   <updated>2014-01-10T00:00:00+00:00</updated>
+   <id>http://spacebotwar.com:4000/blog/2014/01/10/testing</id>
+   <content type="html">&lt;p&gt;I have given some thought lately to how fleet action programs will be written, and in particular how they will be tested.&lt;/p&gt;
+
+&lt;p&gt;The basic principle that I have described elsewhere, is that every 500ms the current state of the two competing fleets will be made available to both programs. This will give the last known speed, direction and orientation of each ship and each missile.&lt;/p&gt;
+
+&lt;p&gt;Using this information, each program will attempt to avoid incoming missiles, position them to attack the enemy or to avoid the enemy. Full information to that point in time is known, so the winning program will be based on the skill of the programmer.&lt;/p&gt;
+
+&lt;p&gt;As I said, every 500ms the information about every ship and missile will be given and each program should give course corrections based on the information. This information will apply for the coming 500ms.&lt;/p&gt;
+
+&lt;p&gt;When a new program is ready for testing (be it a brand new program, or a modification of an existing one) the programmer will submit it for approval. This will involve several steps.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Does it compile without errors?&lt;/li&gt;
+
+&lt;li&gt;Does it run and complete in a reasonable time (less than 300ms)?&lt;/li&gt;
+
+&lt;li&gt;Does it produce valid output for a static opponent?&lt;/li&gt;
+
+&lt;li&gt;Does it produce valid output for a dynamic (but dumb) opponent?&lt;/li&gt;
+
+&lt;li&gt;And perhaps other more complex tests.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If it is accepted for approval then it can be entered into one of several tournaments.&lt;/p&gt;
+
+&lt;h2 id=&quot;debugging&quot;&gt;Debugging&lt;/h2&gt;
+
+&lt;p&gt;Even if a program passes the basic sanity tests, it still may not work as expected.&lt;/p&gt;
+
+&lt;p&gt;I anticipate there being various methods to test a program.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Single stepping.&lt;/li&gt;
+
+&lt;li&gt;Run time logging.&lt;/li&gt;
+
+&lt;li&gt;Running from a snapshot&lt;/li&gt;
+
+&lt;li&gt;Playback&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;single_stepping&quot;&gt;Single Stepping&lt;/h3&gt;
+
+&lt;p&gt;By a ‘single step’ I mean that given all the data for a 500ms tick, the program can be run to produce the output for that tick, and then halt. By this means you can compare the input and the output for that one step.&lt;/p&gt;
+
+&lt;p&gt;If you wish the program can then be run for the next 500ms period and the input and output compared again, for as many ticks as you wish.&lt;/p&gt;
+
+&lt;p&gt;Don’t confuse this with the ‘single step’ of a Perl program, I don’t see how this could be done to single step through individual instructions (but I won’t rule it out!)&lt;/p&gt;
+
+&lt;h3 id=&quot;run_time_logging&quot;&gt;Run time logging.&lt;/h3&gt;
+
+&lt;p&gt;With your own program, you can write to a log file. For example to log the current state of variables in your program. The log file can then be read to see how your program performed. This is just like logging by inserting print statements.&lt;/p&gt;
+
+&lt;h3 id=&quot;running_from_a_snapshot&quot;&gt;Running from a snapshot&lt;/h3&gt;
+
+&lt;p&gt;It should also be possible to replay previous games and when an interesting position is seen a ‘snapshot’ of the current position can be made. These snapshots can be used to set up an initial position for your own fleet (and chosen opponent) to see how well your program copes in that position.&lt;/p&gt;
+
+&lt;h3 id=&quot;playback&quot;&gt;Playback&lt;/h3&gt;
+
+&lt;p&gt;Every match between two fleets will be recorded. How long these recordings will be kept for will remain to be seen (it will ultimately depend upon storage requirements).&lt;/p&gt;
+
+&lt;p&gt;These recordings will retain the positions, and the instructions given, for each fleet for each 500ms period. This will allow an accurate play-back of the actual match, either in real-time, or slow or fast motion, or single step. The instructions issued by the two fleets can be examined and (if it is your own fleet) you should be able to change the program and proceed from a snapshot of the recording to see how your changes affect your program.&lt;/p&gt;
+
+&lt;h2 id=&quot;special_tournaments&quot;&gt;Special tournaments&lt;/h2&gt;
+
+&lt;p&gt;The option of running from a snapshot opens up a number of intriguing possibilities.&lt;/p&gt;
+
+&lt;p&gt;For example, certain scenarios could be set up. A single ship of your own surrounded by a fleet of four others. Your task is to write a program that will succeed against this enemy. A whole set of this type of tournament could be made with prizes or awards made to the first program to win in this situation.&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>Separation of Concerns</title>

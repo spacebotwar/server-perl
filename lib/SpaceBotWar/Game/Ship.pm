@@ -48,13 +48,13 @@ has 'health' => (
 # Current X co-ordinate
 has 'x' => (
     is          => 'rw',
-    isa         => 'Int',
+    isa         => 'Num',
     default     => 0,
 );
 # Current Y co-ordinate
 has 'y' => (
     is          => 'rw',
-    isa         => 'Int',
+    isa         => 'Num',
     default     => 0,
 );
 # Rotation rate of ship (radians per second)
