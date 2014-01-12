@@ -16,6 +16,7 @@ use Data::Dumper;
 use SpaceBotWar;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
+use SpaceBotWar::WebSocket::ConnectionData;
 
 # An AnyEvent Websocket server.
 has websocket_server  => (
@@ -43,6 +44,7 @@ has server => (
 # A hash of all clients that are connected to this server
 has connections => (
     is      => 'rw',
+    isa     => 'HashRef[SpaceBotWar::WebSocket::ConnectionData]',
     default => sub { {} },
 );
 
@@ -108,9 +110,9 @@ sub broadcast_json {
     $self->log->info("BCAST: [$self] [$sent] connections=[$clients]");
     my $i = 0;
     foreach my $con_key (keys %{$self->connections}) {
-        my $connection = $self->connections->{$con_key};
-        $self->log->info("BROADCAST: [$connection][$sent]");
-        $connection->send($sent);
+        my $con_data = $self->connections->{$con_key};
+        $self->log->info("BROADCAST: [$con_data][$sent]");
+        $con_data->connection->send($sent);
     }
 }
 
@@ -148,7 +150,9 @@ sub on_establish {
     # keep a track of everyone connected to this server
     # 
     my $con_ref = $self->connections;
-    $con_ref->{$connection} = $connection;
+    my $connection_obj = SpaceBotWar::WebSocket::ConnectionData->new({ connection => $connection });
+
+    $con_ref->{$connection} = $connection_obj;
     $self->log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
                 
     my $reply = {

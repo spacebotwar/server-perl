@@ -15,16 +15,20 @@ use Math::Round qw(nearest round);
 # this Web Socket server sends moves back to the client
 # (the game server) based on the current position of the ships
 #
+# The module can handle multiple connections, each one of which
+# is a separate connection, so each one needs it's own data.
 
 has counter => (
     is          => 'rw',
-    default     => 0,
+    isa         => 'Maybe[HashRef[Int]]',
+    default     => sub { {} },
 );
 
 # A scratchpad, in which the game state is held
 #
 has scratchpad => (
     is          => 'rw',
+    isa         => 'Maybe[HashRef]',
     default     => sub { return {}; },
 );
 
@@ -82,8 +86,8 @@ sub ws_init_program {
 sub ws_start_state {
     my ($self, $context) = @_;
 
-    $self->scratchpad->{competitors} = $context->param('competitors');
-    $self->scratchpad->{ships_static} = $context->param('ships');
+    $self->scratchpad->{$self->connections}{competitors} = $context->param('competitors');
+    $self->scratchpad->{$self->connections}{ships_static} = $context->param('ships');
 
     return;
 }
@@ -94,11 +98,11 @@ sub ws_start_state {
 sub ws_game_state {
     my ($self, $context) = @_;
 
-    $self->counter($self->counter + 1);
+    $self->counter->{$self->connections} = $self->counter->{$self->connections}+1;
 
     my $player_id = $context->param('player');
 
-    $self->log->debug(Dumper $context->content);
+#    $self->log->debug(Dumper $context->content);
     my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->param('ships')};
 
     my @ship_moves;
