@@ -12,26 +12,43 @@ use JSON;
 use Data::Dumper;
 use Math::Round qw(nearest round);
 
+has scratchpads => (
+    is          => 'rw',
+    isa         => 'HashRef',
+    default     => sub { {} },
+);
+
 # this Web Socket server sends moves back to the client
 # (the game server) based on the current position of the ships
 #
 # The module can handle multiple connections, each one of which
 # is a separate connection, so each one needs it's own data.
-
-has counter => (
-    is          => 'rw',
-    isa         => 'Maybe[HashRef[Int]]',
-    default     => sub { {} },
-);
-
-# A scratchpad, in which the game state is held
+# which we can instantiate during the 'on_establish' method call
 #
-has scratchpad => (
-    is          => 'rw',
-    isa         => 'Maybe[HashRef]',
-    default     => sub { return {}; },
-);
+after 'on_establish' => sub {
+    my ($self, $connection, $env) = @_;
 
+    $self->log->debug("AFTER ON_ESTABLISH");
+    $self->scratchpads->{$connection} = {};
+};
+
+# And kill before we do a final kill of the connection
+# 
+before 'kill_client_data' => sub {
+    my ($self, $connection) = @_;
+
+    delete $self->scratchpads->{$connection};
+    $self->log->info("killed scratchpad data");
+};
+
+
+# Helper method for scratchpad
+#
+sub scratchpad {
+    my ($self,$connection) = @_;
+
+    return $self->scratchpads->{$connection};
+}
 
 sub BUILD {
     my ($self) = @_;
@@ -86,9 +103,10 @@ sub ws_init_program {
 sub ws_start_state {
     my ($self, $context) = @_;
 
-    $self->scratchpad->{$self->connections}{competitors} = $context->param('competitors');
-    $self->scratchpad->{$self->connections}{ships_static} = $context->param('ships');
+    my $scratchpad = $self->scratchpad($context->connection);
 
+    $scratchpad->{competitors}  = $context->param('competitors');
+    $scratchpad->{ships_static} = $context->param('ships');
     return;
 }
 
@@ -98,7 +116,7 @@ sub ws_start_state {
 sub ws_game_state {
     my ($self, $context) = @_;
 
-    $self->counter->{$self->connections} = $self->counter->{$self->connections}+1;
+    my $con_data = $self->connections->{$context->connection};
 
     my $player_id = $context->param('player');
 

@@ -44,7 +44,7 @@ has server => (
 # A hash of all clients that are connected to this server
 has connections => (
     is      => 'rw',
-    isa     => 'HashRef[SpaceBotWar::WebSocket::ConnectionData]',
+    isa     => 'HashRef',
     default => sub { {} },
 );
 
@@ -110,9 +110,9 @@ sub broadcast_json {
     $self->log->info("BCAST: [$self] [$sent] connections=[$clients]");
     my $i = 0;
     foreach my $con_key (keys %{$self->connections}) {
-        my $con_data = $self->connections->{$con_key};
-        $self->log->info("BROADCAST: [$con_data][$sent]");
-        $con_data->connection->send($sent);
+        my $connection = $self->connections->{$con_key};
+        $self->log->info("BROADCAST: [$connection][$sent]");
+        $connection->send($sent);
     }
 }
 
@@ -268,13 +268,24 @@ sub on_establish {
     );
     $connection->on(
         finish => sub {
-            delete $con_ref->{$connection};
-            $self->log->info("FINISH: [$self] there are ".scalar(keys %{$self->connections}). " connections");
-            undef $connection;
-            $self->log->info("bye");
+            $self->kill_client_data($connection);
         },
     );
 }
+
+
+# Remove all data held for the client
+#
+sub kill_client_data {
+    my ($self, $connection) = @_;
+
+    my $con_ref = $self->connections;
+    delete $con_ref->{$connection};
+    $self->log->info("FINISH: [$self] there are ".scalar(keys %{$self->connections}). " connections");
+    undef $connection;
+    $self->log->info("killed connection data");
+}
+
 
 # Report an error in a consistent manner back to the client
 # 
