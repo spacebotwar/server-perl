@@ -22,3 +22,4 @@ cpanm DBB::mysql
 cpanm MooseX::NonMoose
 cpanm Log::Log4perl
 cpanm Math::Round
+cpanm Test::Number::Delta

@@ -16,7 +16,6 @@ use Data::Dumper;
 use SpaceBotWar;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
-use SpaceBotWar::WebSocket::ConnectionData;
 
 # An AnyEvent Websocket server.
 has websocket_server  => (
@@ -147,12 +146,8 @@ sub on_establish {
     });
     $self->log->debug("Establish");
     
-    # keep a track of everyone connected to this server
-    # 
     my $con_ref = $self->connections;
-    my $connection_obj = SpaceBotWar::WebSocket::ConnectionData->new({ connection => $connection });
-
-    $con_ref->{$connection} = $connection_obj;
+    $con_ref->{$connection} = $connection;
     $self->log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
                 
     my $reply = {
