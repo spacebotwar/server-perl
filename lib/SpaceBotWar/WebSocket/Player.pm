@@ -108,7 +108,7 @@ sub ws_start_state {
 
 
 
-my $test_code = <<END;
+my $test_code = <<'END';
     foreach my $ship (@my_ships) {
         $ship->thrust_forward(round(rand(60)));
         $ship->thrust_sideway(round(rand(10)));

@@ -147,6 +147,7 @@ sub on_establish {
     $self->log->debug("Establish");
     
     my $con_ref = $self->connections;
+
     $con_ref->{$connection} = $connection;
     $self->log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
                 
