@@ -134,8 +134,39 @@ sub ws_game_state {
 
     my $player_id = $context->param('player');
 
+    @my_ships;
+    @enemy_ships;
+    foreach my $ship_hash (@{$context->param('ships')}) {
+        my $ship = SpaceBotWar::Game::Ship->new({
+            id              => $ship_hash->{id},
+            owner_id        => $ship_hash->{owner_id},
+            status          => $ship_hash->{status},
+            health          => $ship_hash->{health},
+            x               => $ship_hash->{x},
+            y               => $ship_hash->{y},
+            rotation        => $ship_hash->{rotation},
+            orientation     => $ship_hash->{orientation},
+            thrust_forward  => $ship_hash->{thrust_forward},
+            thrust_sideway  => $ship_hash->{thrust_sideway},
+            thrust_reverse  => $ship_hash->{thrust_reverse},
+
+        });
+        if ($ship_hash->{owner_id} == $player_id) {
+            push @my_ships, $ship;
+        }
+        else {
+            push @enemy_ships, $ship;
+        }
+    }
+
+
+
 #    $self->log->debug(Dumper $context->content);
     my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->param('ships')};
+
+
+
+
 
     my @ship_moves;
     foreach my $ship (@my_ships) {

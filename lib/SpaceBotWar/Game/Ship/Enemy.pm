@@ -1,86 +1,26 @@
-package SpaceBotWar::Game::Ship;
+package SpaceBotWar::Game::Ship::Enemy;
 
 use Moose;
 use Log::Log4perl;
 
 use namespace::autoclean;
 
-# This defines the basic characteristics of a ship
+extends 'SpaceBotWar::Game::Ship';
 
-use constant PI => 3.14159;
-
-# The unique ID of the ship
-has 'id' => (
-    is          => 'ro',
-    writer      => '_id',
-    isa         => 'Int',
-    required    => 1,
-);
-# The ID of the ships owner
-has 'owner_id' => (
-    is          => 'ro',
-    writer      => '_owner_id',
-    isa         => 'Int',
-    required    => 1,
-);
-# The name of the ship
-has 'name' => (
-    is          => 'rw',
-    isa         => 'Str',
-    default     => 'ship',
-);
-# The type of the ship, e.g. 'battleship'
-has 'type' => (
-    is          => 'ro',
-    isa         => 'Str',
-    default     => 'ship',
-);
-# The status of the ship, e.g. 'ok' or 'dead'.
-has 'status' => (
-    is          => 'ro',
-    writer      => '_status',
-    isa         => 'Str',
-    default     => 'ok',
-);
-# The health of the ship (0 to 100)
-has 'health' => (
-    is          => 'ro',
-    writer      => '_health',
-    isa         => 'Int',
-    default     => 100,
-);
-# Current X co-ordinate
-has 'x' => (
-    is          => 'ro',
-    writer      => '_x',
-    isa         => 'Num',
-    default     => 0,
-);
-# Current Y co-ordinate
-has 'y' => (
-    is          => 'ro',
-    writer      => '_y',
-    isa         => 'Num',
-    default     => 0,
-);
 # Rotation rate of ship (radians per second)
 # +ve = 
 has 'rotation' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Num',
+    writer      => '_rotation',
     default     => 1,
 );
-# Current orientation of travel (in radians)
-has 'orientation' => (
-    is          => 'ro',
-    writer      => '_orientation',
-    isa         => 'Num',
-    default     => 0,
-);
+
 # Forward thruster speed
 has 'thrust_forward' => (
-    is          => 'rw',
+    is          => null,
     isa         => 'Num',
+    writer      => '_thrust_forward',
     default     => 0,
 );
 # Side thruster speed
@@ -89,8 +29,9 @@ has 'thrust_forward' => (
 # 'put your hands on your hips'
 #
 has 'thrust_sideway' => (
-    is          => 'rw',
+    is          => null,
     isa         => 'Num',
+    writer      => '_thrust_sideway',
     default     => 0,
 );
 # Reverse thruster speed
