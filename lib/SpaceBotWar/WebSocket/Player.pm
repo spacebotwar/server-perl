@@ -50,6 +50,7 @@ sub scratchpad {
     return $self->scratchpads->{$connection};
 }
 
+
 sub BUILD {
     my ($self) = @_;
 
@@ -57,15 +58,11 @@ sub BUILD {
 }
 
 
-
-
 sub DESTROY {
     my ($self) = @_;
 
     $self->log->debug("DESTROY: PLAYER #### $self");
 }
-
-
 
 
 # Initialise a program (get the code for the program)
@@ -107,8 +104,25 @@ sub ws_start_state {
 
     $scratchpad->{competitors}  = $context->param('competitors');
     $scratchpad->{ships_static} = $context->param('ships');
-    return;
 }
+
+
+
+my $test_code = <<END;
+    foreach my $ship (@my_ships) {
+        $ship->thrust_forward(round(rand(60)));
+        $ship->thrust_sideway(round(rand(10)));
+        $ship->thrust_reverse(round(rand(20)));
+        $ship->rotation(nearest(0.01, rand(2) - 1));
+    }
+END
+
+
+
+
+
+
+
 
 
 # Update with the latest game state of the match
@@ -145,10 +159,7 @@ sub ws_game_state {
     };
 }
 
-
-
-
-# A user has joined the server
+# A user (a match server) has joined the server
 #
 sub on_connect {
     my ($self, $context) = @_;

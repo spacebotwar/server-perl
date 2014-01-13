@@ -11,13 +11,15 @@ use constant PI => 3.14159;
 
 # The unique ID of the ship
 has 'id' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_id',
     isa         => 'Int',
     required    => 1,
 );
 # The ID of the ships owner
 has 'owner_id' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_owner_id',
     isa         => 'Int',
     required    => 1,
 );
@@ -29,31 +31,35 @@ has 'name' => (
 );
 # The type of the ship, e.g. 'battleship'
 has 'type' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Str',
     default     => 'ship',
 );
 # The status of the ship, e.g. 'ok' or 'dead'.
 has 'status' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_status',
     isa         => 'Str',
     default     => 'ok',
 );
 # The health of the ship (0 to 100)
 has 'health' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_health',
     isa         => 'Int',
     default     => 100,
 );
 # Current X co-ordinate
 has 'x' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_x',
     isa         => 'Num',
     default     => 0,
 );
 # Current Y co-ordinate
 has 'y' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_y',
     isa         => 'Num',
     default     => 0,
 );
@@ -66,7 +72,8 @@ has 'rotation' => (
 );
 # Current orientation of travel (in radians)
 has 'orientation' => (
-    is          => 'rw',
+    is          => 'ro',
+    writer      => '_orientation',
     isa         => 'Num',
     default     => 0,
 );
@@ -92,7 +99,7 @@ has 'thrust_reverse' => (
 );
 # Max forward speed of ship
 has 'max_thrust_forward' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Num',
     default     => 60,
 );
@@ -101,26 +108,29 @@ has 'max_thrust_forward' => (
 # -ve = thrust to the right
 # 
 has 'max_thrust_sideway' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Num',
     default     => 20,
 );
 # Max reverse speed of ship
 has 'max_thrust_reverse' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Num',
     default     => 30,
 );
 # Max rotational speed (radians per second)
 has 'max_rotation' => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Num',
     default     => 2,
 );
 
-# log4pel logger
+# log4perl logger
+# TODO We will have to look at directing log info to a location
+# where it can be sent back to the user, not to a system log file
+# 
 has log => (
-    is        => 'rw',
+    is        => 'ro',
     default => sub {
         my ($self) = @_;
         return Log::Log4perl->get_logger( $self );
