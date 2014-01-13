@@ -134,8 +134,8 @@ sub ws_game_state {
 
     my $player_id = $context->param('player');
 
-    @my_ships;
-    @enemy_ships;
+    my @my_ships;
+    my @enemy_ships;
     foreach my $ship_hash (@{$context->param('ships')}) {
         my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_hash->{id},
