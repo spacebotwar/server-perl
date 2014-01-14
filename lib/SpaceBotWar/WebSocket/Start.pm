@@ -62,7 +62,7 @@ sub ws_get_radius {
 
     return {
         code            => 0,
-        message         => "radius api key",
+        message         => "LoginRadius API key",
         radius_api_key  => SpaceBotWar->config->get('radius/api_key'),
     };
 }
@@ -73,13 +73,13 @@ sub ws_get_radius {
 sub ws_register {
     my ($self, $context) = @_;
 
+    # TODO: should this be in it's own method?
+    # $self->check_client_code($context->content->{client_code}) for example
+    #
     SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
     my $db = SpaceBotWar->db;
-    $db->resultset('User')->assert_username_available($context->content->{username});
-    $db->resultset('User')->assert_email_valid($context->content->{email});
-    $db->resultset('User')->assert_password_valid($context->content->{password});
-
-    my $user = $db->resultset('User')->assert_create({ %{$context->content} });
+    my $rs_user = $db->resultset('User');
+    my $user = $rs_user->assert_create({ %{$context->content} });
 
     return {
         code    => 0,
