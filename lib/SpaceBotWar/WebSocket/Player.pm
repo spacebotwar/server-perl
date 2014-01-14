@@ -6,6 +6,8 @@ extends 'SpaceBotWar::WebSocket';
 use AnyEvent;
 use SpaceBotWar;
 use SpaceBotWar::Game::Arena;
+use SpaceBotWar::Game::Ship::Mine;
+use SpaceBotWar::Game::Ship::Enemy;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
@@ -137,36 +139,37 @@ sub ws_game_state {
     my @my_ships;
     my @enemy_ships;
     foreach my $ship_hash (@{$context->param('ships')}) {
-        my $ship = SpaceBotWar::Game::Ship->new({
-            id              => $ship_hash->{id},
-            owner_id        => $ship_hash->{owner_id},
-            status          => $ship_hash->{status},
-            health          => $ship_hash->{health},
-            x               => $ship_hash->{x},
-            y               => $ship_hash->{y},
-            rotation        => $ship_hash->{rotation},
-            orientation     => $ship_hash->{orientation},
-            thrust_forward  => $ship_hash->{thrust_forward},
-            thrust_sideway  => $ship_hash->{thrust_sideway},
-            thrust_reverse  => $ship_hash->{thrust_reverse},
-
-        });
+        my $ship;
         if ($ship_hash->{owner_id} == $player_id) {
+            $ship = SpaceBotWar::Game::Ship::Mine->new({
+                id              => $ship_hash->{id},
+                owner_id        => $ship_hash->{owner_id},
+                status          => $ship_hash->{status},
+                health          => $ship_hash->{health},
+                x               => $ship_hash->{x},
+                y               => $ship_hash->{y},
+                rotation        => $ship_hash->{rotation},
+                orientation     => $ship_hash->{orientation},
+#                thrust_forward  => $ship_hash->{thrust_forward},
+#                thrust_sideway  => $ship_hash->{thrust_sideway},
+#                thrust_reverse  => $ship_hash->{thrust_reverse},
+            });
             push @my_ships, $ship;
         }
         else {
+            $ship = SpaceBotWar::Game::Ship::Enemy->new({
+                id              => $ship_hash->{id},
+                owner_id        => $ship_hash->{owner_id},
+                status          => $ship_hash->{status},
+                health          => $ship_hash->{health},
+                x               => $ship_hash->{x},
+                y               => $ship_hash->{y},
+                rotation        => $ship_hash->{rotation},
+                orientation     => $ship_hash->{orientation},
+            });
             push @enemy_ships, $ship;
         }
     }
-
-
-
-#    $self->log->debug(Dumper $context->content);
-    my @my_ships = grep {$_->{owner_id} == $player_id} @{$context->param('ships')};
-
-
-
-
 
     my @ship_moves;
     foreach my $ship (@my_ships) {

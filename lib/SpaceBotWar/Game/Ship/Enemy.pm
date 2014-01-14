@@ -18,7 +18,7 @@ has 'rotation' => (
 
 # Forward thruster speed
 has 'thrust_forward' => (
-    is          => null,
+    is          => 'bare',
     isa         => 'Num',
     writer      => '_thrust_forward',
     default     => 0,
@@ -29,15 +29,16 @@ has 'thrust_forward' => (
 # 'put your hands on your hips'
 #
 has 'thrust_sideway' => (
-    is          => null,
+    is          => 'bare',
     isa         => 'Num',
     writer      => '_thrust_sideway',
     default     => 0,
 );
 # Reverse thruster speed
 has 'thrust_reverse' => (
-    is          => 'rw',
+    is          => 'bare',
     isa         => 'Num',
+    writer      => '_thrust_reverse',
     default     => 0,
 );
 # Max forward speed of ship
@@ -66,127 +67,6 @@ has 'max_rotation' => (
     isa         => 'Num',
     default     => 2,
 );
-
-# log4perl logger
-# TODO We will have to look at directing log info to a location
-# where it can be sent back to the user, not to a system log file
-# 
-has log => (
-    is        => 'ro',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
-
-# Limit the requested thrust in any direction
-# 
-for my $direction (qw(forward reverse)) {
-    around "thrust_$direction" => sub {
-        my ($orig,$self,$speed) = @_;
-
-        return $self->$orig unless defined $speed;
-        
-        my $max_method = "max_thrust_$direction";
-        if ($speed > $self->$max_method) {
-            $speed = $self->$max_method;
-        }
-        if ($speed < 0) {
-            $speed = 0;
-        }
-        $self->$orig($speed);
-    };
-}
-# Limit the sideways thrust
-#
-around 'thrust_sideway' => sub {
-    my ($orig, $self, $speed) = @_;
-
-    return $self->$orig unless defined $speed;
-
-#    $self->log->debug("thrust_sideways = $speed");
-    my $max_speed = $self->max_thrust_sideway;
-    if ($speed > $max_speed) {
-        $speed = $max_speed;
-    }
-    elsif ($speed < - $max_speed) {
-        $speed = - $max_speed;
-    }
-    $self->$orig($speed);
-};
-
-# Limit the rotational speed
-#
-around "rotation" => sub {
-    my ($orig, $self, $speed) = @_;
-
-    return $self->$orig unless defined $speed;
-
-    if ($speed > $self->max_rotation) {
-        $speed = $self->max_rotation;
-    }
-    if ($speed < 0-$self->max_rotation) {
-        $speed = 0-$self->max_rotation;
-    }
-    $self->$orig($speed);
-};
-
-# Normalise the orientation
-#
-around '_orientation' => sub {
-    my ($orig, $self, $angle) = @_;
-
-    # this should almost never happen, since this is the writer...
-    return $self->$orig unless defined $angle;
-
-    while ($angle > 2*PI) {
-        $angle -= 2*PI;
-    }
-    while ($angle < 0) {
-        $angle += 2*PI;
-    }
-    $self->$orig($angle);
-};
-
-sub asin {
-    my ($val) = @_;
-    return atan2($val, sqrt(1 - $val * $val));
-}
-
-# The direction the ship goes is determined by several factors
-#  the 'orientation' of the ship, i.e. which direction it is facing
-#  the 'thrust_forward' this being the main engine of the ship
-#  the 'thrust_sideway' ships can use minor thrusters to move sideway
-#  the 'thrust_reverse' which counters the main engine if used at the same time
-#
-sub direction {
-    my ($self) = @_;
-
-    my $forward = $self->thrust_forward - $self->thrust_reverse;
-    my $delta_theta = atan2($self->thrust_forward, $self->thrust_sideway);
-    my $direction = $self->orientation + $delta_theta;
-    return $direction;
-}
-
-# Speed is a vector of forward,reverse & sideway thrust
-#
-sub speed {
-    my ($self) = @_;
-
-    my $forward = $self->thrust_forward - $self->thrust_reverse;
-    my $speed = sqrt($forward * $forward + $self->thrust_sideway * $self->thrust_sideway);
-    return $speed;
-}
-
-# Return the value in so many significant points
-# TODO Replace this with Math::Round
-#
-sub decpoint {
-    my ($value, $points) = @_;
-
-    return int($value * 10) / 10;
-}
-
 
 # Create a hash representation of the object. For efficiency
 # just use this to transmit the data once, and cache the static

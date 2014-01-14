@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use Log::Log4perl;
 
-use SpaceBotWar::Game::Ship;
+use SpaceBotWar::Game::Ship::Arena;
 
 use constant PI => 3.14159;
 
@@ -15,7 +15,7 @@ use constant PI => 3.14159;
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ship]',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Arena]',
     default => sub { [] },
 );
 
@@ -86,7 +86,7 @@ sub _initialize {
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
 
-        my $ship = SpaceBotWar::Game::Ship->new({
+        my $ship = SpaceBotWar::Game::Ship::Arena->new({
             id              => $ship_id,
             owner_id        => int(($ship_id - 1) / 3) + 1,
             type            => 'ship',
