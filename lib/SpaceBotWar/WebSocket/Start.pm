@@ -73,10 +73,7 @@ sub ws_get_radius {
 sub ws_register {
     my ($self, $context) = @_;
 
-    # TODO: should this be in it's own method?
-    # $self->check_client_code($context->content->{client_code}) for example
-    #
-    SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
+    $self->check_client_code($context);
     my $db = SpaceBotWar->db;
     my $rs_user = $db->resultset('User');
     my $user = $rs_user->assert_create({ %{$context->content} });
@@ -92,8 +89,8 @@ sub ws_register {
 #
 sub ws_forgot_password {
     my ($self, $context) = @_;
-
-    SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
+ 
+    $self->check_client_code($context);
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username}, $context->content->{email});
@@ -112,7 +109,7 @@ sub ws_forgot_password {
 sub ws_login_with_password {
     my ($self, $context) = @_;
 
-    my $client_code = SpaceBotWar::ClientCode->assert_validate_client_code($context->content->{client_code});
+    my $client_code = self->check_client_code($context);   
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_login_with_password($context->content);
@@ -149,12 +146,14 @@ sub ws_login_with_email_code {
 sub ws_logout {
     my ($self, $context) = @_;
 
-    # What should a 'logout' do? Just set the cache value associated with
-    # the Client Code?
-    #
+    # This should do it, right?
+    my $client_code = $self->check_client_code($context);
+    $cient_code->logged_in(0);
+
     return {
         code        => 0,
-        message     => 'Good Bye',
+        # Shamelessly stolen from Youtube: http://youtu.be/Ex2NNUVE8V4?t=2m30s
+        message     => 'So long, see ya sucka, bon voyage, arriverderci, later loser, goodbye, good riddance, let the doorknob hit ya where the good Lord split ya, don\'t come back around here no more, asta la vista, kick rocks, and get the hell out. Woopsie! Did I say that aloud? :O',
     };
 }
 

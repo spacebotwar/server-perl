@@ -373,5 +373,15 @@ sub on_error {
     return $res->finalize;
 }
 
+sub check_client_code {
+    my $self = shift;
+    my $client_code = shift;
+
+    if (defined $client_code->content) {
+        $client_code = $client_code->content->{client_code};
+    }
+
+    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
+}
 
 1;
