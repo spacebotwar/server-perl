@@ -148,12 +148,12 @@ sub ws_logout {
 
     # This should do it, right?
     my $client_code = $self->check_client_code($context);
-    $cient_code->logged_in(0);
+    $client_code->logged_in(0);
 
     return {
         code        => 0,
         # Shamelessly stolen from Youtube: http://youtu.be/Ex2NNUVE8V4?t=2m30s
-        message     => 'So long, see ya sucka, bon voyage, arriverderci, later loser, goodbye, good riddance, let the doorknob hit ya where the good Lord split ya, don\'t come back around here no more, asta la vista, kick rocks, and get the hell out. Woopsie! Did I say that aloud? :O',
+        message     => 'So long, see ya sucka, bon voyage, arriverderci, later loser, goodbye, good riddance, let the doorknob hit ya where the good Lord split ya, don\'t come back around here no more, hasta la vista, kick rocks, and get the hell out. Woopsie! Did I say that aloud? :O',
     };
 }
 
