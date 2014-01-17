@@ -81,10 +81,10 @@ sub _initialize {
         5   => { x => 400, y => 350, direction => PI/4 + PI },
         6   => { x => 350, y => 400, direction => PI/4 + PI },
     };
-
     my @ships;
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
+    $self->log->debug(Dumper($ship_ref));
 
         my $ship = SpaceBotWar::Game::Ship::Arena->new({
             id              => $ship_id,
@@ -95,7 +95,7 @@ sub _initialize {
             thrust_forward  => 0,
             thrust_sideway  => 0,
             thrust_reverse  => 0,
-            orientation     => $ship_ref->{direction},
+            orientation     => $ship_ref->{direction} || 0,
             rotation        => 0,
         });
         push @ships, $ship;

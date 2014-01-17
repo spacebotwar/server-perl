@@ -72,8 +72,8 @@ has 'rotation' => (
 );
 # Current orientation of travel (in radians)
 has 'orientation' => (
-    is          => 'ro',
-    writer      => '_orientation',
+    is          => 'rw',
+    writer      => 'orientation',
     isa         => 'Num',
     default     => 0,
 );
@@ -192,10 +192,11 @@ around "rotation" => sub {
 
 # Normalise the orientation
 #
-around '_orientation' => sub {
+around 'orientation' => sub {
     my ($orig, $self, $angle) = @_;
 
     # this should almost never happen, since this is the writer...
+    $self->log->debug("Angle is [$angle]");
     return $self->$orig unless defined $angle;
 
     while ($angle > 2*PI) {
@@ -288,7 +289,7 @@ sub dynamic_to_hash {
     #THIS IS TEST CODE ONLY, REMOVE BEFORE PRODUCTION!
     $self->x($self->x + 1);
     $self->y($self->y - 2);
-    $self->_orientation($self->orientation - 0.1);
+    $self->orientation($self->orientation - 0.1);
 
 
 

@@ -36,12 +36,4 @@ has 'y' => (
     default     => 0,
 );
 
-# Current orientation of travel (in radians)
-has 'orientation' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
-
-
 __PACKAGE__->meta->make_immutable;
