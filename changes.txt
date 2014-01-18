@@ -1,0 +1,5 @@
+v-0.001
+    Fixed all tests
+    Fixed login
+    Got sensible class structure for ships in place
+    client now displays mock-battle again
