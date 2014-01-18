@@ -191,8 +191,8 @@ sub tick {
         my $distance = $ship->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($ship->direction);
         my $delta_y = $distance * sin($ship->direction);
-        my $end_x = int($ship->_x + $delta_x);
-        my $end_y = int($ship->_y + $delta_y);
+        my $end_x = int($ship->x + $delta_x);
+        my $end_y = int($ship->y + $delta_y);
     
         # check for limits.
         if ($end_x * $end_x + $end_y * $end_y > $radius_squared) {
@@ -206,8 +206,8 @@ sub tick {
     
         # Check for hits by missiles. In which case cause damage
     
-        $ship->_x($end_x);
-        $ship->_y($end_y);
+        $ship->x($end_x);
+        $ship->y($end_y);
    
         # angle of rotation over the tick.
         my $angle_rad = $ship->rotation * $duration_millisec / 1000;

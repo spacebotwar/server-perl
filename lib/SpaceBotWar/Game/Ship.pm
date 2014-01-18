@@ -12,60 +12,52 @@ use namespace::autoclean;
 use constant PI => 3.14159;
 
 # The unique ID of the ship
-has '_id' => (
+has 'id' => (
     is          => 'rw',
     isa         => 'Int',
     required    => 1,
-    traits      => [qw/Private/],
 );
 # The ID of the ships owner
-has '_owner_id' => (
+has 'owner_id' => (
     is          => 'rw',
     isa         => 'Int',
     required    => 1,
-    traits      => [qw/Private/],
 );
 # The name of the ship
-has '_name' => (
+has 'name' => (
     is          => 'rw',
     isa         => 'Str',
     default     => 'ship',
-    traits      => [qw/Private/],
 );
 # The type of the ship, e.g. 'battleship'
-has '_type' => (
+has 'type' => (
     is          => 'rw',
     isa         => 'Str',
     default     => 'ship',
-    traits      => [qw/Private/],
 );
 # The status of the ship, e.g. 'ok' or 'dead'.
-has '_status' => (
+has 'status' => (
     is          => 'rw',
     isa         => 'Str',
     default     => 'ok',
-    traits      => [qw/Private/],
 );
 # The health of the ship (0 to 100)
-has '_health' => (
+has 'health' => (
     is          => 'rw',
     isa         => 'Int',
     default     => 100,
-    traits      => [qw/Private/],
 );
 # Current X co-ordinate
-has '_x' => (
+has 'x' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Current Y co-ordinate
-has '_y' => (
+has 'y' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Rotation rate of ship (radians per second)
 # +ve = 
@@ -75,66 +67,58 @@ has 'rotation' => (
     default     => 1,
 );
 # Current orientation of travel (in radians)
-has '_orientation' => (
+has 'orientation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Forward thruster speed
-has '_thrust_forward' => (
+has 'thrust_forward' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Side thruster speed
 # +ve = thrust to the left
 # -ve = thrust to the right
 # 'put your hands on your hips'
 #
-has '_thrust_sideway' => (
+has 'thrust_sideway' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Reverse thruster speed
-has '_thrust_reverse' => (
+has 'thrust_reverse' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw/Private/],
 );
 # Max forward speed of ship
-has '_max_thrust_forward' => (
+has 'max_thrust_forward' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 60,
-    traits      => [qw/Private/],
 );
 # Max sideway speed of ship (note may also be negative)
 # Absolute value
 #
-has '_max_thrust_sideway' => (
+has 'max_thrust_sideway' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 20,
-    traits      => [qw/Private/],
 );
 # Max reverse speed of ship
-has '_max_thrust_reverse' => (
+has 'max_thrust_reverse' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 30,
-    traits      => [qw/Private/],
 );
 # Max rotational speed (radians per second)
-has '_max_rotation' => (
+has 'max_rotation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 2,
-    traits      => [qw/Private/],
 );
 
 # log4perl logger
@@ -148,50 +132,6 @@ has log => (
         return Log::Log4perl->get_logger( $self );
     },
 );
-
-
-before rotation => sub {
-    my ($self) = @_;
-
-    $self->log->debug("::Ship->rotation");
-};
-
-# during construction, rename the public attribute names to the private names.
-# 
-around BUILDARGS => sub {
-    my ($orig, $class, $args) = @_;
-
-    # Convert public to private
-    #
-    for my $method (qw(id name owner_id x y health status max_thrust_forward max_thrust_sideway max_thrust_reverse type orientation max_rotation)) {
-        if (defined $args->{$method}) {
-            $args->{"_".$method} = $args->{$method};
-            delete $args->{$method};
-        }
-    }
-    return $class->$orig($args);
-};
-
-# Add read-only accessors for the private ones
-#
-for my $method (qw(id name owner_id x y health status max_thrust_forward max_thrust_sideway max_thrust_reverse type orientation max_rotation)) {
-    __PACKAGE__->meta->add_method($method => sub {
-        my ($self, $arg) = @_;
-        die "Cannot write to [$method]" if defined $arg;
-        my $private_method = "_".$method;
-        return $self->$private_method;
-    })
-}
-
-# Add some read-write accessors that can then be overridden
-#
-for my $method (qw(thrust_forward thrust_sideway thrust_reverse)) {
-    __PACKAGE__->meta->add_method($method => sub {
-        my $self = shift;
-        my $private_method = "_$method";
-        return $self->$private_method(@_);
-    });
-}
 
 # Limit the requested thrust in any direction
 # 
@@ -247,7 +187,7 @@ around "rotation" => sub {
 
 # Normalise the orientation
 #
-around '_orientation' => sub {
+around 'orientation' => sub {
     my ($orig, $self, $angle) = @_;
 
     return $self->$orig if not defined $angle;
@@ -268,29 +208,33 @@ around '_orientation' => sub {
 #  the 'thrust_reverse' which counters the main engine if used at the same time
 #
 sub direction {
-    my ($self, $args) = @_;
+    my ($self) = @_;
 
-    if (defined $args) {
-        die "Cannot write to [direction]";
-    }
-    my $forward = $self->_thrust_forward - $self->_thrust_reverse;
-    my $delta_theta = atan2($self->_thrust_forward, $self->_thrust_sideway);
-    my $direction = $self->orientation + $delta_theta;
-    return $direction;
+    return $self->actual_direction($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse, $self->orientation);
 }
+protected_method actual_direction => sub {
+    my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse, $orientation) = @_;
+
+    my $forward = $thrust_forward - $thrust_reverse;
+    my $delta_theta = atan2($thrust_forward, $thrust_sideway);
+    my $direction = $orientation + $delta_theta;
+    return $direction;
+};
 
 # Speed is a vector of forward,reverse & sideway thrust
 #
 sub speed {
-    my ($self, $args) = @_;
+    my ($self) = @_;
 
-    if (defined $args) {
-        die "Cannot write to [speed]";
-    }
-    my $forward = $self->_thrust_forward - $self->_thrust_reverse;
-    my $speed = sqrt($forward * $forward + $self->_thrust_sideway * $self->_thrust_sideway);
-    return $speed;
+    return $self->actual_speed($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse);
 }
+protected_method actual_speed => sub {
+    my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse) = @_;
+
+    my $forward = $thrust_forward - $thrust_reverse;
+    my $speed = sqrt($forward * $forward + $thrust_sideway * $thrust_sideway);
+    return $speed;
+};
 
 # Return the value in so many significant points
 # TODO Replace this with Math::Round

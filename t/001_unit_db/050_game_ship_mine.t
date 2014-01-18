@@ -23,12 +23,19 @@ isa_ok($my_ship, 'SpaceBotWar::Game::Ship::Mine', "Correct class");
 isa_ok($my_ship, 'SpaceBotWar::Game::Ship', "Correct super class");
 
 my $enemy_ship = SpaceBotWar::Game::Ship::Enemy->new({
-    id          => 0,
-    owner_id    => 0,
+    id              => 0,
+    owner_id        => 0,
+    thrust_forward  => 4,
+    thrust_sideway  => 3,
 });
 
 isa_ok($enemy_ship, 'SpaceBotWar::Game::Ship::Enemy', "Correct class");
 isa_ok($enemy_ship, 'SpaceBotWar::Game::Ship', "Correct super class");
+
+is($enemy_ship->speed, 5, "test for speed");
+
+throws_ok { $enemy_ship->thrust_forward } qr/Attribute thrust_forward is protected/, "Read [thrust_forward] should die";
+throws_ok { $enemy_ship->thrust_forward(0) } qr/Attribute thrust_forward is protected/, "Write [thrust_forward] should die";
 
 # Determine what attributes should be readonly, readwrite or bare (no read or write)
 # for a players own ships
@@ -89,12 +96,13 @@ sub do_test {
         lives_ok { $ship->$attribute } "$prefix: read [$attribute] should live";
     }
     if ($testname eq 'bare') {
-        # 'read' should give an exception
-        throws_ok { $ship->$attribute } qr/Cannot read from \[$attribute\]/, "$prefix: read [$attribute] should die";
+        # 'read' and 'write' should give an exception
+        throws_ok { $ship->$attribute } qr/Attribute $attribute is protected/, "$prefix: read [$attribute] should die";
+        throws_ok { $ship->$attribute(0) } qr/Attribute $attribute is protected/, "$prefix: write [$attribute] should die";
     }
 
     # Write tests
-    if ($testname eq 'readonly' or $testname eq 'bare') {
+    if ($testname eq 'readonly') {
         # 'write' should give an exception
         throws_ok { $ship->$attribute(0) } qr/Cannot write to \[$attribute\]/, "$prefix: write [$attribute] should die";
     }
