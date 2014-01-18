@@ -12,77 +12,102 @@ use Try;
 
 use SpaceBotWar;
 use SpaceBotWar::Game::Ship::Mine;
+use SpaceBotWar::Game::Ship::Enemy;
 
-
-my $ship = SpaceBotWar::Game::Ship::Mine->new({
+my $my_ship = SpaceBotWar::Game::Ship::Mine->new({
     id          => 0,
     owner_id    => 0,
 });
 
-isa_ok($ship, 'SpaceBotWar::Game::Ship::Mine', "Correct class");
+isa_ok($my_ship, 'SpaceBotWar::Game::Ship::Mine', "Correct class");
+isa_ok($my_ship, 'SpaceBotWar::Game::Ship', "Correct super class");
 
-# Check for defaults
-foreach my $method (qw(thrust_forward thrust_sideway thrust_reverse x y)) {
-    my $actual = $ship->$method;
-    is($actual, 0, "$method is zero");
-}
+my $enemy_ship = SpaceBotWar::Game::Ship::Enemy->new({
+    id          => 0,
+    owner_id    => 0,
+});
 
-is($ship->rotation, 1, "rotation is one");
-is($ship->health, 100, "health is 100");
-is($ship->status, 'ok', "status is OK");
-is($ship->max_thrust_forward,   60, "max thrust forward is 60");
-is($ship->max_thrust_reverse,   30, "max thrust reverse is 30");
-is($ship->max_thrust_sideway,   20, "max thrust sideway is 20");
+isa_ok($enemy_ship, 'SpaceBotWar::Game::Ship::Enemy', "Correct class");
+isa_ok($enemy_ship, 'SpaceBotWar::Game::Ship', "Correct super class");
 
-# Check for attributes we are allowed to change
+# Determine what attributes should be readonly, readwrite or bare (no read or write)
+# for a players own ships
 #
-$ship->thrust_forward(50);
-is($ship->thrust_forward, 50, "In range forward");
-$ship->thrust_reverse(20);
-is($ship->thrust_reverse, 20, "In range reverse");
-is($ship->speed, 30, "Correct resultant speed");
+my $mine_tests = {
+    id                  => 'readonly',
+    owner_id            => 'readonly',
+    name                => 'readonly',
+    type                => 'readonly',
+    status              => 'readonly',
+    health              => 'readonly',
+    x                   => 'readonly',
+    y                   => 'readonly',
+    rotation            => 'readwrite',
+    orientation         => 'readonly',
+    thrust_forward      => 'readwrite',
+    thrust_sideway      => 'readwrite',
+    thrust_reverse      => 'readwrite',
+    max_thrust_forward  => 'readonly',
+    max_thrust_sideway  => 'readonly',
+    max_thrust_reverse  => 'readonly',
+    max_rotation        => 'readonly',
+    speed               => 'readonly',
+    direction           => 'readonly',
+};
 
-$ship->thrust_forward(4);
-$ship->thrust_reverse(0);
-$ship->thrust_sideway(3);
-is($ship->speed, 5, "3-4-5 triangle");
+# Determine what attributes should be readonly, readwrite or bare (no read or write)
+# for the other players ships
+#
+my $enemy_tests = {
+    id                  => 'readonly',
+    owner_id            => 'readonly',
+    name                => 'readonly',
+    type                => 'readonly',
+    status              => 'readonly',
+    health              => 'readonly',
+    x                   => 'readonly',
+    y                   => 'readonly',
+    rotation            => 'bare',
+    orientation         => 'readonly',
+    thrust_forward      => 'bare',
+    thrust_sideway      => 'bare',
+    thrust_reverse      => 'bare',
+    max_thrust_forward  => 'bare',
+    max_thrust_sideway  => 'bare',
+    max_thrust_reverse  => 'bare',
+    max_rotation        => 'bare',
+    speed               => 'readonly',
+    direction           => 'readonly',
+};
 
-# full speed!
+sub do_test {
+    my ($prefix, $ship, $attribute, $testname) = @_;
 
-$ship->thrust_forward($ship->max_thrust_forward);
-is($ship->thrust_forward, $ship->max_thrust_forward, "At max forward thrust");
+    # Read tests
+    if ($testname eq 'readonly' or $testname eq 'readwrite') {
+        # 'read' should not give an exception
+        lives_ok { $ship->$attribute } "$prefix: read [$attribute] should live";
+    }
+    if ($testname eq 'bare') {
+        # 'read' should give an exception
+        throws_ok { $ship->$attribute } qr/Cannot read from \[$attribute\]/, "$prefix: read [$attribute] should die";
+    }
 
-$ship->thrust_sideway($ship->max_thrust_sideway);
-is($ship->thrust_sideway, $ship->max_thrust_sideway, "At max sideway right thrust");
-
-$ship->thrust_sideway(0 - $ship->max_thrust_sideway);
-is($ship->thrust_sideway, 0 - $ship->max_thrust_sideway, "at max sideway left thrust");
-
-# attempt warp factor!
-
-$ship->thrust_reverse(99999999);
-is($ship->thrust_reverse, $ship->max_thrust_reverse, "Ye canny break the (reverse) laws of physics!");
-
-$ship->thrust_forward(99999999);
-is($ship->thrust_forward, $ship->max_thrust_forward, "Ye canny break the (forward) laws of physics!");
-
-$ship->thrust_sideway(99999999);
-is($ship->thrust_sideway, $ship->max_thrust_sideway, "Ye canny break the (sideway) laws of physics!");
-
-$ship->thrust_sideway(99999999);
-is($ship->thrust_sideway, $ship->max_thrust_sideway, "Ye canny break the (sideway) laws of physics!");
-
-$ship->thrust_sideway(-99999999);
-is($ship->thrust_sideway, 0 - $ship->max_thrust_sideway, "Ye canny break the (negative sideway) laws of physics!");
-
-# now check attributes we are *not* allowed to alter
-foreach my $method (qw(owner_id type status health orientation  max_thrust_forward max_thrust_sideway max_thrust_reverse max_rotation x y)) {
-    throws_ok {$ship->$method(0)} qr/Cannot write to \[$method\]/, "write to RO attribute [$method]";
+    # Write tests
+    if ($testname eq 'readonly' or $testname eq 'bare') {
+        # 'write' should give an exception
+        throws_ok { $ship->$attribute(0) } qr/Cannot write to \[$attribute\]/, "$prefix: write [$attribute] should die";
+    }
 }
 
-throws_ok {$ship->id(0)}    qr/Cannot write to \[id\]/,       'Cannot write to [id]';
-throws_ok {$ship->_id(0)}   qr/Attribute _id is private/,    'Cannot write to [_id]';
-throws_ok {$ship->_id}      qr/Attribute _id is private/,   'Cannot read from [_id]';
+foreach my $test (keys %{$mine_tests}) {
+    diag "test [$test]";
+    do_test('mine', $my_ship, $test, $mine_tests->{$test});
+}
+
+foreach my $test (keys %{$enemy_tests}) {
+    do_test('enemy', $enemy_ship, $test, $enemy_tests->{$test});
+}
 
 done_testing();
 

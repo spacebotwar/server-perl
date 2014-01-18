@@ -7,66 +7,18 @@ use namespace::autoclean;
 
 extends 'SpaceBotWar::Game::Ship';
 
-# Rotation rate of ship (radians per second)
-# +ve = 
-has 'rotation' => (
-    is          => 'ro',
-    isa         => 'Num',
-    writer      => '_rotation',
-    default     => 1,
-);
+# Make some of the super class methods inaccessible
+#
+for my $method (qw(rotation thrust_forward thrust_reverse thrust_sideway max_thrust_forward max_thrust_sideway max_thrust_reverse max_rotation)) {
+    before $method => sub {
+        my ($self, $args) = @_;
 
-# Forward thruster speed
-has 'thrust_forward' => (
-    is          => 'bare',
-    isa         => 'Num',
-    writer      => '_thrust_forward',
-    default     => 0,
-);
-# Side thruster speed
-# +ve = thrust to the left
-# -ve = thrust to the right
-# 'put your hands on your hips'
-#
-has 'thrust_sideway' => (
-    is          => 'bare',
-    isa         => 'Num',
-    writer      => '_thrust_sideway',
-    default     => 0,
-);
-# Reverse thruster speed
-has 'thrust_reverse' => (
-    is          => 'bare',
-    isa         => 'Num',
-    writer      => '_thrust_reverse',
-    default     => 0,
-);
-# Max forward speed of ship
-has 'max_thrust_forward' => (
-    is          => 'ro',
-    isa         => 'Num',
-    default     => 60,
-);
-# Max sideway speed of ship (note may also be negative)
-# Absolute value
-#
-has 'max_thrust_sideway' => (
-    is          => 'ro',
-    isa         => 'Num',
-    default     => 20,
-);
-# Max reverse speed of ship
-has 'max_thrust_reverse' => (
-    is          => 'ro',
-    isa         => 'Num',
-    default     => 30,
-);
-# Max rotational speed (radians per second)
-has 'max_rotation' => (
-    is          => 'ro',
-    isa         => 'Num',
-    default     => 2,
-);
+        if (defined $args) {
+            die "Cannot write to [$method]";
+        }
+        die "Cannot read from [$method]";
+    };
+}
 
 # Create a hash representation of the object. For efficiency
 # just use this to transmit the data once, and cache the static

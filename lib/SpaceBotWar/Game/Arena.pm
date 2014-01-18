@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use Log::Log4perl;
 
-use SpaceBotWar::Game::Ship::Arena;
+use SpaceBotWar::Game::Ship;
 
 use constant PI => 3.14159;
 
@@ -15,7 +15,7 @@ use constant PI => 3.14159;
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Arena]',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship]',
     default => sub { [] },
 );
 
@@ -86,7 +86,7 @@ sub _initialize {
         my $ship_ref = $ship_layout->{$ship_id};
     $self->log->debug(Dumper($ship_ref));
 
-        my $ship = SpaceBotWar::Game::Ship::Arena->new({
+        my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_id,
             owner_id        => int(($ship_id - 1) / 3) + 1,
             type            => 'ship',
@@ -191,8 +191,8 @@ sub tick {
         my $distance = $ship->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($ship->direction);
         my $delta_y = $distance * sin($ship->direction);
-        my $end_x = int($ship->x + $delta_x);
-        my $end_y = int($ship->y + $delta_y);
+        my $end_x = int($ship->_x + $delta_x);
+        my $end_y = int($ship->_y + $delta_y);
     
         # check for limits.
         if ($end_x * $end_x + $end_y * $end_y > $radius_squared) {
@@ -206,8 +206,8 @@ sub tick {
     
         # Check for hits by missiles. In which case cause damage
     
-        $ship->x($end_x);
-        $ship->y($end_y);
+        $ship->_x($end_x);
+        $ship->_y($end_y);
    
         # angle of rotation over the tick.
         my $angle_rad = $ship->rotation * $duration_millisec / 1000;

@@ -6,6 +6,7 @@ FindBin->again;
 use lib "$FindBin::Bin/../../lib";
 
 use Test::More;
+use Test::Exception;
 use Data::Dumper;
 use Try;
 
@@ -20,10 +21,12 @@ my $ship = SpaceBotWar::Game::Ship->new({
 
 isa_ok($ship, 'SpaceBotWar::Game::Ship', "Correct class");
 
+# Check for defaults
 foreach my $method (qw(thrust_forward thrust_sideway thrust_reverse x y)) {
     my $actual = $ship->$method;
     is($actual, 0, "$method is zero");
 }
+
 is($ship->rotation, 1, "rotation is one");
 is($ship->health, 100, "health is 100");
 is($ship->status, 'ok', "status is OK");
@@ -31,8 +34,8 @@ is($ship->max_thrust_forward,   60, "max thrust forward is 60");
 is($ship->max_thrust_reverse,   30, "max thrust reverse is 30");
 is($ship->max_thrust_sideway,   20, "max thrust sideway is 20");
 
-# Set various in-range speeds
-
+# Check for attributes we are allowed to change
+#
 $ship->thrust_forward(50);
 is($ship->thrust_forward, 50, "In range forward");
 $ship->thrust_reverse(20);
@@ -72,7 +75,14 @@ is($ship->thrust_sideway, $ship->max_thrust_sideway, "Ye canny break the (sidewa
 $ship->thrust_sideway(-99999999);
 is($ship->thrust_sideway, 0 - $ship->max_thrust_sideway, "Ye canny break the (negative sideway) laws of physics!");
 
+# now check attributes we are *not* allowed to alter
+foreach my $method (qw(owner_id type status health orientation  max_thrust_forward max_thrust_sideway max_thrust_reverse max_rotation x y)) {
+    throws_ok {$ship->$method(0)} qr/Cannot write to \[$method\]/, "write to RO attribute [$method]";
+}
 
+throws_ok {$ship->id(0)}    qr/Cannot write to \[id\]/,       'Cannot write to [id]';
+throws_ok {$ship->_id(0)}   qr/Attribute _id is private/,    'Cannot write to [_id]';
+throws_ok {$ship->_id}      qr/Attribute _id is private/,   'Cannot read from [_id]';
 
 done_testing();
 
