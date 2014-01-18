@@ -36,7 +36,7 @@ my $tests = {
         },
         recv    => {
             code        => 0,
-            message     => 'radius api key',
+            message     => 'LoginRadius API key',
             radius_api_key  => $config->get('radius/api_key'),
         },
     },

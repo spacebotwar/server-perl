@@ -109,7 +109,7 @@ sub ws_forgot_password {
 sub ws_login_with_password {
     my ($self, $context) = @_;
 
-    my $client_code = self->check_client_code($context);   
+    my $client_code = $self->check_client_code($context);   
     my $db = SpaceBotWar->db;
 
     my $user = $db->resultset('User')->assert_login_with_password($context->content);
@@ -153,7 +153,9 @@ sub ws_logout {
     return {
         code        => 0,
         # Shamelessly stolen from Youtube: http://youtu.be/Ex2NNUVE8V4?t=2m30s
-        message     => 'So long, see ya sucka, bon voyage, arriverderci, later loser, goodbye, good riddance, let the doorknob hit ya where the good Lord split ya, don\'t come back around here no more, hasta la vista, kick rocks, and get the hell out. Woopsie! Did I say that aloud? :O',
+        # By all means change the code, but make sure the tests still work?
+        message     => 'Good Bye',
+#        message     => 'So long, see ya sucka, bon voyage, arriverderci, later loser, goodbye, good riddance, let the doorknob hit ya where the good Lord split ya, don\'t come back around here no more, hasta la vista, kick rocks, and get the hell out. Woopsie! Did I say that aloud? :O',
     };
 }
 
