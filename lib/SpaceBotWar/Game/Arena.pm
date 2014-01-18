@@ -84,7 +84,7 @@ sub _initialize {
     my @ships;
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
-    $self->log->debug(Dumper($ship_ref));
+#    $self->log->debug(Dumper($ship_ref));
 
         my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_id,

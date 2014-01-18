@@ -183,7 +183,7 @@ sub ws_game_state {
         push @ship_moves, $move;
     }
 
-    $self->log->info(Dumper(\@my_ships));
+#    $self->log->info(Dumper(\@my_ships));
     return {
         code        => 0,
         message     => 'Game State',
