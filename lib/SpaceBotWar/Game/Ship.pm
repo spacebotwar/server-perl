@@ -1,6 +1,8 @@
 package SpaceBotWar::Game::Ship;
 
 use Moose;
+use MooseX::Privacy;
+use Data::Dumper;
 use Log::Log4perl;
 
 use namespace::autoclean;
@@ -10,58 +12,60 @@ use namespace::autoclean;
 use constant PI => 3.14159;
 
 # The unique ID of the ship
-has 'id' => (
-    is          => 'ro',
-    writer      => '_id',
+has '_id' => (
+    is          => 'rw',
     isa         => 'Int',
     required    => 1,
+    traits      => [qw/Private/],
 );
 # The ID of the ships owner
-has 'owner_id' => (
-    is          => 'ro',
-    writer      => '_owner_id',
+has '_owner_id' => (
+    is          => 'rw',
     isa         => 'Int',
     required    => 1,
+    traits      => [qw/Private/],
 );
 # The name of the ship
-has 'name' => (
+has '_name' => (
     is          => 'rw',
     isa         => 'Str',
     default     => 'ship',
+    traits      => [qw/Private/],
 );
 # The type of the ship, e.g. 'battleship'
-has 'type' => (
-    is          => 'ro',
+has '_type' => (
+    is          => 'rw',
     isa         => 'Str',
     default     => 'ship',
+    traits      => [qw/Private/],
 );
 # The status of the ship, e.g. 'ok' or 'dead'.
-has 'status' => (
-    is          => 'ro',
-    writer      => '_status',
+has '_status' => (
+    is          => 'rw',
     isa         => 'Str',
     default     => 'ok',
+    traits      => [qw/Private/],
 );
 # The health of the ship (0 to 100)
-has 'health' => (
-    is          => 'ro',
-    writer      => '_health',
+has '_health' => (
+    is          => 'rw',
     isa         => 'Int',
     default     => 100,
+    traits      => [qw/Private/],
 );
 # Current X co-ordinate
-has 'x' => (
-    is          => 'ro',
-    writer      => '_x',
+has '_x' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 0,
+    traits      => [qw/Private/],
 );
 # Current Y co-ordinate
-has 'y' => (
-    is          => 'ro',
-    writer      => '_y',
+has '_y' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 0,
+    traits      => [qw/Private/],
 );
 # Rotation rate of ship (radians per second)
 # +ve = 
@@ -71,11 +75,11 @@ has 'rotation' => (
     default     => 1,
 );
 # Current orientation of travel (in radians)
-has 'orientation' => (
+has '_orientation' => (
     is          => 'rw',
-    writer      => 'orientation',
     isa         => 'Num',
     default     => 0,
+    traits      => [qw/Private/],
 );
 # Forward thruster speed
 has 'thrust_forward' => (
@@ -100,30 +104,34 @@ has 'thrust_reverse' => (
     default     => 0,
 );
 # Max forward speed of ship
-has 'max_thrust_forward' => (
-    is          => 'ro',
+has '_max_thrust_forward' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 60,
+    traits      => [qw/Private/],
 );
 # Max sideway speed of ship (note may also be negative)
 # Absolute value
 #
-has 'max_thrust_sideway' => (
-    is          => 'ro',
+has '_max_thrust_sideway' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 20,
+    traits      => [qw/Private/],
 );
 # Max reverse speed of ship
-has 'max_thrust_reverse' => (
-    is          => 'ro',
+has '_max_thrust_reverse' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 30,
+    traits      => [qw/Private/],
 );
 # Max rotational speed (radians per second)
-has 'max_rotation' => (
-    is          => 'ro',
+has '_max_rotation' => (
+    is          => 'rw',
     isa         => 'Num',
     default     => 2,
+    traits      => [qw/Private/],
 );
 
 # log4perl logger
@@ -137,6 +145,42 @@ has log => (
         return Log::Log4perl->get_logger( $self );
     },
 );
+
+# Convert some of the public accessors to private one's
+# 
+around BUILDARGS => sub {
+    my ($orig, $class, $args) = @_;
+
+    # Convert public to private
+    #
+    for my $method (qw(id owner_id x y health status max_thrust_forward max_thrust_sideway max_thrust_reverse type orientation max_rotation)) {
+        if (defined $args->{$method}) {
+            $args->{"_".$method} = $args->{$method};
+            delete $args->{$method};
+        }
+    }
+    return $class->$orig($args);
+};
+
+# Add the read only methods for the Private attributes
+#
+for my $method (qw(id owner_id x y health status max_thrust_forward max_thrust_sideway max_thrust_reverse type orientation max_rotation)) {
+    __PACKAGE__->meta->add_method($method => sub {
+        my ($self, $arg) = @_;
+        die "Cannot write to [$method]" if defined $arg;
+        my $private_method = "_".$method;
+        return $self->$private_method;
+    })
+}
+
+
+sub xxxxid {
+    my ($self, $arg) = @_;
+
+    die "Cannot write to [id]" if defined $arg;
+    return $self->_id;
+}
+
 
 # Limit the requested thrust in any direction
 # 
@@ -192,7 +236,7 @@ around "rotation" => sub {
 
 # Normalise the orientation
 #
-around 'orientation' => sub {
+around '_orientation' => sub {
     my ($orig, $self, $angle) = @_;
 
     # this should almost never happen, since this is the writer...
