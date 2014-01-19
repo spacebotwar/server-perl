@@ -151,7 +151,8 @@ sub ws_game_state {
   
     my $player_id = $context->param('player');
 
-    my @ship_moves;
+    # Create the objects to be used in the ship movement calculations
+    #
     my @my_ships;
     my @enemy_ships;
     foreach my $ship_hash (@{$context->param('ships')}) {
@@ -179,14 +180,6 @@ sub ws_game_state {
             # TODO This is just for test purposes. remove in Production!
             # In practices, this will be determined by the Program Code running for this player
             #
-            my $move = {
-                ship_id         => $ship->id,
-                thrust_forward  => 60,
-                thrust_sideway  => 0,
-                thrust_reverse  => 0,
-                rotation        => nearest(0.01, rand(2) - 1),
-            };
-            push @ship_moves, $move;
         }
         else {
             $ship = SpaceBotWar::Game::Ship::Enemy->new({
@@ -201,6 +194,30 @@ sub ws_game_state {
             });
             push @enemy_ships, $ship;
         }
+    }
+
+    # This is where we call the code to calculate the ship movements
+    # 
+    foreach my $ship (@my_ships) {
+        $ship->thrust_forward(60);
+        $ship->thrust_sideway(0);
+        $ship->thrust_reverse(0);
+        $ship->rotation(nearest(0.01, rand(2) - 1));
+    }
+
+
+    # Report the moves for this tick for my own ships
+    #
+    my @ship_moves;
+    foreach my $ship (@my_ships) {
+        my $move = {
+            ship_id         => $ship->id,
+            thrust_forward  => 60,
+            thrust_sideway  => 0,
+            thrust_reverse  => 0,
+            rotation        => nearest(0.01, rand(2) - 1),
+        };
+        push @ship_moves, $move;
     }
 
     return {
