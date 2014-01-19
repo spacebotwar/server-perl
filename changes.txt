@@ -1,3 +1,9 @@
+v-0.002
+    Match start-state and game-state is updating correctly
+    Player code is now correctly merging static and dynamic data
+    TODO: Must remove thrust_forward etc. from Enemy ships in data sent to players
+    TODO: Must make speed and direction into attributes (not methods) of Game::Ships::Enemy
+
 v-0.001
     Fixed all tests
     Fixed login

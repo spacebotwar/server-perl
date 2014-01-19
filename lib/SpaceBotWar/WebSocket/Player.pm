@@ -55,15 +55,13 @@ sub scratchpad {
 
 sub BUILD {
     my ($self) = @_;
-
     $self->log->debug("BUILD: PLAYER####### $self");
 }
 
 
 sub DESTROY {
     my ($self) = @_;
-
-    $self->log->debug("DESTROY: PLAYER #### $self");
+    $self->log->warn("DESTROY: PLAYER #### $self");
 }
 
 
@@ -106,8 +104,6 @@ sub ws_start_state {
 
     $scratchpad->{competitors}  = $context->param('competitors');
     $scratchpad->{ships_static} = $context->param('ships');
-
-    $self->log->debug("<<<<<<<<<<<<<<<<<<<<<<<<<START-STATE>>>>>>>>>>>>>>>>>>>>>>>>: ".Dumper($scratchpad));
 }
 
 
@@ -123,9 +119,26 @@ END
 
 
 
+# Merge the game state into the scratchpad for a specific ship
+#
+sub merge_scratchpad {
+    my ($self, $scratchpad, $ship_hash) = @_;
 
-
-
+    my ($sp_hash) = grep {$_->{id} == $ship_hash->{id}} @{$scratchpad->{ships_static}};
+    if ($sp_hash) {
+        $sp_hash->{x}           = $ship_hash->{x};
+        $sp_hash->{y}           = $ship_hash->{y};
+        $sp_hash->{rotation}    = $ship_hash->{rotation};
+        $sp_hash->{orientation} = $ship_hash->{orientation};
+        $sp_hash->{status}      = $ship_hash->{status};
+        $sp_hash->{direction}   = $ship_hash->{direction};
+        $sp_hash->{health}      = $ship_hash->{health};
+    }
+    else {
+        die "could not find hash for ship";
+    }
+    return $sp_hash;
+}
 
 
 
@@ -134,26 +147,46 @@ END
 sub ws_game_state {
     my ($self, $context) = @_;
 
-    my $con_data = $self->connections->{$context->connection};
-
+    my $scratchpad = $self->scratchpad($context->connection);
+  
     my $player_id = $context->param('player');
 
+    my @ship_moves;
     my @my_ships;
     my @enemy_ships;
     foreach my $ship_hash (@{$context->param('ships')}) {
+        # Add the data to the scratchpad.
+        my $sp_hash = $self->merge_scratchpad($scratchpad, $ship_hash);
+
         my $ship;
-        if ($ship_hash->{owner_id} == $player_id) {
+        if ($sp_hash->{owner_id} == $player_id) {
             $ship = SpaceBotWar::Game::Ship::Mine->new({
-                id              => $ship_hash->{id},
-                owner_id        => $ship_hash->{owner_id},
-                status          => $ship_hash->{status},
-                health          => $ship_hash->{health},
-                x               => $ship_hash->{x},
-                y               => $ship_hash->{y},
-                rotation        => $ship_hash->{rotation},
-                orientation     => $ship_hash->{orientation},
+                id              => $sp_hash->{id},
+                owner_id        => $sp_hash->{owner_id},
+                status          => $sp_hash->{status},
+                health          => $sp_hash->{health},
+                x               => $sp_hash->{x},
+                y               => $sp_hash->{y},
+                rotation        => $sp_hash->{rotation},
+                orientation     => $sp_hash->{orientation},
+                thrust_forward  => $sp_hash->{thrust_forward},
+                thrust_sideway  => $sp_hash->{thrust_sideway},
+                thrust_reverse  => $sp_hash->{thrust_reverse},
             });
             push @my_ships, $ship;
+
+
+            # TODO This is just for test purposes. remove in Production!
+            # In practices, this will be determined by the Program Code running for this player
+            #
+            my $move = {
+                ship_id         => $ship->id,
+                thrust_forward  => 60,
+                thrust_sideway  => 0,
+                thrust_reverse  => 0,
+                rotation        => nearest(0.01, rand(2) - 1),
+            };
+            push @ship_moves, $move;
         }
         else {
             $ship = SpaceBotWar::Game::Ship::Enemy->new({
@@ -170,19 +203,6 @@ sub ws_game_state {
         }
     }
 
-    my @ship_moves;
-    foreach my $ship (@my_ships) {
-        my $move = {
-            ship_id         => $ship->{id},
-            thrust_forward  => round(rand(60)),
-            thrust_sideway  => round(int(rand(10))),
-            thrust_reverse  => round(int(rand(20))),
-            rotation        => nearest(0.01, rand(2) - 1),
-        };
-        push @ship_moves, $move;
-    }
-
-#    $self->log->info(Dumper(\@my_ships));
     return {
         code        => 0,
         message     => 'Game State',
