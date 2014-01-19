@@ -250,8 +250,6 @@ sub decpoint {
 # just use this to transmit the data once, and cache the static
 # bits. From then use the 'dynamic_to_hash' method call.
 #
-
-# TODO We should look at doing this with 'augment'.
 sub all_to_hash {
     my ($self) = @_;
 
@@ -262,6 +260,9 @@ sub all_to_hash {
         y                   => decpoint($self->y),
         direction           => decpoint($self->direction),
         speed               => decpoint($self->speed),
+        thrust_forward      => decpoint($self->thrust_forward),
+        thrust_sideway      => decpoint($self->thrust_sideway),
+        thrust_reverse      => decpoint($self->thrust_reverse),
         rotation            => decpoint($self->rotation),
         orientation         => decpoint($self->orientation),
         max_rotation        => decpoint($self->max_rotation),
@@ -282,14 +283,6 @@ sub all_to_hash {
 #
 sub dynamic_to_hash {
     my ($self) = @_;
-
-    #TODO TODO TODO
-    #THIS IS TEST CODE ONLY, REMOVE BEFORE PRODUCTION!
-    $self->x($self->x + 1);
-    $self->y($self->y - 2);
-    $self->orientation($self->orientation - 0.1);
-
-
 
     return {
         id              => $self->id,

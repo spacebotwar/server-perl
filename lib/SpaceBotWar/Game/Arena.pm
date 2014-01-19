@@ -84,7 +84,6 @@ sub _initialize {
     my @ships;
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
-#    $self->log->debug(Dumper($ship_ref));
 
         my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_id,
@@ -101,14 +100,17 @@ sub _initialize {
         push @ships, $ship;
     }
     $self->ships(\@ships);
-    $self->start_time(-5);
+    $self->start_time(-6);
+    $self->log->debug("######status = starting at [".$self->start_time."] ############");
     $self->status('starting');
 }
 
-before 'status' => sub {
+after 'status' => sub {
     my ($self, $val) = @_;
 
+    $self->log->debug("____ reading [$val] ____");
     if (defined $val) {
+        $self->log->debug("___________________________________ [".$val."] __________________________");
         if ($val eq 'init') {
             $self->_initialize;            
         }
@@ -123,7 +125,7 @@ before 'status' => sub {
 sub accept_move {
     my ($self, $owner_id, $data) = @_;
 
-#    $self->log->info("ACCEPT MOVE: ".Dumper($data));
+    $self->log->info("ACCEPT MOVE: ".Dumper($data));
     if ($data->{ships}) {
         foreach my $ship_data (@{$data->{ships}}) {
 
@@ -149,15 +151,12 @@ sub tick {
 
     my $duration_millisec = $duration * 100;
     $self->start_time($self->start_time + $duration / 10);
+    $self->log->debug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ ".$self->start_time." ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 
-    if ($self->status eq 'starting' and $self->start_time >= 0) {
+    if ($self->status eq 'starting' and $self->start_time > 0) {
+        $self->log->debug("######status = running at [".$self->start_time."] ############");
         $self->status('running');
     }
-    if ($self->status ne 'running') {
-#        return;
-    }
-
-
 
     # In practice, on each tick, we give the current actual position of all
     # ships and the thrust and rotation (as we currently know it)
@@ -215,6 +214,18 @@ sub tick {
     }
 }
 
+# Create hash dependent upon state
+#
+sub to_hash {
+    my ($self) = @_;
+
+    if ($self->status eq 'running') {
+        return $self->dynamic_to_hash;
+    }
+    return $self->all_to_hash;
+}
+
+
 # Create a hash representation of the changing data in the object
 # Omit static information that can be read once, and cached, in
 # order to reduce the size of the frequent data.
@@ -245,8 +256,7 @@ sub all_to_hash {
     }
     return {
         status  => $self->status,
-        width   => $self->width,
-        height  => $self->height,
+        radius  => $self->radius,
         time    => $self->start_time,
         ships   => \@ships_ref,
     };

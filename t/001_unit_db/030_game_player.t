@@ -52,8 +52,8 @@ is_deeply($reply, $expected_reply);
 $content = {
     player  => 0,
     ships   => [
-        {id => 0, owner_id => 0},
-        {id => 1, owner_id => 1},
+        {id => 0, owner_id => 0, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
+        {id => 1, owner_id => 1, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
     ]
 };
 $context->content($content);

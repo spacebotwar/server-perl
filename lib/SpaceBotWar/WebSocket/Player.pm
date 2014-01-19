@@ -106,6 +106,8 @@ sub ws_start_state {
 
     $scratchpad->{competitors}  = $context->param('competitors');
     $scratchpad->{ships_static} = $context->param('ships');
+
+    $self->log->debug("<<<<<<<<<<<<<<<<<<<<<<<<<START-STATE>>>>>>>>>>>>>>>>>>>>>>>>: ".Dumper($scratchpad));
 }
 
 
@@ -144,15 +146,12 @@ sub ws_game_state {
             $ship = SpaceBotWar::Game::Ship::Mine->new({
                 id              => $ship_hash->{id},
                 owner_id        => $ship_hash->{owner_id},
-#                status          => $ship_hash->{status},
-#                health          => $ship_hash->{health},
-#                x               => $ship_hash->{x},
-#                y               => $ship_hash->{y},
-#                rotation        => $ship_hash->{rotation},
-#                orientation     => $ship_hash->{orientation},
-#                thrust_forward  => $ship_hash->{thrust_forward},
-#                thrust_sideway  => $ship_hash->{thrust_sideway},
-#                thrust_reverse  => $ship_hash->{thrust_reverse},
+                status          => $ship_hash->{status},
+                health          => $ship_hash->{health},
+                x               => $ship_hash->{x},
+                y               => $ship_hash->{y},
+                rotation        => $ship_hash->{rotation},
+                orientation     => $ship_hash->{orientation},
             });
             push @my_ships, $ship;
         }
@@ -160,12 +159,12 @@ sub ws_game_state {
             $ship = SpaceBotWar::Game::Ship::Enemy->new({
                 id              => $ship_hash->{id},
                 owner_id        => $ship_hash->{owner_id},
-#                status          => $ship_hash->{status},
-#                health          => $ship_hash->{health},
-#                x               => $ship_hash->{x},
-#                y               => $ship_hash->{y},
-#                rotation        => $ship_hash->{rotation},
-#                orientation     => $ship_hash->{orientation},
+                status          => $ship_hash->{status},
+                health          => $ship_hash->{health},
+                x               => $ship_hash->{x},
+                y               => $ship_hash->{y},
+                rotation        => $ship_hash->{rotation},
+                orientation     => $ship_hash->{orientation},
             });
             push @enemy_ships, $ship;
         }
