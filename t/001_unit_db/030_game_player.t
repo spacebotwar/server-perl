@@ -58,21 +58,16 @@ $content = {
 };
 $context->content($content);
 
-$reply = $player->ws_game_state($context);
+
+# TODO We need to mock the connection object before we can do any more tests!
+
+#$reply = $player->ws_start_state($context);
+
+#$reply = $player->ws_game_state($context);
 
 diag Dumper($reply);
 
-
-
-
-
-
-
-
-
-
-
-diag Dumper($reply);
+sleep 5;
 
 
 done_testing();
