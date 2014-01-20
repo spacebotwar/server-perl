@@ -4,6 +4,7 @@ use warnings;
 use FindBin;
 FindBin->again;
 use lib "$FindBin::Bin/../../lib";
+use lib "$FindBin::Bin/../lib";
 
 use Test::More;
 use Data::Dumper;
@@ -11,8 +12,9 @@ use Try;
 use Safe;
 use Safe::Hole;
 
+use MooseShip;
 
-our $ship = Ship::Mine->new({});
+our $ship = MooseShip->new({});
 
 my $compartment = Safe->new;
 my $hole = Safe::Hole->new({});
@@ -23,18 +25,12 @@ $hole->wrap($ship, $compartment, '$ship');
 $compartment->reval('$ship->thrust_forward(42);');
 print $@ if $@;
 
-print STDERR "RETURN thrust = ".$ship->{thrust_forward}."\n";
+diag "RETURN thrust = ".$ship->thrust_forward;
+
+is($ship->thrust_forward, 42, "Correct thrust");
 
 
-
-package Ship::Mine;
-sub new { bless {}, shift(); }
-
-sub thrust_forward {
-    my ($self, $thrust) = @_;
-    print STDERR "thrust = $thrust\n";
-    $self->{thrust_forward} = $thrust;
-}
+done_testing();
 1;
 
 

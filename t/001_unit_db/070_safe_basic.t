@@ -19,7 +19,6 @@ my $hole = Safe::Hole->new({});
 
 $hole->wrap($ship, $compartment, '$ship');
 
-
 $compartment->reval('$ship->thrust_forward(42);');
 print $@ if $@;
 
