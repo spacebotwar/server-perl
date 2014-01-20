@@ -48,7 +48,6 @@ my $test_code = <<'END';
 #    $thrust_forward = 1;
 #    $log .= "thrust_forward now=[$thrust_forward]\n";
     $log .= "ship = [$ship]\n";
-    $ship->foo(rand(60));
     $ship->thrust_forward(10);
 #    $ship->thrust_sideway(rand(10));
 #    $ship->thrust_reverse(rand(20));
@@ -63,5 +62,6 @@ if ($@) {
 diag "----- result [\n$result\n] -------";
 diag "ship->thrust_forward = [".$ship->thrust_forward."]";
 diag "thrust_forward = [$thrust_forward]";
+ok(1);
 done_testing();
 

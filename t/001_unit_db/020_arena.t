@@ -24,7 +24,7 @@ is(scalar(@{$arena->ships}), 6, "Correct number of ships");
 my $player_ships = grep {$_->owner_id == 1} @{$arena->ships};
 is($player_ships, 3, "Correct number of ships for player 1");
 
-is($arena->start_time, -6, "Initial start time is correct");
+is($arena->start_time, -1, "Initial start time is correct");
 
 my ($ship) = grep {$_->id == 1} @{$arena->ships};
 my $start_x = $ship->x;
@@ -34,7 +34,7 @@ my $rotation = $ship->rotation;
 
 $arena->tick(5);
 
-is($arena->start_time, -5.5, "Tick time is correct");
+is($arena->start_time, -0.5, "Tick time is correct");
 
 # A ship with zero thrust should have moved.
 

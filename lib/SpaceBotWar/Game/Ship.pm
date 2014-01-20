@@ -228,7 +228,7 @@ sub speed {
 
     return $self->actual_speed($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse);
 }
-protected_method actual_speed => sub {
+sub actual_speed {
     my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse) = @_;
 
     my $forward = $thrust_forward - $thrust_reverse;

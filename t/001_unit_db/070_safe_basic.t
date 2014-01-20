@@ -24,6 +24,8 @@ print $@ if $@;
 
 print STDERR "RETURN thrust = ".$ship->{thrust_forward}."\n";
 
+ok(1);
+done_testing();
 
 
 package Ship::Mine;

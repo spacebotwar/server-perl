@@ -22,9 +22,10 @@ for my $method ( qw(id owner_id name type status health x y orientation speed di
     };
 }
 
-sub foo {
-    my ($self) = @_;
-
+# Why do we have to do this in order for 'Safe' to recognise it?
+#
+for my $method (qw(actual_speed speed thrust_forward thrust_sideway thrust_reverse rotation)) {
+    before $method => sub {};
 }
 
 __PACKAGE__->meta->make_immutable;

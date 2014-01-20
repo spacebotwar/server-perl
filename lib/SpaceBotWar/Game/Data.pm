@@ -11,12 +11,12 @@ use namespace::autoclean;
 
 has 'my_ships'  => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ships::Mine]'
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Mine]'
 );
 
 has 'enemy_ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ships::Enemy]'
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Enemy]'
 );
 
 has 'my_missiles' => (
@@ -28,6 +28,23 @@ has 'enemy_missiles' => (
     is      => 'rw',
 #    isa     => 'ArrayRef[SpaceBotWar::Game::Missiles]'
 );
+
+has '_log' => (
+    is      => 'rw',
+    isa     => 'Str',
+    default => '',
+);
+
+sub log {
+    my ($self, $msg) = @_;
+
+    if (defined $msg) {
+        $self->_log($self->_log . $msg);
+    }
+    return $self->_log;
+}
+
+
 
 
 __PACKAGE__->meta->make_immutable;

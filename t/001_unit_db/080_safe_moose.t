@@ -14,7 +14,7 @@ use Safe::Hole;
 
 use MooseShip;
 
-our $ship = MooseShip->new({});
+my $ship = MooseShip->new({});
 
 my $compartment = Safe->new;
 my $hole = Safe::Hole->new({});

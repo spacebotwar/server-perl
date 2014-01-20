@@ -9,6 +9,8 @@ use namespace::autoclean;
 
 extends 'SpaceBotWar::Game::Ship';
 
+
+
 # Make some of the attributes private
 has ['+thrust_forward', '+thrust_reverse', '+thrust_sideway', '+rotation', '+max_thrust_forward','+max_thrust_sideway','+max_thrust_reverse','+max_rotation'] => (
     traits  => [qw/Protected/],
