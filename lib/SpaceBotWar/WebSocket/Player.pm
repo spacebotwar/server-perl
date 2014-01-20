@@ -13,6 +13,7 @@ use UUID::Tiny ':std';
 use JSON;
 use Data::Dumper;
 use Math::Round qw(nearest round);
+use Safe;
 
 has scratchpads => (
     is          => 'rw',
@@ -108,14 +109,6 @@ sub ws_start_state {
 
 
 
-my $test_code = <<'END';
-    foreach my $ship (@my_ships) {
-        $ship->thrust_forward(round(rand(60)));
-        $ship->thrust_sideway(round(rand(10)));
-        $ship->thrust_reverse(round(rand(20)));
-        $ship->rotation(nearest(0.01, rand(2) - 1));
-    }
-END
 
 
 
@@ -198,24 +191,37 @@ sub ws_game_state {
 
     # This is where we call the code to calculate the ship movements
     # 
-    foreach my $ship (@my_ships) {
-        $ship->thrust_forward(60);
-        $ship->thrust_sideway(0);
-        $ship->thrust_reverse(0);
-        $ship->rotation(nearest(0.01, rand(2) - 1));
-    }
+    my $compartment = new Safe;
+    $compartment->permit('rand','srand');
+    $compartment->share('@my_ships');
 
+    my @ship_moves;
+
+    my $test_code = <<'END';
+        foreach my $ship (@my_ships) {
+            $ship->thrust_forward(round(rand(60)));
+            $ship->thrust_sideway(round(rand(10)));
+            $ship->thrust_reverse(round(rand(20)));
+            $ship->rotation(nearest(0.01, rand(2) - 1));
+        }
+END
+
+    my $result = $compartment->reval($test_code);
+    if ($@) {
+        $self->log->error("=========== could not evaluate code =========== $@");
+        die "Could not evaluate code ==================================== $@";
+    }
+    $self->log->debug("...................... [$result]..................");
 
     # Report the moves for this tick for my own ships
     #
-    my @ship_moves;
     foreach my $ship (@my_ships) {
         my $move = {
             ship_id         => $ship->id,
-            thrust_forward  => 60,
-            thrust_sideway  => 0,
-            thrust_reverse  => 0,
-            rotation        => nearest(0.01, rand(2) - 1),
+            thrust_forward  => $ship->thrust_forward,
+            thrust_sideway  => $ship->thrust_sideway,
+            thrust_reverse  => $ship->thrust_reverse,
+            rotation        => $ship->rotation,
         };
         push @ship_moves, $move;
     }

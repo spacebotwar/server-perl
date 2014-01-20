@@ -100,7 +100,7 @@ sub _initialize {
         push @ships, $ship;
     }
     $self->ships(\@ships);
-    $self->start_time(-6);
+    $self->start_time(-1);
     $self->log->debug("######status = starting at [".$self->start_time."] ############");
     $self->status('starting');
 }

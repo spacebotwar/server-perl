@@ -138,7 +138,7 @@ sub ws_start_match {
                     my $msg = JSON->new->decode($message->body);
 
                     # Game State received
-                    if ($msg->{route} eq '/game_state' and $msg->{code} == 0) {
+                    if ($msg->{route} eq '/game_state' and defined $msg->{code} and $msg->{code} == 0 ) {
                        # TODO: We need to do some validation on the received data at some point...
                        #
                        my $data = $msg->{content}{data};

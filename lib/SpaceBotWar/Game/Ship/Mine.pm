@@ -22,4 +22,9 @@ for my $method ( qw(id owner_id name type status health x y orientation speed di
     };
 }
 
+sub foo {
+    my ($self) = @_;
+
+}
+
 __PACKAGE__->meta->make_immutable;
