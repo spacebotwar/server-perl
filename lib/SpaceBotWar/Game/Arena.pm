@@ -125,11 +125,11 @@ after 'status' => sub {
 sub accept_move {
     my ($self, $owner_id, $data) = @_;
 
-    #$self->log->info("ACCEPT MOVE: ".Dumper($data));
+    $self->log->info("ACCEPT MOVE: ".Dumper($data));
     if ($data->{ships}) {
         foreach my $ship_data (@{$data->{ships}}) {
 
-#$self->log->info("SET SHIP SPEED: ".Dumper($ship_data));
+$self->log->info("SET SHIP SPEED: ".Dumper($ship_data));
 
         my ($ship) = grep {$_->id == $ship_data->{ship_id}} @{$self->{ships}};
         confess [1000, "Cannot find ship with id [".$ship_data->{id}."]" ] if not defined $ship;

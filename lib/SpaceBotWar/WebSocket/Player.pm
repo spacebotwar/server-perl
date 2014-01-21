@@ -6,6 +6,7 @@ extends 'SpaceBotWar::WebSocket';
 use AnyEvent;
 use SpaceBotWar;
 use SpaceBotWar::Game::Arena;
+use SpaceBotWar::Game::Data;
 use SpaceBotWar::Game::Ship::Mine;
 use SpaceBotWar::Game::Ship::Enemy;
 use Carp;
@@ -14,6 +15,7 @@ use JSON;
 use Data::Dumper;
 use Math::Round qw(nearest round);
 use Safe;
+use Safe::Hole;
 
 has scratchpads => (
     is          => 'rw',
@@ -189,20 +191,25 @@ sub ws_game_state {
         }
     }
 
+    my $data = SpaceBotWar::Game::Data->new({
+        my_ships        => \@my_ships,
+    });
+
     # This is where we call the code to calculate the ship movements
     # 
     my $compartment = new Safe;
+    my $hole = Safe::Hole->new({});
+    $hole->wrap($data, $compartment, '$data');
     $compartment->permit('rand','srand');
-    $compartment->share('@my_ships');
 
     my @ship_moves;
 
     my $test_code = <<'END';
-        foreach my $ship (@my_ships) {
-            $ship->thrust_forward(round(rand(60)));
-            $ship->thrust_sideway(round(rand(10)));
-            $ship->thrust_reverse(round(rand(20)));
-            $ship->rotation(nearest(0.01, rand(2) - 1));
+        foreach my $ship (@{$data->my_ships}) {
+            $ship->thrust_forward(rand(60));
+            $ship->thrust_sideway(rand(10));
+            $ship->thrust_reverse(rand(20));
+            $ship->rotation(rand(2) - 1);
         }
 END
 
@@ -215,7 +222,7 @@ END
 
     # Report the moves for this tick for my own ships
     #
-    foreach my $ship (@my_ships) {
+    foreach my $ship (@{$data->my_ships}) {
         my $move = {
             ship_id         => $ship->id,
             thrust_forward  => $ship->thrust_forward,

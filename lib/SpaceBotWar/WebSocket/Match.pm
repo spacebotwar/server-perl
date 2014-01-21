@@ -138,18 +138,24 @@ sub ws_start_match {
                     my $msg = JSON->new->decode($message->body);
 
                     # Game State received
-                    if ($msg->{route} eq '/game_state' and defined $msg->{code} and $msg->{code} == 0 ) {
-                       # TODO: We need to do some validation on the received data at some point...
-                       #
-                       my $data = $msg->{content}{data};
-                       if ($data) {
-                           eval {
-                               $self->arena->accept_move($id+1, $data);
-                           };
-                           if ($@) {
-                               $self->log->error($@);
-                           }
-                       }
+                    if ($msg->{route} eq '/game_state' and defined $msg->{content} and defined $msg->{content}{code} and $msg->{content}{code} == 0 ) {
+                        # TODO: We need to do some validation on the received data at some point...
+                        #
+                        my $data = $msg->{content}{data};
+                        if ($data) {
+                            eval {
+                                $self->arena->accept_move($id+1, $data);
+                            };
+                            if ($@) {
+                                $self->log->error($@);
+                            }
+                        }
+                        else {
+                            $self->log->info("###### no {content}{data} #######");
+                        }
+                    }
+                    else {
+                        $self->log->info("##### no {content} #####");
                     }
                 });
             }
