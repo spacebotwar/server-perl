@@ -77,11 +77,21 @@ sub ws_init_program {
 
 
     # Read the program into a string.
-
-    
+    my $scratchpad = $self->scratchpad($context->connection);
+    # TODO For now hard code it, shortly get it from the file store.
+    #
+    $scratchpad->{code} = <<'END';
+        foreach my $ship (@{$data->my_ships}) {
+            $ship->thrust_forward(rand(60));
+            $ship->thrust_sideway(rand(10));
+            $ship->thrust_reverse(rand(20));
+            $ship->rotation(rand(2) - 1);
+        }
+        return 1;
+END
 
     # We would get this from the file system, or GIT
-
+    $self->log->debug("[[[[[[[[[[[[[[[[[[[ ".$scratchpad->{code}." ]]]]]]]]]]]]]]]]]]]");
     return {
         code        => 0,
         message     => 'Program',
@@ -204,15 +214,8 @@ sub ws_game_state {
 
     my @ship_moves;
 
-    my $test_code = <<'END';
-        foreach my $ship (@{$data->my_ships}) {
-            $ship->thrust_forward(rand(60));
-            $ship->thrust_sideway(rand(10));
-            $ship->thrust_reverse(rand(20));
-            $ship->rotation(rand(2) - 1);
-        }
-END
-
+    my $test_code = $scratchpad->{code};
+    $self->log->debug("Code is $test_code");
     my $result = $compartment->reval($test_code);
     if ($@) {
         $self->log->error("=========== could not evaluate code =========== $@");

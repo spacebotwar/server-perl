@@ -108,9 +108,7 @@ sub _initialize {
 after 'status' => sub {
     my ($self, $val) = @_;
 
-    $self->log->debug("____ reading [$val] ____");
     if (defined $val) {
-        $self->log->debug("___________________________________ [".$val."] __________________________");
         if ($val eq 'init') {
             $self->_initialize;            
         }
@@ -128,8 +126,6 @@ sub accept_move {
     $self->log->info("ACCEPT MOVE: ".Dumper($data));
     if ($data->{ships}) {
         foreach my $ship_data (@{$data->{ships}}) {
-
-$self->log->info("SET SHIP SPEED: ".Dumper($ship_data));
 
         my ($ship) = grep {$_->id == $ship_data->{ship_id}} @{$self->{ships}};
         confess [1000, "Cannot find ship with id [".$ship_data->{id}."]" ] if not defined $ship;
@@ -151,10 +147,8 @@ sub tick {
 
     my $duration_millisec = $duration * 100;
     $self->start_time($self->start_time + $duration / 10);
-    $self->log->debug("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ ".$self->start_time." ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 
     if ($self->status eq 'starting' and $self->start_time > 0) {
-        $self->log->debug("######status = running at [".$self->start_time."] ############");
         $self->status('running');
     }
 
