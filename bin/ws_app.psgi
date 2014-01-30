@@ -36,7 +36,8 @@ my $app = builder {
 
     # The 'arena' where you go to find out what matches are being run
     mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
-    mount "/ws/match/rae"       => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
+    mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
+    mount "/ws/player"          => SpaceBotWar::WebSocket::Player->new({ server => 'Scott'      })->to_app;
 #    mount "/ws/match/scott"     => SpaceBotWar::WebSocket::Match->new({ server => 'Scott'       })->to_app;
 
 };

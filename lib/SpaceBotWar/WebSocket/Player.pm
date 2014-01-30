@@ -82,10 +82,12 @@ sub ws_init_program {
     #
     $scratchpad->{code} = <<'END';
         foreach my $ship (@{$data->my_ships}) {
-            $ship->thrust_forward(rand(60));
-            $ship->thrust_sideway(rand(10));
-            $ship->thrust_reverse(rand(20));
-            $ship->rotation(rand(2) - 1);
+            $ship->thrust_forward(60);
+            $ship->rotation(0.2);
+    #        $ship->thrust_forward(rand(60));
+    #        $ship->thrust_sideway(rand(10));
+    #        $ship->thrust_reverse(rand(20));
+    #        $ship->rotation(rand(2) - 1);
         }
         return 1;
 END
@@ -140,7 +142,7 @@ sub merge_scratchpad {
         $sp_hash->{health}      = $ship_hash->{health};
     }
     else {
-        die "could not find hash for ship";
+        die "could not find hash for ship [".$ship_hash->{id}."]";
     }
     return $sp_hash;
 }

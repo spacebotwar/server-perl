@@ -96,6 +96,12 @@ sub tick {
         my $route       = ($self->arena->status eq 'starting') ? '/start_state' : '/game_state';
 
         if ($client_player->connection) {
+            # this is a little messy!
+            $self->log->debug("@@@@@@@@@@@@@@@@@@@@@@ state [".$client_player->state."] @@@@@@@@@@@@@@@@@@@");
+            if ($client_player->state eq 'connected') {
+                $self->send_json($client_player->connection, '/init_program');
+                $client_player->state('running');
+            }
             $self->send_json($client_player->connection, $route, $msg);
         }
     }
