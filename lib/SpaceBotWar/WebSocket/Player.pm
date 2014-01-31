@@ -17,6 +17,10 @@ use Math::Round qw(nearest round);
 use Safe;
 use Safe::Hole;
 
+# 'scratchpads' is a generic hash structure
+# within which we can store connection specific data.
+# e.g. the 'static' data for each of the players ships
+#
 has scratchpads => (
     is          => 'rw',
     isa         => 'HashRef',
@@ -73,27 +77,35 @@ sub DESTROY {
 sub ws_init_program {
     my ($self, $context) = @_;
 
-    my $program_id = $context->param('program_id');
+    my $server_secret   = $context->param('server_secret');
+    my $program_id      = $context->param('program_id');
+
+    # Confirm that the correct server secret has been given
+    confess [1000, "Incorrect server secret. Go away! [$server_secret]" ] if $server_secret != SpaceBotWar->config->get('server_secrets/player');
+
+    # The final production code will do the following.
+    #   1. Put a job onto a Beanstalk queue which requests that a specific program be read.
+    #   2. The job is taken by a client which does the necessary with Git
+    #   3. Once the code is read (or an error occurs) the code is sent to this client via a Web Socket call
+    #   4. This client then returns the 'init_program' response to the caller.
+    #
 
 
+    # But for now, we just return 'something' that could be the executable program code
+    #
     # Read the program into a string.
     my $scratchpad = $self->scratchpad($context->connection);
     # TODO For now hard code it, shortly get it from the file store.
     #
     $scratchpad->{code} = <<'END';
+        # Run in circles, very fast...
         foreach my $ship (@{$data->my_ships}) {
             $ship->thrust_forward(60);
             $ship->rotation(0.2);
-    #        $ship->thrust_forward(rand(60));
-    #        $ship->thrust_sideway(rand(10));
-    #        $ship->thrust_reverse(rand(20));
-    #        $ship->rotation(rand(2) - 1);
         }
         return 1;
 END
 
-    # We would get this from the file system, or GIT
-    $self->log->debug("[[[[[[[[[[[[[[[[[[[ ".$scratchpad->{code}." ]]]]]]]]]]]]]]]]]]]");
     return {
         code        => 0,
         message     => 'Program',
@@ -117,12 +129,11 @@ sub ws_start_state {
 
     my $scratchpad = $self->scratchpad($context->connection);
 
+    # All we need to is store it in the connections scratchpad.
+    #
     $scratchpad->{competitors}  = $context->param('competitors');
     $scratchpad->{ships_static} = $context->param('ships');
 }
-
-
-
 
 
 
@@ -140,6 +151,7 @@ sub merge_scratchpad {
         $sp_hash->{status}      = $ship_hash->{status};
         $sp_hash->{direction}   = $ship_hash->{direction};
         $sp_hash->{health}      = $ship_hash->{health};
+        $sp_hash->{speed}       = $ship_hash->{speed};
     }
     else {
         die "could not find hash for ship [".$ship_hash->{id}."]";
@@ -198,6 +210,8 @@ sub ws_game_state {
                 y               => $ship_hash->{y},
                 rotation        => $ship_hash->{rotation},
                 orientation     => $ship_hash->{orientation},
+                direction       => $ship_hash->{direction},
+                speed           => $ship_hash->{speed},
             });
             push @enemy_ships, $ship;
         }

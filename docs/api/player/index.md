@@ -322,9 +322,21 @@ The current state of the game (sent once the match has started)
     "ships       : [
         {
         "id"                    : 0,
-        "direction"             : 1.35,
+        "owner_id"              : 1,
+        "status"                : "ok",
+        "health"                : 98,
+        "x"                     : -456,
+        "y"                     : 342,
+        "rotation"              : 0.23,
         "orientation"           : 1.23,
+
+        "direction"             : 1.35,
         "speed"                 : 60,
+
+        "thrust_forward"        : 55,
+        "thrust_sideway"        : 20,
+        "thrust_reverse"        : 0,
+        
         },
         ...
     ],
@@ -339,43 +351,105 @@ such as speed and direction. The static information on ships was provided via th
 match_id
 --------
 
+(sent to all players)
 The unique ID of the match.
 
 match_time
 ----------
 
+(sent to all players)
 The current time of the match, in seconds, since the game started.
 
 spectators
 ----------
 
+(sent to all players)
 The number of people watching the match
 
 ships
 -----
 
+(sent to all players)
 An array of all ships in the game, both the current player and the competitor.
 
 id
 --
 
+(sent to all players)
 A unique ID for the ship
+
+owner_id
+--------
+
+(sent to all players)
+The unique ID for the owner
+
+x and y
+-------
+
+(sent to all players)
+The current X,Y co-ordinate of the ship
 
 direction
 ---------
 
+(sent only to the player who does **not** own the ship)
 The direction the ship is currently moving in (based on the vector of all three
 thrust directions)
+
+rotation
+--------
+
+(sent to all players)
+The rate at which the ship is turning, in Radians per second. Positive value 
+indicates anti-clockwise rotation, negative indicates clockwise rotation.
 
 orientation
 -----------
 
+(sent to all players)
 The current orientation of the ship (it may be different to the direction the
 ship is moving, for example if it has sideways thrust)
 
 speed
 -----
 
+(sent only to the player who does **not** own the ship)
 The current speed of the ship (based on a vector of all the thrusts) if it is
 at zero, the ship is stationary.
+
+health
+------
+
+(sent to all players)
+The health of the ship (100 = full health, 0 = destroyed)
+
+thrust_forward
+--------------
+
+(sent only to the player who owns the ship)
+The current forward thrust setting.
+
+thrust_sideway
+--------------
+
+(sent only to the player who owns the ship)
+The current sideways thrust setting.
+
+thrust_reverse
+--------------
+
+(sent only to the player who owns the ship)
+The current reverse thrust setting.
+
+Note
+----
+A player **knows** his own thrust settings (forward, sideway, reverse) but can only determine
+from his sensors the resultant vector of enemy ships (speed and direction). This is why the
+data sent back for a players own ships differ in these attributes.
+
+
+
+
+
 
