@@ -40,3 +40,17 @@ create table competition (
     primary key (id)
 ) engine=InnoDB default charset=utf8;
 
+create table code_store (
+    id          int(11) not null auto_increment,
+    name        varchar(45) not null,
+    title       varchar(256) not null default "",
+    description varchar(1024) not null default "",
+    owner_id    int(11) not null,
+    code        text(65500) not null default "",
+    parent_id   int(11) not null,
+    primary key (id)
+) engine=InnoDB default charset=utf8;
+
+insert into code_store (id,name,title,description,owner_id,code,parent_id)
+    values (1,'genesis','genesis','first one',1,'',0);
+

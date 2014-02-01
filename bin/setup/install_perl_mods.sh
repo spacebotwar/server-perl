@@ -25,3 +25,4 @@ cpanm Math::Round
 cpanm Test::Number::Delta
 cpanm Safe
 cpanm Safe::Hole
+cpanm Git::Repository

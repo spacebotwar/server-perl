@@ -83,28 +83,11 @@ sub ws_init_program {
     # Confirm that the correct server secret has been given
     confess [1000, "Incorrect server secret. Go away! [$server_secret]" ] if $server_secret != SpaceBotWar->config->get('server_secrets/player');
 
-    # The final production code will do the following.
-    #   1. Put a job onto a Beanstalk queue which requests that a specific program be read.
-    #   2. The job is taken by a client which does the necessary with Git
-    #   3. Once the code is read (or an error occurs) the code is sent to this client via a Web Socket call
-    #   4. This client then returns the 'init_program' response to the caller.
-    #
+    my $code_store = SpaceBotWar->db->resultset('CodeStore')->find(1);
+    confess [1000, "Cannot find code with ID [$program_id]"] if not $code_store;
 
-
-    # But for now, we just return 'something' that could be the executable program code
-    #
-    # Read the program into a string.
     my $scratchpad = $self->scratchpad($context->connection);
-    # TODO For now hard code it, shortly get it from the file store.
-    #
-    $scratchpad->{code} = <<'END';
-        # Run in circles, very fast...
-        foreach my $ship (@{$data->my_ships}) {
-            $ship->thrust_forward(60);
-            $ship->rotation(0.2);
-        }
-        return 1;
-END
+    $scratchpad->{code} = $code_store->code;
 
     return {
         code        => 0,

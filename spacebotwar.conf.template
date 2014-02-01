@@ -15,6 +15,7 @@
         "lobby"         : "ws://spacebotwar.co.uk:5000/ws/lobby",
         "arena"         : "ws://spacebotwar.co.uk:5000/ws/arena",
     },
+    "git_code_repo" : "/home/icydee/space-bot-war-code",
     "secret"        : "a random code",
     "email_secret"  : "another random code",
     "radius"   : {
