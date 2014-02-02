@@ -1,0 +1,133 @@
+package SpaceBotWar::Game::FileStore;
+
+use Moose;
+use Git::Repository;
+use Data::Dumper;
+use Log::Log4perl;
+use File::Slurp;
+
+use namespace::autoclean;
+
+# This is the interface to the file store, to do operations
+# on files such as GET, UPDATE, CLONE etc.
+# In practice we will probably use GIT, but there is no need
+# to tell the outside world that!
+#
+
+# log4perl logger
+has log => (
+    is      => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( $self );
+    },
+);
+
+has work_dir => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    builder => '_work_dir_build',
+);
+
+has repository => (
+    is      => 'rw',
+    isa     => 'Git::Repository',
+    lazy    => 1,
+    builder => '_repository_build',
+);
+
+# Get the working directory
+#
+sub _work_dir_build {
+    my ($self) = @_;
+    
+    my $wd = SpaceBotWar->config->get('git_code_repository');
+    $wd .= '/' unless $wd =~ m[/$];
+    return $wd;
+}
+
+# Get the repository object
+#
+sub _repository_build {
+    my ($self) = @_;
+
+    my $git_dir = $self->work_dir;
+    print STDERR Dumper($self);
+
+    print STDERR "#### $git_dir ####\n";
+    my $r = Git::Repository->new(
+        work_tree => $self->work_dir,
+        {
+            env => {
+                GIT_COMMITTER_EMAIL => 'git@spacebotwar.com',
+                GIT_COMMITTER_NAME  => 'SpaceBotWar Code',
+            },
+        }
+    );
+    return $r;
+}
+
+
+# Get a file, based on the id
+#   git checkout <checksum>
+#   RETURN the content of the code.pl file
+#
+sub get_file {
+    my ($self, $id) = @_;
+
+    my $r = $self->repository;
+    $self->log->debug("Run git command 'checkout $id'");
+    $r->run( checkout => $id );
+    my $code = read_file($self->work_dir."code.pl");
+    return $code;    
+}
+
+# Clone an existing file
+#
+#   Assume we already did a 'get_file' and modified the $code
+#   we now clone commit $id and create a new version
+#   'tag'ging the code we just committed
+#   RETURNing the new commit code
+#
+sub clone_file {
+    my ($self, $id, $tag, $code) = @_;
+
+    my $r = $self->repository;
+    $r->run( checkout => $id );
+    write_file($self->work_dir.'code.pl', \$code);
+    $r->run( add => 'code.pl');
+    $r->run( commit => '-m', 'code' );
+    $r->run( tag => $tag );
+    return $r->run( 'rev-parse', 'HEAD' );
+}
+
+
+# Save a new version of the file
+#   git checkout <checksum>
+#   <write the new content>
+#   git add code.pl
+#   git commit -m "Modification text here"
+#   git rev-parse HEAD
+#   <returns the checksum>
+#   # The checksum is returned
+#
+#   $args :
+#       checksum    : git checksum for current version
+#       code        : the code to store
+#       author      : the name of the author
+#       author_id   : the unique ID of the author
+#       name        : the name of the program
+#       title       : A brief description
+#       notes       : Notes about the program
+#
+sub update_file {
+    my ($self, $args) = @_;
+}
+
+
+
+
+
+
+__PACKAGE__->meta->make_immutable;
