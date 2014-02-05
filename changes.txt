@@ -1,3 +1,6 @@
+v-0.004 (2014-02-05)
+    Rewrote client so that it is now written in coffee-script
+
 v-0.003 (2014-02-02)
     Refactor of the player WS to make it easier to test
     Player code is now held in a database (subject to redoing it in the future)
