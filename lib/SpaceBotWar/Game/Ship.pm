@@ -216,7 +216,7 @@ protected_method actual_direction => sub {
     my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse, $orientation) = @_;
 
     my $forward = $thrust_forward - $thrust_reverse;
-    my $delta_theta = atan2($thrust_forward, $thrust_sideway);
+    my $delta_theta = atan2($thrust_sideway, $thrust_forward);
     my $direction = $orientation + $delta_theta;
     return $direction;
 };
