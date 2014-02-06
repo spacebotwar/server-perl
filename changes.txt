@@ -1,3 +1,6 @@
+v-0.005 (2014-02-06)
+    Ship movement in UI is now continuous and smooth (except from ocassional jaggys)
+
 v-0.004 (2014-02-05)
     Rewrote client so that it is now written in coffee-script
 
