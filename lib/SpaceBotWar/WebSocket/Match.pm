@@ -57,8 +57,7 @@ sub BUILD {
     $self->log->info("BUILD MATCH#######");
     my $ws = AnyEvent->timer(
         after       => 0.0,
-        # should be every 0.5 seconds, but slow it down during debugging!
-        interval    => 5.0,
+        interval    => 0.5,
         cb          => sub {
             $self->tick;
         },
