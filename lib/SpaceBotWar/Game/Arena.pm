@@ -123,7 +123,7 @@ after 'status' => sub {
 sub accept_move {
     my ($self, $owner_id, $data) = @_;
 
-    $self->log->info("ACCEPT MOVE: ".Dumper($data));
+#    $self->log->info("ACCEPT MOVE: ".Dumper($data));
     if ($data->{ships}) {
         foreach my $ship_data (@{$data->{ships}}) {
 
