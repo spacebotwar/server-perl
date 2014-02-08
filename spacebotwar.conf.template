@@ -1,12 +1,12 @@
 # config-file-type: JSON 1
 {
     "log"   : {
-        "conf_file" : "/home/icydee/space-bot-war/log4perl.conf",
+        "conf_file" : "/data/space-bot-war/log4perl.conf",
     },
     "db"    : {
-        "dsn"       : "DBI:mysql:sbw_icydee",
+        "dsn"       : "DBI:mysql:sbw_root",
         "password"  : "sbw",
-        "username"  : "sbw_icydee",
+        "username"  : "sbw_root",
     },
     "redis_server"  : "localhost:7000",
     "ws_servers"    : {
@@ -14,8 +14,9 @@
         "start"         : "ws://spacebotwar.co.uk:5000/ws/start",
         "lobby"         : "ws://spacebotwar.co.uk:5000/ws/lobby",
         "arena"         : "ws://spacebotwar.co.uk:5000/ws/arena",
+        "player"        : "ws://spacebotwar.co.uk:5000/ws/player/darwin",
     },
-    "git_code_repo" : "/home/icydee/space-bot-war-code",
+    "git_code_repo" : "/data/space-bot-war-code",
     "secret"        : "a random code",
     "email_secret"  : "another random code",
     "radius"   : {
