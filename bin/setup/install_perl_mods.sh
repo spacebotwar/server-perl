@@ -18,7 +18,7 @@ cpanm Mojo::JSON
 cpanm File::Next
 cpanm Plack::Handler::Twiggy
 cpanm Try
-cpanm DBB::mysql
+cpanm DBD::mysql
 cpanm MooseX::NonMoose
 cpanm Log::Log4perl
 cpanm Math::Round
