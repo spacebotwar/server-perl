@@ -26,7 +26,7 @@ written in Coffee-Script so it brings a whole new meaning to the term 'chicken
 or egg'!
 
 The parser is built upon the Jison API which is in turn based on the API for Bison.
-(see [https://github.com/zaach/jison]). From the readme. 'Jison takes a JSON encoded
+[see github/zaach/jison](https://github.com/zaach/jison). From the readme. 'Jison takes a JSON encoded
 grammer ... and outputs a Javascript file capable of parsing the language described
 by that grammer'. What does that mean exactly?
 

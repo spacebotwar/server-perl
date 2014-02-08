@@ -5,3 +5,4 @@ start_redis.sh
 _config.yml
 log
 log4perl.conf
+docs/_site
