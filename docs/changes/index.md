@@ -4,9 +4,9 @@ title: Changes
 ---
 v-0.006 (2014-02-07)
 -------------------
-###[UI](https://github.com/spacebotwar/space-bot-war-client)
+###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/ba6a3b534ecffb87c8ef7d09d1cef5299e6309e0)
     - Changed to allow us to map the documentation to the public site.
-###[Server]((https://github.com/spacebotwar/space-bot-war)
+###[Server]((https://github.com/spacebotwar/space-bot-war/commit/29d6707f39a89a139281ce4d9e41f2e2755f24d5)
     - Changed to allow us to map the documentation to the public site.
     - Blog entry about coffee-scripts
 
