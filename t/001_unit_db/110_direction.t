@@ -8,6 +8,7 @@ my $sideway = 0;
 
 my $delta_theta = atan2($sideway, $forward);
 
+ok(1);
 diag "delta_theta = $delta_theta";
 
-
+done_testing();

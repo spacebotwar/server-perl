@@ -25,6 +25,7 @@ $clone->description("Test description");
 $clone->update;
 
 
+ok(1);
 
 diag "clone = [$clone]";
 

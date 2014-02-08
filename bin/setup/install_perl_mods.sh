@@ -26,3 +26,5 @@ cpanm Test::Number::Delta
 cpanm Safe
 cpanm Safe::Hole
 cpanm Git::Repository
+cpanm MooseX::Privacy
+cpanm Test::More
