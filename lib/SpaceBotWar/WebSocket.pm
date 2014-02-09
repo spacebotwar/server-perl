@@ -30,7 +30,7 @@ has log => (
     is        => 'rw',
     default => sub {
         my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
+        return Log::Log4perl->get_logger( "WS::".$self->server );
     },
 );
 

@@ -179,7 +179,6 @@ sub tick {
 
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
-        $self->log->info("SHIP CALC: ".$ship." thrust_forward=[".$ship->thrust_forward."] speed=[".$ship->speed."]");            
         # Calculate the final position based on thrust and direction
         my $distance = $ship->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($ship->direction);
