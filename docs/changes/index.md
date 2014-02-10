@@ -2,6 +2,15 @@
 layout: default
 title: Changes
 ---
+v-0.007 (2014-02-10)
+-------------------
+###[UI]
+    - Client can now be built as one file for distribution
+###[Server]
+    - Toned down the logging messages for Web Sockets
+
+---
+
 v-0.006 (2014-02-07)
 -------------------
 ###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/ba6a3b534ecffb87c8ef7d09d1cef5299e6309e0)
