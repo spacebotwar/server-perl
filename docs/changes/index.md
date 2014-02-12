@@ -2,11 +2,18 @@
 layout: default
 title: Changes
 ---
+v-0.008 (2014-02-12)
+###[UI]
+    - Client that builds for production now loads images
+###[Server]
+    - not a lot
+
+---
 v-0.007 (2014-02-10)
 -------------------
-###[UI]
+###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/9883d91d3e263a92d2ef74a4389ca391460aeba1)
     - Client can now be built as one file for distribution
-###[Server]
+###[Server](https://github.com/spacebotwar/space-bot-war/commit/197a363702a375299a7c73c50f662f229dcfd8c9)
     - Toned down the logging messages for Web Sockets
 
 ---
@@ -15,7 +22,7 @@ v-0.006 (2014-02-07)
 -------------------
 ###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/ba6a3b534ecffb87c8ef7d09d1cef5299e6309e0)
     - Changed to allow us to map the documentation to the public site.
-###[Server]((https://github.com/spacebotwar/space-bot-war/commit/29d6707f39a89a139281ce4d9e41f2e2755f24d5)
+###[Server](https://github.com/spacebotwar/space-bot-war/commit/29d6707f39a89a139281ce4d9e41f2e2755f24d5)
     - Changed to allow us to map the documentation to the public site.
     - Blog entry about coffee-scripts
 
