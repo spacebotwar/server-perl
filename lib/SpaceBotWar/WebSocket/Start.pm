@@ -10,6 +10,7 @@ use SpaceBotWar::EmailCode;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
+use Try;
 
 # This is the common point into which everyone connects to. On this server
 # it is possible to do the necessary commands to log in.
@@ -92,14 +93,20 @@ sub ws_forgot_password {
  
     $self->check_client_code($context);
     my $db = SpaceBotWar->db;
+    my $user;
 
-    my $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username}, $context->content->{email});
+    try {
+       $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username_or_email});
+    ;
 
+    if ($user) {
+        # TODO Put a message on the beanstalk send_email job queue
+    }
     confess [9999, "Not yet implemented"];
     
     return {
         code        => 0,
-        message     => 'Email code sent.',
+        message     => 'Success',
     };
 }
 
@@ -131,6 +138,7 @@ sub ws_login_with_email_code {
     SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
 
     # email code login? Just recover the client_code user_id?
+    confess [9999, "Not yet implemented"];
 
     return {
         code        => 0,

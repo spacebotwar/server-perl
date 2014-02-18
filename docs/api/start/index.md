@@ -32,7 +32,7 @@ you should still keep the same Client Code for subsequent sessions.
 A Client may be a different web browser (Internet Explorer, Chrome, Safari etc.) or a
 different computer, or a script running. Each of these should be given a different Client Code
 
-In the following API calls, if it specifies a Client Code then it is mandatory. If you don't
+In the following API calls, if it specifies a Client Code then it is mandatory. If you do not
 supply a Client Code the call will be rejected.
 
 
@@ -77,14 +77,14 @@ Client : get_client_code
 
 This is on the route **/get_client_code**
 
-Get a new Client Code. Note you should only do this if you don't already have a Client Code.
+Get a new Client Code. Note you should only do this if you do not have a Client Code.
 e.g. if this is the first time on this computer, or with this Web Browser. If you do have 
 one (even if it is timed out) you should reuse it.
 
 {% highlight JSON %}
 {
     "msg_id"        : 123,
-    "client_code"     : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "client_code"   : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
 }
 {% endhighlight %}
 
@@ -100,7 +100,7 @@ client_code (optional)
 You can validate/refresh your existing client code. If valid the server will return
 the same Client Code. If not valid it will return a new one.
 
-If you don't supply a Client code, then you will get a new one.
+If you do not supply a Client code, then you will get a new one.
 
 RESPONSE
 --------
@@ -120,7 +120,7 @@ Server response to the **Client : get_client_code** request
 {
     "code"          : 0,
     "message"       : "OK",
-    "client_code"     : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "client_code"   : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
     "msg_id"        : 123,
 }
 {% endhighlight %}
@@ -156,7 +156,7 @@ msg_id (optional)
 
 An **ID** to identify this message. If used the server reply will contain the same message
 ID. This can be useful if you wish to link the server response to the client request.
-(I'm probably not going to mention this again, take it as read)
+(I am probably not going to mention this again, take it as read)
 
 RESPONSE
 --------
@@ -201,7 +201,7 @@ Register a new account with the server.
 {% highlight JSON %}
 {
     "msg_id"            : 123,
-    "client_code"         : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "client_code"       : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
     "username"          : "james_bond",
     "email"             : "jb@mi5.gov.co.uk",
     "password"          : "TopS3cret",
@@ -250,6 +250,8 @@ Gives a standard response with **msg_id**, **code**, and **message**
 Client : forgot_password
 ========================
 
+NOT YET IMPLEMENTED
+
 This is on the route **/forgot_password**
 
 Request the server to send an email which will allow access to an account where the password
@@ -258,29 +260,29 @@ has been forgotten.
 {% highlight JSON %}
 {
     "msg_id"            : 123,
-    "client_code"         : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
-    "username"          : "james_bond",
-    "email"             : "jb@mi5.gov.co.uk",
+    "client_code"       : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "username_or_email" : "james_bond",
 }
 {% endhighlight %}
 
-username (optional)
+username_or_email (required)
 -------------------
-email (optional)
-----------------
 
 One or other, but not both, of **username** or **email** should be provided in order to
 identify the account.
 
-If they are verified, then an email will be sent to the registered email address with
+NOTE: The server responds with success whether or not an account with that username or
+email was found. The client should inform the user something along the lines of
+'If an account with that username or email is found, a password reminder will be sent'
+so as to prevent a phishing attack to determine if a particular email address is in use.
+
+If verified, then an email will be sent to the registered email address with
 details of how to log in.
 
 RESPONSE
 --------
 
 There will be a **Server : forgot_password** response.
-
-
 
 
 
@@ -306,7 +308,7 @@ Log into the server by giving the username and password
 {% highlight JSON %}
 {
     "msg_id"            : 123,
-    "client_code"         : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "client_code"       : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
     "username"          : "james_bond",
     "password"          : "TopS3cret",
 }
@@ -348,6 +350,8 @@ If successful, you will now be logged in with access to your account.
 Client : login_with_email_code
 ==============================
 
+NOT YET IMPLEMENTED
+
 This is on the route **/login_with_email_code**
 
 The email sent as a result of the **Client : forgot_password** message
@@ -357,7 +361,7 @@ to then change your password.
 {% highlight JSON %}
 {
     "msg_id"            : 123,
-    "client_code"         : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "client_code"       : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
     "email_code"        : "342e883c-ab8e-8782-fe89-9d828db8f9ca-2ea8d",
 }
 {% endhighlight %}

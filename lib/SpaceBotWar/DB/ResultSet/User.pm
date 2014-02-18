@@ -69,10 +69,23 @@ sub assert_create {
     return $user;
 }
 
+# Assert that either the username or the email address is valid
+#
+sub assert_find_by_username_or_email {
+    my ($self, $username_or_email) = @_;
+
+    my $user = $self->search({
+        -or => [
+            username    => $username_or_email,
+            email       => $username_or_email,
+        ],
+    });
+    confess [1002, 'Could not find account' ] if not $user;
+}           
+
 # Assert that a user can log in with a password
 #
 sub assert_login_with_password {
-
     my ($self, $args) = @_;
 
     confess [1001, 'username is missing' ]      if not defined $args->{username};
