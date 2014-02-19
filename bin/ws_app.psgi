@@ -26,7 +26,6 @@ use Plack::App::IndexFile;
 #
 my $app = builder {
 #    mount "/ajax/chat"          => SpaceBotWar::AjaxChat->new()->to_app;
-    mount "/ajax/mail"          => SpaceBotWar::WebSocket::EmailWorker->new({ server => 'RowlandHill'})->to_app;
     # the 'start' of the game, where you go to get connection to a game server.
     mount "/ws/start"           => SpaceBotWar::WebSocket::Start->new({ server => 'Kingsley'    })->to_app;
     mount "/ws/game/alpha"      => SpaceBotWar::WebSocket::Game->new({  server => 'Livingstone' })->to_app;

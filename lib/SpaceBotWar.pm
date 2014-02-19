@@ -12,6 +12,7 @@ use Module::Find qw(useall);
 use Redis;
 use SpaceBotWar::Cache;
 use SpaceBotWar::DB;
+use SpaceBotWar::Queue;
 use Log::Log4perl;
 
 my $dir = $ENV{SPACEBOTWAR_DIR} || "/data/spacebotwar";
@@ -34,6 +35,12 @@ my $_cache = SpaceBotWar::Cache->new({
     redis   => $_redis,
 });
 
+my $_queue = SpaceBotWar::Queue->new({
+    server  => $_config->get('beanstalk/server'),
+    ttr     => $_config->get('beanstalk/ttr'),
+    debug   => $_config->get('beanstalk/debug'),
+});
+
 
 # These are all singletons.
 #
@@ -51,6 +58,10 @@ sub cache {
 
 sub redis {
     return $_redis;
+}
+
+sub queue {
+    return $_queue;
 }
 
 __PACKAGE__->meta->make_immutable;

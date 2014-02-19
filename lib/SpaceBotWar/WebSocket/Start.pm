@@ -101,9 +101,17 @@ sub ws_forgot_password {
   
 
     if ($user) {
-        # TODO Put a message on the beanstalk send_email job queue
+        # Put a job on the send_email queue to send a forgotten password reminder email
+        #
+        my $queue = SpaceBotWar->queue;
+        my $job = $queue->publish('send_email', {
+            task        => 'forgot_password',
+            user_id     => $user->id,
+        },{
+            priority    => 1000,
+        });
+        $self->log->debug("Send Password Reminder Email Job ID : ".$job->id);
     }
-    confess [9999, "Not yet implemented"];
     
     return {
         code        => 0,

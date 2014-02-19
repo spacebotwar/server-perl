@@ -230,6 +230,9 @@ at least of of the following - Uppercase character, Lowercase character, Number.
 RESPONSE
 --------
 
+An email will be sent to the user which contains their registration details. A link in the email
+will be used to validate the email address.
+
 The server will respond with a **Server : register** message.
 
 
