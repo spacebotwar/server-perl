@@ -11,7 +11,10 @@ use SpaceBotWar::WebSocket::Chat;
 use SpaceBotWar::WebSocket::Arena;
 use SpaceBotWar::WebSocket::Match;
 use SpaceBotWar::WebSocket::Player;
+use SpaceBotWar::WebSocket::EmailWorker;
+use SpaceBotWar::AjaxChat;
 use Plack::Builder;
+use Plack::App::IndexFile;
 
 # Each of these 'servers' can potentially be on separate servers and we can add new servers to increase capacity
 #   'start'     - Should always be present, it is the first place to connect to
@@ -22,6 +25,8 @@ use Plack::Builder;
 #   the 'game', the 'chat' and the 'match' servers of which there can be many.
 #
 my $app = builder {
+#    mount "/ajax/chat"          => SpaceBotWar::AjaxChat->new()->to_app;
+    mount "/ajax/mail"          => SpaceBotWar::WebSocket::EmailWorker->new({ server => 'RowlandHill'})->to_app;
     # the 'start' of the game, where you go to get connection to a game server.
     mount "/ws/start"           => SpaceBotWar::WebSocket::Start->new({ server => 'Kingsley'    })->to_app;
     mount "/ws/game/alpha"      => SpaceBotWar::WebSocket::Game->new({  server => 'Livingstone' })->to_app;
@@ -38,7 +43,7 @@ my $app = builder {
     mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
     mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
     mount "/ws/player"          => SpaceBotWar::WebSocket::Player->new({ server => 'Scott'      })->to_app;
-#    mount "/ws/match/scott"     => SpaceBotWar::WebSocket::Match->new({ server => 'Scott'       })->to_app;
+    mount "/"                   => Plack::App::IndexFile->new(root => "/home/icydee/space-bot-war-client/src")->to_app;
 
 };
 $app;

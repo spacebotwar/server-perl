@@ -96,8 +96,9 @@ sub ws_forgot_password {
     my $user;
 
     try {
-       $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username_or_email});
-    ;
+        $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username_or_email});
+    };
+  
 
     if ($user) {
         # TODO Put a message on the beanstalk send_email job queue

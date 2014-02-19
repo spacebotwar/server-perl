@@ -98,7 +98,12 @@ sub tick {
             # this is a little messy!
             $self->log->debug("@@@@@@@@@@@@@@@@@@@@@@ state [".$client_player->state."] @@@@@@@@@@@@@@@@@@@");
             if ($client_player->state eq 'connected') {
-                $self->send_json($client_player->connection, '/init_program');
+                $self->log->debug("######### connected #########");
+                my $msg = {
+                    server_secret   => SpaceBotWar->config->get('server_secrets/player'),
+                    program_id      => 1,
+                };
+                $self->send_json($client_player->connection, '/init_program', $msg);
                 $client_player->state('running');
             }
             $self->send_json($client_player->connection, $route, $msg);

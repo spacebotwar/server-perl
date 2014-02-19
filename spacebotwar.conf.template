@@ -22,5 +22,8 @@
     "radius"   : {
         "api_key"   : "78855680-671c-4c70-b194-2e392a0a7c81",
         "secret"    : "9aa93d7d-59a1-4589-bdf3-bfe6d6531c4c"
+    },
+    "email_queue"   : {
+        "server"        : "localhost:11300"
     }
 }

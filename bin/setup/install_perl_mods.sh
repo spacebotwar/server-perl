@@ -28,3 +28,4 @@ cpanm Safe::Hole
 cpanm Git::Repository
 cpanm MooseX::Privacy
 cpanm Test::More
+cpanm AnyEvent::Beanstalk

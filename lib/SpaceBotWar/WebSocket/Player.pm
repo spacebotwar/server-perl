@@ -77,18 +77,19 @@ sub DESTROY {
 sub ws_init_program {
     my ($self, $context) = @_;
 
-    my $server_secret   = $context->param('server_secret');
+    my $server_secret   = $context->param('server_secret') || "";
     my $program_id      = $context->param('program_id');
 
     # Confirm that the correct server secret has been given
-    confess [1000, "Incorrect server secret. Go away! [$server_secret]" ] if $server_secret != SpaceBotWar->config->get('server_secrets/player');
+    $self->log->debug("Server secret [$server_secret]");
+    confess [1000, "Incorrect server secret. Go away! [$server_secret]" ] if $server_secret ne SpaceBotWar->config->get('server_secrets/player');
 
     my $code_store = SpaceBotWar->db->resultset('CodeStore')->find(1);
     confess [1000, "Cannot find code with ID [$program_id]"] if not $code_store;
 
     my $scratchpad = $self->scratchpad($context->connection);
     $scratchpad->{code} = $code_store->code;
-
+    $self->log->debug("INIT_PROGRAM CODE=[".$scratchpad->{code}."]");
     return {
         code        => 0,
         message     => 'Program',
