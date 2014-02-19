@@ -79,6 +79,17 @@ sub ws_register {
     my $rs_user = $db->resultset('User');
     my $user = $rs_user->assert_create({ %{$context->content} });
 
+    # Send a registration email to the user
+    #
+    my $queue = SpaceBotWar->queue;
+    my $job = $queue->publish('send_email', {
+        task        => 'registration',
+        user_id     => $user->id,
+    },{
+        priority    => 1000,
+    });
+    $self->log->debug("Send Registration Email. Job ID : ".$job->id);
+
     return {
         code    => 0,
         message => 'Available',
@@ -110,7 +121,7 @@ sub ws_forgot_password {
         },{
             priority    => 1000,
         });
-        $self->log->debug("Send Password Reminder Email Job ID : ".$job->id);
+        $self->log->debug("Send Password Reminder Email. Job ID : ".$job->id);
     }
     
     return {
