@@ -1,6 +1,7 @@
 use 5.010;
 use strict;
 use feature "switch";
+use lib '../lib';
 use lib '../../lib';
 use SpaceBotWar;
 use Test::More;
