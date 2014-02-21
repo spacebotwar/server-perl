@@ -84,6 +84,18 @@ sub assert_find_by_username_or_email {
     return $user;
 }           
 
+# Assert that a row exists with a specified id
+#
+sub assert_id {
+    my ($self, $id) = @_;
+
+    my ($user) = $self->search({
+        id  => $id,
+    });
+    confess [1002, 'Could not find account' ] if not $user;
+    return $user;
+}
+
 # Assert that a user can log in with a password
 #
 sub assert_login_with_password {

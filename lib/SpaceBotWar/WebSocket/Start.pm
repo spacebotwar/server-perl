@@ -160,19 +160,28 @@ sub ws_login_with_email_code {
     my ($self, $context) = @_;
 
     my $client_code = $self->check_client_code($context);
-    my $email_code = SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
+    $self->log->debug("Log in with email code [".$context->content->{email_code}."]");
+    # See if the email code is in the cache
+    my $email_code = SpaceBotWar::EmailCode->new({
+        id      => $context->content->{email_code},
+    });
+    $email_code->assert_validate;
 
     # If the email code is valid (and has not timed out) then it should now contain the user_id
     #
-    if ($email_code->user_id) {
-    }
-    else {
-    }
+    $self->log->debug("USER_ID = [".$email_code->user_id."]");
 
+    if ($email_code->user_id) {
+        my $user = SpaceBotWar->db->resultset('User')->assert_id($email_code->user_id);
+        return {
+            code        => 0,
+            message     => 'Welcome',
+            username    => $user->username,
+        }
+    }
     return {
-        code        => 0,
-        message     => 'Welcome',
-        username    => 'james',
+        code        => 1000,
+        message     => 'Error',
     };
 }
 

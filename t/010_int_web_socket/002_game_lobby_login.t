@@ -9,6 +9,8 @@ use lib "$FindBin::Bin/../lib";
 use Data::Dumper;
 use Test::More;
 use SpaceBotWar;
+use SpaceBotWar::EmailCode;
+
 use WSTester;
 
 my $db      = SpaceBotWar->db;
@@ -19,6 +21,23 @@ my $tester = WSTester->new({
     server      => $config->get('ws_servers/start'),
 });
 
+my $invalid_email_code = SpaceBotWar::EmailCode->new({
+    timeout_sec => 1,
+    user_id     => 1,
+})->store;
+
+diag("INVALID: email code is [".$invalid_email_code->id."]");
+
+# allow for the timeout of the invalid code (we could do this better)
+sleep(1);
+
+my $valid_email_code = SpaceBotWar::EmailCode->new({
+    timeout_sec => 100,
+    user_id     => 1,
+})->store;
+diag("VALID: email code is [".$valid_email_code->id."]");
+
+isnt($invalid_email_code->id, $valid_email_code->id, 'Codes are different');
 
 my $tests = {
     "000_get_client_code" => {
@@ -98,15 +117,26 @@ my $tests = {
     "008_login_with_email_code_invalid" => {
         method  => 'login_with_email_code',
         send    => {
-            email_code  => 'foo',
+            email_code  => $invalid_email_code->id,
         },
         recv    => {
-            code        => 1001,
-            message     => 'Invalid Email Code',
+            code        => 1000,
+            message     => 'Error',
         },
     },
 
-    "009_forgotten_password_username" => {
+    "009_login_with_email_code_valid" => {
+        method  => 'login_with_email_code',
+        send    => {
+            email_code  => $valid_email_code->id,
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Welcome',
+        },
+    },
+
+    "010_forgotten_password_username" => {
         method  => 'forgot_password',
         send    => {
             username_or_email   => ' test_user_1',
@@ -117,7 +147,7 @@ my $tests = {
         },
     },
 
-#    "009_login_with_email_code" => {
+#    "011_login_with_email_code" => {
 #        method  => 'login_with_email_code',
 #        send    => {
 #            email_code  => 'foo',

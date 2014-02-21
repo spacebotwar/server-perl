@@ -75,7 +75,7 @@ sub _create_id {
     return $uuid."-".$digest;
 }
 
-# Automatically extend the client_code if we update any values
+# Automatically store the client_code if we update any values
 #
 for my $func (qw(user_id)) {
     around $func => sub {
@@ -85,17 +85,18 @@ for my $func (qw(user_id)) {
         return $self->$orig() if not @_;
 
         my $ret = $self->$orig(@_);
-        $self->extend;
+        $self->store;
         return $ret;
     };
 }
 
-# extend the client_code timer
+# store the email code timer
 #
-sub extend {
+sub store {
     my ($self) = @_;
 
     $self->cache->set($self->namespace, $self->id, $self->to_hash, $self->timeout_sec);
+    return $self;
 }
 
 # Create a hash of this client_code
@@ -139,7 +140,7 @@ sub validate {
 sub assert_validate {
     my ($self) = @_;
 
-    confess [1000, "Email Code is missing" ]                    if not defined $self->id;
+    confess [1000, "Email Code is missing" ]            if not defined $self->id;
     confess [1001, "Invalid Email Code", $self->id ]    if not $self->validate;
     return $self;
 }
