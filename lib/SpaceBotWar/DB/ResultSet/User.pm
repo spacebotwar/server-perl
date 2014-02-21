@@ -74,13 +74,14 @@ sub assert_create {
 sub assert_find_by_username_or_email {
     my ($self, $username_or_email) = @_;
 
-    my $user = $self->search({
+    my ($user) = $self->search({
         -or => [
             username    => $username_or_email,
             email       => $username_or_email,
         ],
     });
     confess [1002, 'Could not find account' ] if not $user;
+    return $user;
 }           
 
 # Assert that a user can log in with a password

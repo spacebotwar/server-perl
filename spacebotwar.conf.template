@@ -25,5 +25,10 @@
     },
     "email_queue"   : {
         "server"        : "localhost:11300"
+    },
+    "beanstalk"     : {
+        "server"        : "localhost:11300",
+        "ttr"           : "120",
+        "debug"         : "0"
     }
 }

@@ -48,10 +48,19 @@ has 'debug' => (
     default     => 0,
 );
 
+# log4perl logger
+has log => (
+    is        => 'rw',
+    default => sub {
+        my ($self) = @_;
+        return Log::Log4perl->get_logger( "Queue" );
+    },
+);
                 
 sub __build_beanstalk {
     my ($self) = @_;
 
+    $self->log->debug("beanstalk connect: [".$self->server."][".$self->ttr."][".$self->debug."]");
     my $beanstalk = Beanstalk::Client->new({
         server      => $self->server,
         ttr         => $self->ttr,
@@ -153,17 +162,20 @@ sub consume {
 
     my $job;
     my $beanstalk = $self->_beanstalk;
-
+    $self->log->debug("beanstalk = [$beanstalk]");
     RESERVE:
     while (not $job) {
+        $self->log->debug("wait on tube [$tube]");
         $beanstalk->watch_only($tube);
         $job = $beanstalk->reserve;
 
         # Defend against undef jobs (most likely due to DEADLINE_SOON)
         if (not $job) {
+            $self->log->debug("No Job! [".$beanstalk->error."]");
             sleep 1;
             redo RESERVE;
         }
+        $self->log->debug("Got job $job");
         my $stats = $job->stats;
         my $bury;
 

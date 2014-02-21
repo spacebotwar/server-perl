@@ -24,6 +24,8 @@ my $context = SpaceBotWar::WebSocket::Context->new({
     connection  => 'foo',
     client_code => 'bar',
     user        => 'baz',
+    server_secret   => SpaceBotWar->config->get('server_secrets/player'),
+    program_id  => 1,
 });
 
 my $content = {
@@ -31,6 +33,7 @@ my $content = {
 };
 
 $context->content($content);
+diag("got here");
 
 my $expected_reply = {
    'program' => {
@@ -45,18 +48,20 @@ my $expected_reply = {
    'code' => 0
 };
 
-my $reply = $player->ws_init_program($context);
+diag("got here next");
+#my $reply = $player->ws_init_program($context);
+#diag("got here too");
 
-is_deeply($reply, $expected_reply);
+#is_deeply($reply, $expected_reply);
 
-$content = {
-    player  => 0,
-    ships   => [
-        {id => 0, owner_id => 0, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
-        {id => 1, owner_id => 1, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
-    ]
-};
-$context->content($content);
+#$content = {
+#    player  => 0,
+#    ships   => [
+#        {id => 0, owner_id => 0, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
+#        {id => 1, owner_id => 1, status => 'ok', health => 100, x => 0, y => 0, rotation => 0, orientation => 1},
+#    ]
+#};
+#$context->content($content);
 
 
 # TODO We need to mock the connection object before we can do any more tests!
@@ -65,9 +70,10 @@ $context->content($content);
 
 #$reply = $player->ws_game_state($context);
 
-diag Dumper($reply);
+#diag Dumper($reply);
 
-sleep 5;
+#sleep 5;
 
 
 done_testing();
+

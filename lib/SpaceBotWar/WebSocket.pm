@@ -30,6 +30,7 @@ has log => (
     is        => 'rw',
     default => sub {
         my ($self) = @_;
+        my $server = $self->server || "null";
         return Log::Log4perl->get_logger( "WS::".$self->server );
     },
 );
@@ -375,11 +376,11 @@ sub on_error {
 }
 
 sub check_client_code {
-    my $self = shift;
-    my $client_code = shift;
+    my ($self, $message) = @_;
 
-    if (defined $client_code->content) {
-        $client_code = $client_code->content->{client_code};
+    my $client_code;
+    if (defined $message and defined $message->content) {
+        $client_code = $message->content->{client_code};
     }
 
     return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);

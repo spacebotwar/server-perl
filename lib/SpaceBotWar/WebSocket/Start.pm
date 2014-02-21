@@ -106,6 +106,7 @@ sub ws_forgot_password {
     my $db = SpaceBotWar->db;
     my $user;
 
+    $self->log->debug("Forgot password!");
     try {
         $user = $db->resultset('User')->assert_find_by_username_or_email($context->content->{username_or_email});
     };
@@ -122,6 +123,9 @@ sub ws_forgot_password {
             priority    => 1000,
         });
         $self->log->debug("Send Password Reminder Email. Job ID : ".$job->id);
+    }
+    else {
+        $self->log->debug("Could not find user with those details! [".$context->content->{username_or_email}."]");
     }
     
     return {
@@ -155,10 +159,15 @@ sub ws_login_with_password {
 sub ws_login_with_email_code {
     my ($self, $context) = @_;
 
-    SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
+    my $client_code = $self->check_client_code($context);
+    my $email_code = SpaceBotWar::EmailCode->assert_validate_email_code($context->content->{email_code});
 
-    # email code login? Just recover the client_code user_id?
-    confess [9999, "Not yet implemented"];
+    # If the email code is valid (and has not timed out) then it should now contain the user_id
+    #
+    if ($email_code->user_id) {
+    }
+    else {
+    }
 
     return {
         code        => 0,

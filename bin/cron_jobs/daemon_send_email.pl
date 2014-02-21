@@ -14,10 +14,12 @@ use Log::Log4perl qw(:levels);
 #
 my $daemonize   = 1;
 our $quiet      = 1;
+our $loop       = 1;
 
 GetOptions(
     'daemonize!'    => \$daemonize,
     'quiet!'        => \$quiet,
+    'loop!'         => \$loop,
 );
 
 $App::Daemon::loglevel = $quiet ? $WARN : $DEBUG;
@@ -82,6 +84,7 @@ eval {
         my $task    = $args->{task};
     
         out('job received ['.$job->id.']');
+        out('payload '.Dumper($job->payload));
 
         my $payload = $job->payload;
 
@@ -113,7 +116,7 @@ exit 0;
 
 sub out {
     my ($message) = @_;
-    my $logger = Log::Log4perl->get_logger;
+    my $logger = Log::Log4perl->get_logger("Daemon::SendEmail");
     $logger->info($message);
 }
 

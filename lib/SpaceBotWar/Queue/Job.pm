@@ -14,12 +14,7 @@ has 'job' => (
 sub payload {
     my ($self) = @_;
 
-    my $args    = $self->job->args;
-    my $class   = $args->{parent_table};
-    my $id      = $args->{parent_id};
-
-    my $thing   = SpaceBotWar->db->resultset($class)->find($id);
-    return $thing;
+    return $self->job->args;
 }
 
 __PACKAGE__->meta->make_immutable;

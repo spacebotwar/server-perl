@@ -106,6 +106,17 @@ my $tests = {
         },
     },
 
+    "009_forgotten_password_username" => {
+        method  => 'forgot_password',
+        send    => {
+            username_or_email   => ' test_user_1',
+        },
+        recv    => {
+            code        => 0,
+            message     => 'Success'
+        },
+    },
+
 #    "009_login_with_email_code" => {
 #        method  => 'login_with_email_code',
 #        send    => {

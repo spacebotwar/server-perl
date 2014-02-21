@@ -1,9 +1,9 @@
 # log4perl configuration file
 #
 # default log level DEBUG is good during development, should be WARN in production
-log4perl.rootLogger=DEBUG, LOGFILE, SCREEN
+log4perl.rootLogger=DEBUG, SCREEN
 # this turns on or off the (frequent) Web Socket messages, definately WARN in production!
-log4perl.logger.WS=WARN, LOGFILE, SCREEN
+log4perl.logger.WS=WARN, SCREEN
 
 log4perl.appender.LOGFILE=Log::Log4perl::Appender::File
 log4perl.appender.LOGFILE.filename=/home/icydee/space-bot-war/log/error.log

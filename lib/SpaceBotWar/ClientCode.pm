@@ -129,7 +129,7 @@ sub extend {
     my ($self) = @_;
 
     $self->extended($self->extended + 1);
-    $self->cache->set('client_code', $self->id, $self->to_hash, $self->timeout_sec);
+    $self->cache->set($self->namespace, $self->id, $self->to_hash, $self->timeout_sec);
 }
 
 

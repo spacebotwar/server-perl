@@ -12,16 +12,46 @@ use Try;
 use SpaceBotWar;
 use SpaceBotWar::EmailCode;
 
-my $email_code = SpaceBotWar::EmailCode->create_email_code;
+# Create a new email code with no data
+my $email_code = SpaceBotWar::EmailCode->new({
+    timeout_sec => 5,
+});
 is(defined $email_code, 1, "Email Code is created");
-diag("email_code = [$email_code]");
+isa_ok($email_code, 'SpaceBotWar::EmailCode');
+$email_code->user_id(123);
+is($email_code->user_id, 123, 'Correct user_id');
 
-my $valid = SpaceBotWar::EmailCode->validate_email_code($email_code);
-is($valid, 1, "Email Code is valid");
+my $code = $email_code->id;
+diag("CODE = ".$code);
 
-# note. this test may be fragile as code is moved around between servers?
-$valid = SpaceBotWar::EmailCode->validate_email_code('25138e31-e0c7-40c8-8968-1cb9bd45b7c6-e88a4c');
-is($valid, 1, "Email Code is valid 2");
+my $valid = $email_code->validate;
+diag("email_code_valid = [$valid]");
+
+is($valid, $email_code, "Email Code is valid");
+
+# Now read it back to get the user_id
+
+my $new_email_code = SpaceBotWar::EmailCode->new({
+    id  => $code,
+    timeout_sec => 5,
+});
+is($new_email_code->user_id, $email_code->user_id, "Read back, user_id is valid");
+
+diag("valid2 = [$valid]");
+is($email_code->id, $new_email_code->id, "Same ID");
+is($new_email_code->user_id, 123, "Retrieved user id");
+
+
+
+# Now wait for the timeout
+sleep(6);
+
+$new_email_code = SpaceBotWar::EmailCode->new({
+    id  => $code,
+});
+is($new_email_code->user_id, undef, "User ID has expired");
+
+
 
 done_testing();
 

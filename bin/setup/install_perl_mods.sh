@@ -29,3 +29,5 @@ cpanm Git::Repository
 cpanm MooseX::Privacy
 cpanm Test::More
 cpanm AnyEvent::Beanstalk
+cpanm Beanstalk::Client
+cpanm App::Daemon
