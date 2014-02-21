@@ -20,8 +20,8 @@ my $queue = SpaceBotWar::Queue->new({
 
 diag("queue = $queue");
 
-my $job = $queue->consume('send_email');
+#my $job = $queue->consume('send_email');
 
-diag("job = $job");
+#diag("job = $job");
 ok(1);
 done_testing;
