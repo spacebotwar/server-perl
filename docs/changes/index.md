@@ -2,10 +2,20 @@
 layout: default
 title: Changes
 ---
-v-0.008 (2014-02-12)
+v-0.009 (2014-02-21)
 ###[UI]
-    - Client that builds for production now loads images
+    - Register a user
+    - Changes to build procedure
+    - Start to implement Jasmine tests
 ###[Server]
+    - Email job queue added
+    - Forgotten password implemented
+    - Login via email code implemented
+
+v-0.008 (2014-02-12)
+###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/b08fdb439122dabf941f7a85e8b61551cc1b332a)
+    - Client that builds for production now loads images
+###[Server](https://github.com/spacebotwar/space-bot-war/commit/05d4c150b12131a62c1ea053b5359509cbdc5b70)
     - not a lot
 
 ---
