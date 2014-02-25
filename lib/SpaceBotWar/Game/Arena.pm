@@ -19,6 +19,13 @@ has 'ships' => (
     default => sub { [] },
 );
 
+# An array of all the missiles in the Arena
+#
+has 'missiles' => (
+    is      => 'rw',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]',
+    default => sub { [] },
+);
 
 # This size (radius) of the arena (in pixels)
 has radius  => (
@@ -194,10 +201,28 @@ sub tick {
             $end_y = sin($angle) * 1000;
         }
     
-        # Check for collisions, in which case come to an early halt
-    
+        # Check for ship-to-ship collisions, in which case come to an early halt
+        SHIP:
+        my $ship_dia_squared = 40 * 40;
+        foreach my $other_ship (@{$self->ships}) {
+            next SHIP if $ship == $other_ship;
+            my $dx = $ship->x - $other_ship->x;
+            my $dy = $ship->y - $other_ship->y;
+            if ($dy * $dy + $dx * $dx < $ship_dia_squared) {
+                # For now, simplest solution is to put the ship back where it was!
+                # Yes, we are introducing bias, ships with the lowest ID are moved
+                # back and higher ID ships are allowed to move.
+                $end_x = $ship->x;
+                $end_y = $ship->y;
+            }
+        }
         # Check for hits by missiles. In which case cause damage
-    
+        # This is basically the intersection of a line with a circle.
+
+
+
+
+
         $ship->x($end_x);
         $ship->y($end_y);
    
