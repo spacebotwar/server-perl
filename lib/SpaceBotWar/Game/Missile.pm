@@ -47,6 +47,19 @@ has 'y' => (
     isa         => 'Num',
     default     => 0,
 );
+# Next X co-ordinate
+has 'next_x' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+# Next Y co-ordinate
+has 'next_y' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
 # Forward speed
 has 'speed' => (
     is          => 'rw',

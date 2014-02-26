@@ -81,12 +81,12 @@ sub _initialize {
     my ($self) = @_;
     
     my $ship_layout = {
-        1   => { x => -350, y => -350, direction => PI/4 },
-        2   => { x => -400, y => -350, direction => PI/4 },
+        1   => { x => -340, y => -340, direction => PI/4 },
+        2   => { x => -400, y => -340, direction => PI/4 },
         3   => { x => -350, y => -400, direction => PI/4 },
-        4   => { x => 350, y => 350, direction => PI/4 + PI },
-        5   => { x => 400, y => 350, direction => PI/4 + PI },
-        6   => { x => 350, y => 400, direction => PI/4 + PI },
+        4   => { x => 340, y => 340, direction => PI/4 + PI },
+        5   => { x => 400, y => 340, direction => PI/4 + PI },
+        6   => { x => 340, y => 400, direction => PI/4 + PI },
     };
     my @ships;
     foreach my $ship_id (sort keys %$ship_layout) {
@@ -184,6 +184,15 @@ sub tick {
 
     my $radius_squared = $self->radius * $self->radius;
 
+    foreach my $missile (@{$self->missiles}) {
+        my $distance = $missile->speed * $duration_millisec / 1000;
+        my $delta_x = $distance * cos($missile->direction);
+        my $delta_y = $distance * sin($missile->direction);
+        $missile->end_x(int($missile->x + $delta_x));
+        $missile->end_y(int($missile->y + $delta_y));
+        # TODO we need to take into account the max range of the missile.
+    }
+
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
         # Calculate the final position based on thrust and direction
@@ -222,10 +231,12 @@ sub tick {
         }
         # Check for hits by missiles. In which case cause damage
         # This is basically the intersection of a line with a circle.
-
-
-
-
+        MISSILE:
+        foreach my $missile (@{$self->missiles}) {
+            if (intersect_missile_ship($missile, $ship, 20) {
+                # missile causes damage to ship
+            }
+        }
 
         $ship->x($end_x);
         $ship->y($end_y);
@@ -235,6 +246,59 @@ sub tick {
         $ship->orientation($ship->orientation+$angle_rad);
     }
 }
+
+# Check for the intersection of the missile and the ship
+#   returns 'damage' as a number between 0 and 1
+#
+sub intersect_missile_ship {
+    my ($missile, $ship, $r) = @_;
+
+    # equation taken from http://mathworld.wolfram.com/Circle-LineIntersection.html
+    # Note, circle is assumed to be at (0,0) so we need to take this into account.
+    # Note, for the purpose of this test, the ship is assumed to be static (which it will be,
+    # relative to the speed of the missile).
+    #
+    my $x1  = $missile->x - $ship->x;
+    my $x2  = $missile->end_x - $ship->x;
+    my $y1  = $missile->y = $ship->y;
+    my $y2  = $missile->end_y - $ship->y;
+
+    my $dx  = $x2 - $x1;
+    my $dy  = $y2 - $y1;
+    my $dr  = sqrt($dx * $dx  + $dy * $dy);
+    my $d   = ($x1 * $y2) - ($x2 * $y1);
+
+    # Do they intersect?
+    my $drs = $dr * $dr;
+    my $dis = $r * $r * $drs - $d * $d;
+    if ($dis <= 0) {
+        # Note, tangents ($dis == 0) are ignored
+        # as are total misses
+        return 0;
+    }
+    # Yes, they intersect. Determine the chord size to estimate the damage.
+    my $dis_root = sqrt($dis);
+    my $sgn = $dy < 0 ? -1 : 1;
+    my $dya = abs($dy);
+    my $xa  = $d * $dy - $sgn * $dx * $dis_root
+
+}
+
+
+
+
+
+
+
+
+    my $dx = $missile->end_x - $missile->x;
+    my $dy = $missile->end_y - $missile->y;
+    my $dr = sqrt($dx * $dx + $dy * $dy);
+    my $d = ($missile->x - $ship->x)*($missile->end_y - $ship->y) - ($missile->end_x - $ship->x)*($missile->y - $ship->y);
+
+
+
+
 
 # Create hash dependent upon state
 #
