@@ -202,18 +202,22 @@ sub tick {
         }
     
         # Check for ship-to-ship collisions, in which case come to an early halt
-        SHIP:
         my $ship_dia_squared = 40 * 40;
+        SHIP:
         foreach my $other_ship (@{$self->ships}) {
             next SHIP if $ship == $other_ship;
             my $dx = $ship->x - $other_ship->x;
             my $dy = $ship->y - $other_ship->y;
-            if ($dy * $dy + $dx * $dx < $ship_dia_squared) {
-                # For now, simplest solution is to put the ship back where it was!
-                # Yes, we are introducing bias, ships with the lowest ID are moved
-                # back and higher ID ships are allowed to move.
-                $end_x = $ship->x;
-                $end_y = $ship->y;
+
+            my $apart_squared = $dy * $dy + $dx * $dx;
+            if ($apart_squared < $ship_dia_squared) {
+                # For now, simplest solution is to move the ship away from the
+                # one it is closest to
+                my $apart_fraction = 1 - sqrt($apart_squared) / sqrt($ship_dia_squared);
+                $dx *= $apart_fraction;
+                $dy *= $apart_fraction;
+                $end_x = $other_ship->x - $dx;
+                $end_y = $other_ship->y - $dy;
             }
         }
         # Check for hits by missiles. In which case cause damage
