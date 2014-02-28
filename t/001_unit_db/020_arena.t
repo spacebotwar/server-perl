@@ -12,6 +12,7 @@ use Try;
 
 use SpaceBotWar;
 use SpaceBotWar::Game::Arena;
+use SpaceBotWar::Game::Ship;
 
 use constant PI => 3.14159;
 
@@ -19,10 +20,10 @@ my $arena = SpaceBotWar::Game::Arena->new({});
 
 isa_ok($arena, 'SpaceBotWar::Game::Arena', "Correct class");
 
-is(scalar(@{$arena->ships}), 6, "Correct number of ships");
+is(scalar(@{$arena->ships}), 12, "Correct number of ships");
 
 my $player_ships = grep {$_->owner_id == 1} @{$arena->ships};
-is($player_ships, 3, "Correct number of ships for player 1");
+is($player_ships, 6, "Correct number of ships for player 1");
 
 is($arena->start_time, -1, "Initial start time is correct");
 
@@ -62,6 +63,34 @@ $ship->orientation(0);
 $ship->rotation(-1);
 $arena->tick(5);
 delta_ok($ship->orientation, PI * 2 -0.5, "Clockwise rotation for half a second");
+
+##### Now some tests for collisions ######
+# (we just need two ships initially)
+#
+my @ships;
+foreach my $ship_id (1,2) {
+    my $ship = SpaceBotWar::Game::Ship->new({
+        id              => $ship_id,
+        owner_id        => $ship_id,
+        x               => 0,
+        y               => 0,
+        thrust_forward  => 0,
+        thrust_sideway  => 0,
+        thrust_reverse  => 0,
+        orientation     => 0,
+        rotation        => 0,
+    });
+    push @ships, $ship;
+}
+$arena->ships(\@ships);
+
+$arena->tick(5);
+
+foreach my $ship (@{$arena->ships}) {
+    diag "ID: ".$ship->id;
+    diag "          x: ".$ship->x;
+    diag "          y: ".$ship->y;
+}
 
 
 done_testing();

@@ -60,7 +60,7 @@ has log => (
     is        => 'rw',
     default => sub {
         my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
+        return Log::Log4perl->get_logger( "SpaceBotWar::Game::Arena");
     },
 );
 
@@ -81,12 +81,20 @@ sub _initialize {
     my ($self) = @_;
     
     my $ship_layout = {
-        1   => { x => -340, y => -340, direction => PI/4 },
-        2   => { x => -400, y => -340, direction => PI/4 },
-        3   => { x => -350, y => -400, direction => PI/4 },
-        4   => { x => 340, y => 340, direction => PI/4 + PI },
-        5   => { x => 400, y => 340, direction => PI/4 + PI },
-        6   => { x => 340, y => 400, direction => PI/4 + PI },
+#1 => { x => -250, y => 0, direction => 0},
+#2 => { x => 250, y => 0, direction => PI},
+        1   => { x => -140, y => -240, direction => PI/4 },
+        2   => { x => -200, y => -240, direction => PI/4 },
+        3   => { x => -140, y => -300, direction => PI/4 },
+        4   => { x => -140, y => -360, direction => PI/4 },
+        5   => { x => -200, y => -300, direction => PI/4 },
+        6   => { x => -260, y => -240, direction => PI/4 },
+        7   => { x => 140, y => 240, direction => PI/4 + PI },
+        8   => { x => 200, y => 240, direction => PI/4 + PI },
+        9   => { x => 140, y => 300, direction => PI/4 + PI },
+        10  => { x => 140, y => 360, direction => PI/4 + PI },
+        11  => { x => 200, y => 300, direction => PI/4 + PI },
+        12  => { x => 260, y => 240, direction => PI/4 + PI },
     };
     my @ships;
     foreach my $ship_id (sort keys %$ship_layout) {
@@ -94,7 +102,7 @@ sub _initialize {
 
         my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_id,
-            owner_id        => int(($ship_id - 1) / 3) + 1,
+            owner_id        => int(($ship_id - 1) / 6) + 1,
             type            => 'ship',
             x               => $ship_ref->{x},
             y               => $ship_ref->{y},
@@ -107,6 +115,25 @@ sub _initialize {
         push @ships, $ship;
     }
     $self->ships(\@ships);
+
+#    @ships = ();
+    foreach my $i (1..40) {
+        my $ship = SpaceBotWar::Game::Ship->new({
+            id              => $i,
+            owner_id        => $i % 2 + 1,
+            type            => 'ship',
+            x               => int(rand(200)),
+            y               => int(rand(200)),
+            thrust_forward  => 0,
+            thrust_sideway  => 0,
+            thrust_reverse  => 0,
+            orientation     => rand(2 * PI),
+            rotation        => 0,
+        });
+#        push @ships, $ship;
+    }
+#    $self->ships(\@ships);
+
     $self->start_time(-1);
     $self->log->debug("######status = starting at [".$self->start_time."] ############");
     $self->status('starting');
@@ -152,6 +179,7 @@ sub accept_move {
 sub tick {
     my ($self, $duration) = @_;
 
+    $self->log->debug("TICK");
     my $duration_millisec = $duration * 100;
     $self->start_time($self->start_time + $duration / 10);
 
@@ -193,6 +221,8 @@ sub tick {
         # TODO we need to take into account the max range of the missile.
     }
 
+    # Calculate the end position for each ship first
+    #
     foreach my $ship (@{$self->ships}) {
         # No longer check for limits here, all done in the Ship module!
         # Calculate the final position based on thrust and direction
@@ -209,49 +239,80 @@ sub tick {
             $end_x = cos($angle) * 1000;
             $end_y = sin($angle) * 1000;
         }
-    
+        $ship->x($end_x);
+        $ship->y($end_y);
+    }
+
+    # Now check for collisions (can we not merge these two loops together?)
+    # 
+    foreach my $ship (@{$self->ships}) {
+        $self->log->debug("ship id ".$ship->id);        
         # Check for ship-to-ship collisions, in which case come to an early halt
-        my $ship_dia_squared = 40 * 40;
         SHIP:
         foreach my $other_ship (@{$self->ships}) {
             next SHIP if $ship == $other_ship;
-            my $dx = $ship->x - $other_ship->x;
-            my $dy = $ship->y - $other_ship->y;
+            # Check for intersection of two ships
+            $self->intersect_ship_ship($ship, $other_ship);
 
-            my $apart_squared = $dy * $dy + $dx * $dx;
-            if ($apart_squared < $ship_dia_squared) {
-                # For now, simplest solution is to move the ship away from the
-                # one it is closest to
-                my $apart_fraction = 1 - sqrt($apart_squared) / sqrt($ship_dia_squared);
-                $dx *= $apart_fraction;
-                $dy *= $apart_fraction;
-                $end_x = $other_ship->x - $dx;
-                $end_y = $other_ship->y - $dy;
-            }
         }
         # Check for hits by missiles. In which case cause damage
         # This is basically the intersection of a line with a circle.
         MISSILE:
         foreach my $missile (@{$self->missiles}) {
-            if (intersect_missile_ship($missile, $ship, 20) {
+            if ($self->intersect_missile_ship($missile, $ship, 20)) {
                 # missile causes damage to ship
             }
         }
 
-        $ship->x($end_x);
-        $ship->y($end_y);
-   
         # angle of rotation over the tick.
         my $angle_rad = $ship->rotation * $duration_millisec / 1000;
         $ship->orientation($ship->orientation+$angle_rad);
     }
 }
 
+
+# Check for the intersection of two ships. If they intersect, then move them apart so they don't touch
+#
+sub intersect_ship_ship {
+    my ($self, $ship, $other_ship) = @_;
+
+    my $ship_dia = 60;
+    my $ship_dia_squared = $ship_dia * $ship_dia;
+    $self->log->debug("ship compare ".$ship->id." with ".$other_ship->id);
+    my $dx = $ship->x - $other_ship->x;
+    my $dy = $ship->y - $other_ship->y;
+
+    my $apart_squared = $dy * $dy + $dx * $dx;
+    $self->log->debug("Distance apart = [$apart_squared][$ship_dia_squared]");
+    if ($apart_squared < $ship_dia_squared) {
+        # For now, simplest solution is to move the ship away from the
+        # one it is closest to
+        # 'apart' is the distance they have to be moved apart by
+        my $apart = $ship_dia * (1 - sqrt($apart_squared) / $ship_dia);
+        $self->log->debug("Apart = $apart");
+
+        # 'angle' defines the axis they have to be moved apart on
+        my $angle = atan2($dy, $dx);
+        $self->log->debug("Angle = $angle");
+
+        # Move the ship apart from each other by half the apart_fraction on the axis between them
+        my $hdx = cos($angle) * $apart / 2;
+        my $hdy = sin($angle) * $apart / 2;
+        $self->log->debug("hdx = $hdx, hdy = $hdy");
+
+        $ship->x($ship->x + $hdx);
+        $ship->y($ship->y + $hdy);
+        $other_ship->x($other_ship->x - $hdx);
+        $other_ship->y($other_ship->y - $hdy);
+    }
+}
+
+
 # Check for the intersection of the missile and the ship
 #   returns 'damage' as a number between 0 and 1
 #
 sub intersect_missile_ship {
-    my ($missile, $ship, $r) = @_;
+    my ($self, $missile, $ship, $r) = @_;
 
     # equation taken from http://mathworld.wolfram.com/Circle-LineIntersection.html
     # Note, circle is assumed to be at (0,0) so we need to take this into account.
@@ -283,22 +344,6 @@ sub intersect_missile_ship {
     my $xa  = $d * $dy - $sgn * $dx * $dis_root
 
 }
-
-
-
-
-
-
-
-
-    my $dx = $missile->end_x - $missile->x;
-    my $dy = $missile->end_y - $missile->y;
-    my $dr = sqrt($dx * $dx + $dy * $dy);
-    my $d = ($missile->x - $ship->x)*($missile->end_y - $ship->y) - ($missile->end_x - $ship->x)*($missile->y - $ship->y);
-
-
-
-
 
 # Create hash dependent upon state
 #
