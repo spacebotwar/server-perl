@@ -2,12 +2,22 @@
 layout: default
 title: Changes
 ---
+v-0.010 (2014-02-28)
+###[UI]()
+    - Major tidy up
+    - Revamp of build process
+    - Support for main game screen
+    - Login, Logout now works
+    - Start to implement UI tests
+###[Server]()
+    - Collision detection, and avoidance for ship movements
+
 v-0.009 (2014-02-21)
-###[UI]
+###[UI](https://github.com/spacebotwar/space-bot-war/commit/ec3167b54d8b4ce3c0e1af260d862de4eb8f71e0)
     - Register a user
     - Changes to build procedure
     - Start to implement Jasmine tests
-###[Server]
+###[Server](https://github.com/spacebotwar/space-bot-war/commit/ec3167b54d8b4ce3c0e1af260d862de4eb8f71e0)
     - Email job queue added
     - Forgotten password implemented
     - Login via email code implemented
