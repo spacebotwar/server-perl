@@ -3,7 +3,6 @@ package SpaceBotWar::Game::Ship;
 use Moose;
 use MooseX::Privacy;
 use Data::Dumper;
-use Log::Log4perl;
 
 use namespace::autoclean;
 
@@ -121,18 +120,6 @@ has 'max_rotation' => (
     default     => 2,
 );
 
-# log4perl logger
-# TODO We will have to look at directing log info to a location
-# where it can be sent back to the user, not to a system log file
-# 
-has log => (
-    is        => 'ro',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
-
 # Limit the requested thrust in any direction
 # 
 for my $direction (qw(forward reverse)) {
@@ -158,7 +145,6 @@ around 'thrust_sideway' => sub {
 
     return $self->$orig unless defined $speed;
 
-#    $self->log->debug("thrust_sideways = $speed");
     my $max_speed = $self->max_thrust_sideway;
     if ($speed > $max_speed) {
         $speed = $max_speed;

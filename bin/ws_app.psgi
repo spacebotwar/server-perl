@@ -28,12 +28,12 @@ my $app = builder {
 #    mount "/ajax/chat"          => SpaceBotWar::AjaxChat->new()->to_app;
     # the 'start' of the game, where you go to get connection to a game server.
     mount "/ws/start"           => SpaceBotWar::WebSocket::Start->new({ server => 'Kingsley'    })->to_app;
-    mount "/ws/game/alpha"      => SpaceBotWar::WebSocket::Game->new({  server => 'Livingstone' })->to_app;
+#    mount "/ws/game/alpha"      => SpaceBotWar::WebSocket::Game->new({  server => 'Livingstone' })->to_app;
 
     # The 'lobby' where you connect to gain access to the chat servers.
-    mount "/ws/lobby"           => SpaceBotWar::WebSocket::Lobby->new({ server => 'Dickens'     })->to_app;
-    mount "/ws/chat/bronte"     => SpaceBotWar::WebSocket::Chat->new({  server => 'Bronte'      })->to_app;
-    mount "/ws/chat/Carroll"    => SpaceBotWar::WebSocket::Chat->new({  server => 'Carroll'     })->to_app;
+#    mount "/ws/lobby"           => SpaceBotWar::WebSocket::Lobby->new({ server => 'Dickens'     })->to_app;
+#    mount "/ws/chat/bronte"     => SpaceBotWar::WebSocket::Chat->new({  server => 'Bronte'      })->to_app;
+#    mount "/ws/chat/Carroll"    => SpaceBotWar::WebSocket::Chat->new({  server => 'Carroll'     })->to_app;
 
     # private servers to run the code that is used in matches.
     mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
@@ -41,7 +41,6 @@ my $app = builder {
     # The 'arena' where you go to find out what matches are being run
     mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
     mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
-    mount "/ws/player"          => SpaceBotWar::WebSocket::Player->new({ server => 'Scott'      })->to_app;
     mount "/"                   => Plack::App::IndexFile->new(root => "/home/icydee/space-bot-war-client/src")->to_app;
 
 };

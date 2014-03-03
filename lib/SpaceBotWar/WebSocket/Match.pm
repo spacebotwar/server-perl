@@ -76,6 +76,11 @@ sub tick {
 
     $self->arena->tick(5);
 
+    if ($self->arena->start_time > 300) {
+        $self->ws_start_match;
+        return;
+    }
+
     my $msg = {
         code        => 0,
         message     => 'Match Status',
@@ -96,7 +101,7 @@ sub tick {
 
         if ($client_player->connection) {
             # this is a little messy!
-            $self->log->debug("@@@@@@@@@@@@@@@@@@@@@@ state [".$client_player->state."] @@@@@@@@@@@@@@@@@@@");
+            $self->log->debug("state [".$client_player->state."] ");
             if ($client_player->state eq 'connected') {
                 $self->log->debug("######### connected #########");
                 my $msg = {
