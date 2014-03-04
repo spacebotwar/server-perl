@@ -25,16 +25,6 @@ has websocket_server  => (
     },
 );
 
-# log4perl logger
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        my $server = $self->server || "null";
-        return Log::Log4perl->get_logger( "WS::".$self->server );
-    },
-);
-
 # The 'name' of the server. It may be useful later...
 has server => (
     is      => 'ro',
@@ -47,6 +37,12 @@ has connections => (
     isa     => 'HashRef',
     default => sub { {} },
 );
+
+sub log {
+    my ($self) = @_;
+    my $server = $self->server || "null";
+    return Log::Log4perl->get_logger( "WS::".$self->server );
+}
 
 
 sub BUILD {
@@ -104,14 +100,15 @@ sub broadcast_json {
         route   => $route,
         content => $content,
     };
+    my $log = $self->log;
 
     my $sent = JSON->new->encode($json);
     my $clients = keys %{$self->connections};
-    $self->log->info("BCAST: [$self] [$sent] connections=[$clients]");
+    $log->info("BCAST: [$self] [$sent] connections=[$clients]");
     my $i = 0;
     foreach my $con_key (keys %{$self->connections}) {
         my $connection = $self->connections->{$con_key};
-        $self->log->info("BROADCAST: [$connection][$sent]");
+        $log->info("BROADCAST: [$connection][$sent]");
         $connection->send($sent);
     }
 }
@@ -138,26 +135,27 @@ sub on_connect {
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
-    $self->log->info("Establish: [$connection]");
+    my $log = $self->log;
+    $log->info("Establish: [$connection]");
 
     my $context = SpaceBotWar::WebSocket::Context->new({
         server      => $self->server,
         connection  => $connection,
         content     => {},
     });
-    $self->log->debug("Establish");
+    $log->debug("Establish");
     
     my $con_ref = $self->connections;
 
     $con_ref->{$connection} = $connection;
-    $self->log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
+    $log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
                 
     my $reply = {
         server      => $self->server,
         route       => '/',
         content     => $self->on_connect($context),
     };
-    $self->log->debug("Establish");
+    $log->debug("Establish");
     if ($reply) {
         $self->render_json($context, $reply);
     }
@@ -166,23 +164,23 @@ sub on_establish {
     # Should the web socket care?
     my $user;
     my $client_code;
-    $self->log->debug("Establish");
+    $log->debug("Establish");
     
     $connection->on(
         message => sub {
             my ($connection, $msg) = @_;
 
-            $self->log->info("RCVD: $msg");
+            $log->info("RCVD: $msg");
 
             my $json = JSON->new;
             my $json_msg = eval {$json->decode($msg)};
             if ($@) {
-                $self->log->error($@);
+                $log->error($@);
                 $self->fatal($connection, $@);
                 return;
             }
 
-            $self->log->debug("Establish");
+            $log->debug("Establish");
             my $path    = $json_msg->{route};
             my $content = $json_msg->{content} || {};
 
@@ -208,20 +206,20 @@ sub on_establish {
                 $route =~ s{^/}{};
                 $route =~ s{/}{::};
                 $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-                $self->log->debug("route = [$route]");
+                $log->debug("route = [$route]");
                 my $obj;
                 if ($route) {
-                    $self->log->debug("ROUTE... [$route]");
+                    $log->debug("ROUTE... [$route]");
                     $route = ref($self)."::".$route;
                     eval "require $route";
                     $obj = $route->new({});
                 }
                 else {
-                    $self->log->debug("ROUTE... [SELF!]");
+                    $log->debug("ROUTE... [SELF!]");
                     $route = $self;
                     $obj = $self;
                 }
-                $self->log->debug("route = [$route]");
+                $log->debug("route = [$route]");
                 my $context = SpaceBotWar::WebSocket::Context->new({
                     server          => $self->server,
                     connection      => $connection,
@@ -229,7 +227,7 @@ sub on_establish {
                     client_code     => $client_code,
                     user            => $user,
                 });
-                $self->log->debug("Call [$obj][$method]");
+                $log->debug("Call [$obj][$method]");
                 my $reply = $obj->$method($context);
                 if ($reply) {
                     # Send back the message ID
@@ -276,11 +274,12 @@ sub on_establish {
 sub kill_client_data {
     my ($self, $connection) = @_;
 
+    my $log = $self->log;
     my $con_ref = $self->connections;
     delete $con_ref->{$connection};
-    $self->log->info("FINISH: [$self] there are ".scalar(keys %{$self->connections}). " connections");
+    $log->info("FINISH: [$self] there are ".scalar(keys %{$self->connections}). " connections");
     undef $connection;
-    $self->log->info("killed connection data");
+    $log->info("killed connection data");
 }
 
 
@@ -311,11 +310,12 @@ my $ERROR_ENV = "plack.app.websocket.error";
 sub call {
     my ($self, $env) = @_;
 
+    my $log = $self->log;
     if ($env->{"psgi.run_once"}) {
-        $self->log->debug("RUNNING IN A NON-PERSISTENT ENVIRONMENT");
+        $log->debug("RUNNING IN A NON-PERSISTENT ENVIRONMENT");
     }
     else {
-        $self->log->debug("RUNNING IN A PERSISTENT ENVIRONMENT");
+        $log->debug("RUNNING IN A PERSISTENT ENVIRONMENT");
     }
 
 

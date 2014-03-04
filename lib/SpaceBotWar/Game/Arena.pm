@@ -55,14 +55,10 @@ has 'status' => (
     default => 'starting',
 );
 
-# log4perl logger
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( "SpaceBotWar::Game::Arena");
-    },
-);
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger( "SpaceBotWar::Game::Arena");
+}
 
 # An arena is assumed to be a circle of radius $self->radius
 # with the x,y origin in the centre.
@@ -179,7 +175,8 @@ sub accept_move {
 sub tick {
     my ($self, $duration) = @_;
 
-    $self->log->debug("TICK");
+    my $log = $self->log;
+    $log->debug("TICK");
     my $duration_millisec = $duration * 100;
     $self->start_time($self->start_time + $duration / 10);
 
@@ -246,7 +243,7 @@ sub tick {
     # Now check for collisions (can we not merge these two loops together?)
     # 
     foreach my $ship (@{$self->ships}) {
-        $self->log->debug("ship id ".$ship->id);        
+        $log->debug("ship id ".$ship->id);        
         # Check for ship-to-ship collisions, in which case come to an early halt
         SHIP:
         foreach my $other_ship (@{$self->ships}) {
@@ -276,29 +273,30 @@ sub tick {
 sub intersect_ship_ship {
     my ($self, $ship, $other_ship) = @_;
 
+    my $log = $self->log;
     my $ship_dia = 60;
     my $ship_dia_squared = $ship_dia * $ship_dia;
-    $self->log->debug("ship compare ".$ship->id." with ".$other_ship->id);
+    $log->debug("ship compare ".$ship->id." with ".$other_ship->id);
     my $dx = $ship->x - $other_ship->x;
     my $dy = $ship->y - $other_ship->y;
 
     my $apart_squared = $dy * $dy + $dx * $dx;
-    $self->log->debug("Distance apart = [$apart_squared][$ship_dia_squared]");
+    $log->debug("Distance apart = [$apart_squared][$ship_dia_squared]");
     if ($apart_squared < $ship_dia_squared) {
         # For now, simplest solution is to move the ship away from the
         # one it is closest to
         # 'apart' is the distance they have to be moved apart by
         my $apart = $ship_dia * (1 - sqrt($apart_squared) / $ship_dia);
-        $self->log->debug("Apart = $apart");
+        $log->debug("Apart = $apart");
 
         # 'angle' defines the axis they have to be moved apart on
         my $angle = atan2($dy, $dx);
-        $self->log->debug("Angle = $angle");
+        $log->debug("Angle = $angle");
 
         # Move the ship apart from each other by half the apart_fraction on the axis between them
         my $hdx = cos($angle) * $apart / 2;
         my $hdy = sin($angle) * $apart / 2;
-        $self->log->debug("hdx = $hdx, hdy = $hdy");
+        $log->debug("hdx = $hdx, hdy = $hdy");
 
         $ship->x($ship->x + $hdx);
         $ship->y($ship->y + $hdy);

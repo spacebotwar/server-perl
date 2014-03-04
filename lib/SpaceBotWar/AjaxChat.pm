@@ -14,14 +14,11 @@ use Chat::iFly;
 use SpaceBotWar;
 
 
-# log4perl logger
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( "AjaxChat" );
-    },
-);
+sub log {
+    my ($self) = @_;
+
+    return Log::Log4perl->get_logger( "AjaxChat" );
+}
 
 has chat => (
     is      => 'rw',
@@ -47,11 +44,12 @@ sub BUILD {
 sub call {
     my ($self, $env) = @_;
 
-    $self->log->debug(Dumper(\$env));
+    my $log = $self->log;
+    $log->debug(Dumper(\$env));
     my $user = $self->chat->generate_anonymous_user;
     my $json = $self->chat->render_ajax($user);
 
-    $self->log->debug("AJAX CHAT [$json]");
+    $log->debug("AJAX CHAT [$json]");
     return [ 200, ['Content-Type','application/json'], [$json]];
 }
 

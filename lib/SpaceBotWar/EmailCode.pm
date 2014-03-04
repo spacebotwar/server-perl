@@ -45,15 +45,10 @@ has user_id => (
     isa     => 'Int',
 );
 
-# log4perl logger
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger($self);
-    },
-);
-
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger($self);
+}
 
 
 # Called *after* the object has been constructed
@@ -126,12 +121,13 @@ sub from_hash {
 sub validate {
     my ($self) = @_;
 
+    my $log = $self->log;
     return if not defined $self->id;
     my $secret  = SpaceBotWar->config->get('email_secret');
     my $uuid    = substr($self->id, 0, 36);
     my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
-    $self->log->debug("test = [$test]");
-    $self->log->debug("retn = [".$self->id."]");
+    $log->debug("test = [$test]");
+    $log->debug("retn = [".$self->id."]");
     return $test eq $self->id ? $self : undef;
 }
 

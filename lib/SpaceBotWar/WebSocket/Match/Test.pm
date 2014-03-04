@@ -2,13 +2,10 @@ package SpaceBotWar::WebSocket::Match::Test;
 
 use Moose;
 
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger( $self );
+}
 
 sub ws_test {
     my ($self, $context) = @_;

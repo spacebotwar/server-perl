@@ -72,19 +72,10 @@ has 'direction' => (
     default     => 2,
 );
 
-# log4perl logger
-# TODO We will have to look at directing log info to a location
-# where it can be sent back to the user, not to a system log file
-# 
-has log => (
-    is        => 'ro',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
-
-};
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger( $self );
+}
 
 # Normalise the direction
 #

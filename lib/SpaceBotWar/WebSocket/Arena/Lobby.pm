@@ -10,13 +10,10 @@ use Carp;
 use UUID::Tiny ':std';
 use JSON;
 
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger( $self );
+}
 
 sub BUILD {
     my ($self) = @_;

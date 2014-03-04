@@ -2,13 +2,10 @@ package SpaceBotWar::WebSocket::Start::User;
 
 use Moose;
 
-has log => (
-    is        => 'rw',
-    default => sub {
-        my ($self) = @_;
-        return Log::Log4perl->get_logger( $self );
-    },
-);
+sub log {
+    my ($self) = @_;
+    return Log::Log4perl->get_logger( $self );
+}
 
 # This API supports the /user route
 
