@@ -2,14 +2,20 @@
 layout: default
 title: Changes
 ---
-v-0.010 (2014-02-28)
+v-0.011 (2014-03-04)
 ###[UI]()
+    - Added UI test framework
+    - Added tests for login
+###[Server]()
+    - Found a memory leak and fixed it.
+v-0.010 (2014-02-28)
+###[UI](https://github.com/spacebotwar/space-bot-war-client/commit/78130a572e41f5004fb41f750204528aa315925b)
     - Major tidy up
     - Revamp of build process
     - Support for main game screen
     - Login, Logout now works
     - Start to implement UI tests
-###[Server]()
+###[Server](https://github.com/spacebotwar/space-bot-war/commit/7e2b240e7477afdc9753bd0d4d5c0e0279bccb48)
     - Collision detection, and avoidance for ship movements
 
 v-0.009 (2014-02-21)
