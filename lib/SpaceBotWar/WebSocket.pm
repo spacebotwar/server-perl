@@ -31,6 +31,13 @@ has server => (
     default => 'main'
 );
 
+# 'heartbeat' timer to ensure the module is healthy
+#
+has hb_timer => (
+    is      => 'rw',
+);
+
+
 # A hash of all clients that are connected to this server
 has connections => (
     is      => 'rw',
@@ -38,24 +45,85 @@ has connections => (
     default => sub { {} },
 );
 
+
 sub log {
     my ($self) = @_;
     my $server = $self->server || "null";
     return Log::Log4perl->get_logger( "WS::".$self->server );
 }
 
+sub incr_stat {
+    my ($self, $attr) = @_;
 
+    $self->$attr($self->$attr + 1);
+}
+
+sub read_and_reset_stat {
+    my ($self, $attr) = @_;
+
+    my $val = $self->$attr;
+    $self->$attr(0);
+    return $val;
+}
+
+# Statistic values
+# (how many new connections)
+#
+has [qw(stats_new_connections stats_die_connections stats_sent_messages)] => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
+# Give the module a heartbeat (every 10 seconds)
+#
 sub BUILD {
     my ($self) = @_;
 
-    # every half second, send a status message (for test purposes)
-    #
-    $self->log->debug("BUILD WEBSOCKET ####### $self");
+    $self->log->info("BUILD WEBSOCKET #### $self");
+    my $ws = AnyEvent->timer(
+        after       => 0.0,
+        interval    => 10,
+        cb          => sub {
+            $self->heartbeat;
+        },
+    );
+    $self->hb_timer($ws);
 }
 
-sub DEMOLISH {
+# Generate a hash for the statistics of this instance
+# Note: this structure will be augmented by descendents
+#
+sub instance_stats {
     my ($self) = @_;
+
+    my $stats = inner() || {};
+    $stats->{time}              = time;
+    $stats->{server}            = $self->server;
+    $stats->{number_of_clients} = $self->number_of_clients;
+    $stats->{new_connections}   = $self->read_and_reset_stat('stats_new_connections');
+    $stats->{die_connections}   = $self->read_and_reset_stat('stats_die_connections');
+    $stats->{sent_messages}     = $self->read_and_reset_stat('stats_sent_messages');
+
+    return $stats;
 }
+
+# Called every heartbeat to report it's stats and health
+#
+sub heartbeat {
+    my ($self) = @_;
+
+    my $stats = $self->instance_stats;
+    # Put the stats onto the stats queue
+    my $queue = SpaceBotWar->queue;
+    my $job = $queue->publish('stats', {
+        task        => 'websocket',
+        stats       => $stats,
+    },{
+        priority    => 1000,
+    });
+}
+
 
 # A fatal error has occurred and the connection cannot be made
 #
@@ -65,14 +133,23 @@ sub fatal {
     $self->log->error($@);
 }
 
+# General purpose send method, so we can log and record stats
+#
+sub send {
+    my ($self, $connection, $msg) = @_;
+
+    $self->log->info("Sent: [$msg]");
+    $self->incr_stat('stats_sent_messages');
+    $connection->send($msg);
+}
+
 # Send a message to the one client in the 'context'
 # 
 sub render_json {
     my ($self, $context, $json) = @_;
 
     my $sent = JSON->new->encode($json);
-    $self->log->info("Sent: [$sent]");
-    $context->connection->send($sent);
+    $self->send($context->connection, $sent);
 }
 
 # Send a message to one client, without the context
@@ -86,8 +163,7 @@ sub send_json {
         content     => $json,
     };
     my $sent = JSON->new->encode($msg);
-    $self->log->info("SEND: [$connection][$sent]");
-    $connection->send($sent);
+    $self->send($connection, $sent);
 }
  
 # Broadcast the same message to every connected client
@@ -103,13 +179,11 @@ sub broadcast_json {
     my $log = $self->log;
 
     my $sent = JSON->new->encode($json);
-    my $clients = keys %{$self->connections};
-    $log->info("BCAST: [$self] [$sent] connections=[$clients]");
+    $log->info("BCAST: [$self] [$sent] connections=[".$self->number_of_clients."]");
     my $i = 0;
     foreach my $con_key (keys %{$self->connections}) {
         my $connection = $self->connections->{$con_key};
-        $log->info("BROADCAST: [$connection][$sent]");
-        $connection->send($sent);
+        $self->send($connection, $sent);
     }
 }
 
@@ -135,6 +209,7 @@ sub on_connect {
 sub on_establish {
     my ($self, $connection, $env) = @_;
 
+    $self->incr_stat('stats_new_connections');
     my $log = $self->log;
     $log->info("Establish: [$connection]");
 
@@ -263,6 +338,7 @@ sub on_establish {
     );
     $connection->on(
         finish => sub {
+            $self->incr_stat('stats_die_connections');
             $self->kill_client_data($connection);
         },
     );
@@ -299,8 +375,7 @@ sub report_error {
         },
     };
     $msg = JSON->new->encode($msg);
-    $self->log->info("SEND: $msg");
-    $connection->send($msg);
+    $self->send($connection, $msg);
 }
 
 my $ERROR_ENV = "plack.app.websocket.error";

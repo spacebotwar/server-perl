@@ -27,6 +27,30 @@ has scratchpads => (
     default     => sub { {} },
 );
 
+# (how many inits)
+#
+has stats_new_inits => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
+# (how many game_state calls)
+#
+has stats_game_states => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
+# (how many start_state calls)
+#
+has stats_start_states => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+
 # this Web Socket server sends moves back to the client
 # (the game server) based on the current position of the ships
 #
@@ -48,6 +72,20 @@ before 'kill_client_data' => sub {
 
     delete $self->scratchpads->{$connection};
     $self->log->info("killed scratchpad data");
+};
+
+# heartbeat stats
+#
+augment 'instance_stats' => sub {
+    my ($self) = @_;
+
+    my $stats = inner() || {};
+    $stats->{type} = 'Player';
+    $stats->{game_states}   = $self->read_and_reset_stat('stats_game_states');
+    $stats->{new_inits}     = $self->read_and_reset_stat('stats_new_inits');
+    $stats->{start_states}  = $self->read_and_reset_stat('stats_start_states');
+
+    return $stats;
 };
 
 
@@ -76,6 +114,8 @@ sub DESTROY {
 # 
 sub ws_init_program {
     my ($self, $context) = @_;
+
+    $self->incr_stat('stats_new_inits');
 
     my $server_secret   = $context->param('server_secret') || "";
     my $program_id      = $context->param('program_id');
@@ -111,6 +151,7 @@ sub ws_init_program {
 sub ws_start_state {
     my ($self, $context) = @_;
 
+    $self->incr_stat('stats_start_states');
     my $scratchpad = $self->scratchpad($context->connection);
 
     # All we need to is store it in the connections scratchpad.
@@ -149,6 +190,8 @@ sub merge_scratchpad {
 #
 sub ws_game_state {
     my ($self, $context) = @_;
+
+    $self->incr_stat('stats_game_states');
 
     my $scratchpad = $self->scratchpad($context->connection);
   

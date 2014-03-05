@@ -11,7 +11,6 @@ use SpaceBotWar::WebSocket::Chat;
 use SpaceBotWar::WebSocket::Arena;
 use SpaceBotWar::WebSocket::Match;
 use SpaceBotWar::WebSocket::Player;
-use SpaceBotWar::WebSocket::EmailWorker;
 use SpaceBotWar::AjaxChat;
 use Plack::Builder;
 use Plack::App::IndexFile;

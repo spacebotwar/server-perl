@@ -120,12 +120,22 @@ sub tick {
     $self->broadcast_json("/match_tick", $msg);
 }
 
+sub end_match {
+    my ($self) = @_;
+
+    return if not $self->client_players;
+    foreach my $cp (@{$self->client_players}) {
+        $cp->connection->close;
+    }
+}
 
 # Start a new match
 # TODO: Look at making this work from a beanstalk job queue
 # 
 sub ws_start_match {
     my ($self, $context) = @_;
+
+    $self->end_match;
 
     $self->arena->status('init');
     $self->log->info("START MATCH");
