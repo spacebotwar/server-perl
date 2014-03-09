@@ -340,6 +340,19 @@ The current state of the game (sent once the match has started)
         },
         ...
     ],
+    "missiles"  : [
+        {
+        "id"                    : 1001,
+        "owner_id"              : 1,
+        "x"                     : -545,
+        "y"                     : 34,
+        "direction"             : -1.2,
+        "speed"                 : 150,
+        "type"                  : "fireball",
+        "status"                : "explode",
+        },
+        ...
+    ],
 }
 {% endhighlight %}
 
@@ -448,6 +461,36 @@ A player **knows** his own thrust settings (forward, sideway, reverse) but can o
 from his sensors the resultant vector of enemy ships (speed and direction). This is why the
 data sent back for a players own ships differ in these attributes.
 
+missiles
+--------
+
+Missiles have similar attributes to ships,
+
+###owner_id
+
+As above.
+
+###missile_id
+
+All missiles are identified by a unique ID.
+
+###x and y
+
+As above.
+
+###direction and speed
+
+As above.
+
+###status
+
+The status can be used to distinguish different phases of the missile. e.g.
+**launch**, **running**, **explosion**
+
+###type
+
+The type of the missile, may be used to indicate different missiles and images for them,
+e.g. **laser**, **rocket**, etc.
 
 
 

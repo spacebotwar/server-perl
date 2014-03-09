@@ -228,10 +228,6 @@ As above.
 
 As above.
 
-###orientation, rotation
-
-Missiles are always orientatied in the direction of their movement and they don't rotate.
-
 ###status
 
 The status can be used to distinguish different phases of the missile. e.g.

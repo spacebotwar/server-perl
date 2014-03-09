@@ -21,12 +21,12 @@ has 'enemy_ships' => (
 
 has 'my_missiles' => (
     is      => 'rw',
-#    isa     => 'ArrayRef[SpaceBotWar::Game::Missiles]'
+    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]'
 );
 
 has 'enemy_missiles' => (
     is      => 'rw',
-#    isa     => 'ArrayRef[SpaceBotWar::Game::Missiles]'
+    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]'
 );
 
 has '_log' => (

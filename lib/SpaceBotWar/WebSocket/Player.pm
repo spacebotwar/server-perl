@@ -244,8 +244,34 @@ sub ws_game_state {
         }
     }
 
+    my @my_missiles;
+    my @enemy_missiles;
+    foreach my $missile_hash (@{$context->param('missiles')}) {
+        my $missile;
+        $missile = SpacebotWar::Game::Missile->new({
+            id          => $missile_hash->{id},
+            owner_id    => $missile_hash->{owner_id},
+            status      => $missile_hash->{status},
+            type        => $missile_hash->{type},
+            x           => $missile_hash->{x}, 
+            y           => $missile_hash->{y},
+            direction   => $missile_hash->{direction},
+            speed       => $missile_hash->{speed},
+        });
+        if ($missile->owner_id == $player_id) {
+            push @my_missiles, $missile;
+        }
+        else {
+            push @enemy_missiles, $missile;
+        }
+    }
+
+
     my $data = SpaceBotWar::Game::Data->new({
         my_ships        => \@my_ships,
+        enemy_ships     => \@enemy_ships,
+        my_missiles     => \@my_missiles,
+        enemy_missiles  => \@enemy_missiles,
     });
 
     # This is where we call the code to calculate the ship movements

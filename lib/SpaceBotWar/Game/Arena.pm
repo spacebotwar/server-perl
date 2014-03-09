@@ -367,9 +367,10 @@ sub dynamic_to_hash {
         push @ships_ref, $ship->dynamic_to_hash;
     }
     return {
-        status  => $self->status,
-        time    => $self->start_time,
-        ships   => \@ships_ref,
+        status      => $self->status,
+        time        => $self->start_time,
+        ships       => \@ships_ref,
+        missiles    => [],
     };
 }
 
@@ -383,11 +384,16 @@ sub all_to_hash {
     foreach my $ship (@{$self->ships}) {
         push @ships_ref, $ship->all_to_hash;
     }
+    my @missiles_ref;
+    foreach my $missile (@{$self->missiles}) {
+        push @missiles_ref, $missile->all_to_hash;
+    }
     return {
-        status  => $self->status,
-        radius  => $self->radius,
-        time    => $self->start_time,
-        ships   => \@ships_ref,
+        status      => $self->status,
+        radius      => $self->radius,
+        time        => $self->start_time,
+        ships       => \@ships_ref,
+        missiles    => \@missiles_ref,
     };
 }
 
