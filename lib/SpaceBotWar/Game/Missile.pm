@@ -7,6 +7,8 @@ use Log::Log4perl;
 
 use namespace::autoclean;
 
+extends "SpaceBotWar::Game";
+
 # This defines the basic characteristics of a ship
 
 use constant PI => 3.14159;

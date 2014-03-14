@@ -3,8 +3,12 @@ package SpaceBotWar::Game::Ship;
 use Moose;
 use MooseX::Privacy;
 use Data::Dumper;
+use Math::Round qw(nearest);
+use POSIX qw(fmod);
 
 use namespace::autoclean;
+
+extends 'SpaceBotWar::Game';
 
 # This defines the basic characteristics of a ship
 
@@ -119,6 +123,28 @@ has 'max_rotation' => (
     isa         => 'Num',
     default     => 2,
 );
+# Flag to launch a missile
+has 'missile_launch' => (
+    is          => 'rw',
+    isa         => 'Int',
+    default     => 0,
+    traits      => [qw(Protected)],
+);
+# Direction to fire missile
+has 'missile_direction' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+    traits      => [qw(Protected)],
+);
+# Missile reload period
+has 'missile_reloading' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+    traits      => [qw(Protected)],
+);
+
 
 # Limit the requested thrust in any direction
 # 
@@ -171,21 +197,38 @@ around "rotation" => sub {
     $self->$orig($speed);
 };
 
-# Normalise the orientation
+# Normalise an angle to return in the range -PI to +PI
+# (this could be factored out into a module, but it would be lonely!)
 #
-around 'orientation' => sub {
-    my ($orig, $self, $angle) = @_;
+sub normalize_radians {
+    my ($self, $angle) = @_;
 
-    return $self->$orig if not defined $angle;
+    my $log = $self->log;
 
-    while ($angle > 2*PI) {
-        $angle -= 2*PI;
-    }
-    while ($angle < 0) {
-        $angle += 2*PI;
-    }
-    $self->$orig($angle);
-};
+    $log->debug("angle = [$angle]");
+    my $f_angle = fmod($angle, 2*PI);
+    $log->debug("f_angle = [$f_angle]");
+
+    $f_angle -= 2*PI if $f_angle > PI;
+    $f_angle += 2*PI if $f_angle < 0 - PI;
+    $log->debug("return = [$f_angle]");
+
+    return $f_angle;
+}
+
+
+# Normalise methods that are given an angle
+#
+for my $method (qw(orientation missile_direction)) {
+    around $method => sub {
+        my ($orig, $self, $angle) = @_;
+
+        return $self->$orig if not defined $angle;
+
+        $angle = $self->normalize_radians($angle);
+        $self->$orig($angle);
+    };
+}
 
 # The direction the ship goes is determined by several factors
 #  the 'orientation' of the ship, i.e. which direction it is facing
@@ -214,23 +257,14 @@ sub speed {
 
     return $self->actual_speed($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse);
 }
-sub actual_speed {
+
+protected_method actual_speed => sub {
     my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse) = @_;
 
     my $forward = $thrust_forward - $thrust_reverse;
     my $speed = sqrt($forward * $forward + $thrust_sideway * $thrust_sideway);
     return $speed;
 };
-
-# Return the value in so many significant points
-# TODO Replace this with Math::Round
-#
-sub decpoint {
-    my ($value, $points) = @_;
-
-    return int($value * 10) / 10;
-}
-
 
 # Create a hash representation of the object. For efficiency
 # just use this to transmit the data once, and cache the static
@@ -242,19 +276,19 @@ sub all_to_hash {
     return {
         id                  => $self->id,
         owner_id            => $self->owner_id,
-        x                   => decpoint($self->x),
-        y                   => decpoint($self->y),
-        direction           => decpoint($self->direction),
-        speed               => decpoint($self->speed),
-        thrust_forward      => decpoint($self->thrust_forward),
-        thrust_sideway      => decpoint($self->thrust_sideway),
-        thrust_reverse      => decpoint($self->thrust_reverse),
-        rotation            => decpoint($self->rotation),
-        orientation         => decpoint($self->orientation),
-        max_rotation        => decpoint($self->max_rotation),
-        max_thrust_forward  => decpoint($self->max_thrust_forward),
-        max_thrust_sideway  => decpoint($self->max_thrust_sideway),
-        max_thrust_reverse  => decpoint($self->max_thrust_reverse),
+        x                   => nearest(0.1, $self->x),
+        y                   => nearest(0.1, $self->y),
+        direction           => nearest(0.01, $self->direction),
+        speed               => nearest(0.1, $self->speed),
+        thrust_forward      => nearest(0.1, $self->thrust_forward),
+        thrust_sideway      => nearest(0.1, $self->thrust_sideway),
+        thrust_reverse      => nearest(0.1, $self->thrust_reverse),
+        rotation            => nearest(0.01, $self->rotation),
+        orientation         => nearest(0.01, $self->orientation),
+        max_rotation        => nearest(0.1, $self->max_rotation),
+        max_thrust_forward  => nearest(0.1, $self->max_thrust_forward),
+        max_thrust_sideway  => nearest(0.1, $self->max_thrust_sideway),
+        max_thrust_reverse  => nearest(0.1, $self->max_thrust_reverse),
         name                => $self->name,
         type                => $self->type,
         status              => $self->status,
@@ -273,12 +307,12 @@ sub dynamic_to_hash {
     return {
         id              => $self->id,
         owner_id        => $self->owner_id,
-        x               => decpoint($self->x),
-        y               => decpoint($self->y),
-        direction       => decpoint($self->direction),
-        speed           => decpoint($self->speed),
-        rotation        => decpoint($self->rotation),
-        orientation     => decpoint($self->orientation),
+        x               => nearest(0.1, $self->x),
+        y               => nearest(0.1, $self->y),
+        direction       => nearest(0.01, $self->direction),
+        speed           => nearest(0.1, $self->speed),
+        rotation        => nearest(0.01, $self->rotation),
+        orientation     => nearest(0.01, $self->orientation),
         status          => $self->status,
         health          => $self->health,
     };

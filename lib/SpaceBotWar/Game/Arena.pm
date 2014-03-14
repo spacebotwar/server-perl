@@ -5,11 +5,12 @@ package SpaceBotWar::Game::Arena;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
-use Log::Log4perl;
 
 use SpaceBotWar::Game::Ship;
 
 use constant PI => 3.14159;
+
+extends "SpaceBotWar::Game";
 
 # An array of all the ships in the Arena
 #
