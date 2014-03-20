@@ -7,8 +7,8 @@ use AnyEvent;
 use SpaceBotWar;
 use SpaceBotWar::Game::Arena;
 use SpaceBotWar::Game::Data;
-use SpaceBotWar::Game::Ship::Mine;
-use SpaceBotWar::Game::Ship::Enemy;
+use SpaceBotWar::Player::Ship::Mine;
+use SpaceBotWar::Player::Ship::Enemy;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
@@ -129,6 +129,17 @@ sub ws_init_program {
 
     my $scratchpad = $self->scratchpad($context->connection);
     $scratchpad->{code} = $code_store->code;
+
+    # for test purposes only
+    $scratchpad->{code} = <<'CODE_END';
+        foreach my $ship (@{$data->my_ships}) { 
+            $ship->thrust_forward(20); 
+            $ship->rotation(-0.2);
+            $ship->fire_missile_relative(0);
+        } 
+        return 1;
+CODE_END
+
     $self->log->debug("INIT_PROGRAM CODE=[".$scratchpad->{code}."]");
     return {
         code        => 0,
@@ -207,7 +218,7 @@ sub ws_game_state {
 
         my $ship;
         if ($sp_hash->{owner_id} == $player_id) {
-            $ship = SpaceBotWar::Game::Ship::Mine->new({
+            $ship = SpaceBotWar::Player::Ship::Mine->new({
                 id              => $sp_hash->{id},
                 owner_id        => $sp_hash->{owner_id},
                 status          => $sp_hash->{status},
@@ -228,7 +239,7 @@ sub ws_game_state {
             #
         }
         else {
-            $ship = SpaceBotWar::Game::Ship::Enemy->new({
+            $ship = SpaceBotWar::Player::Ship::Enemy->new({
                 id              => $ship_hash->{id},
                 owner_id        => $ship_hash->{owner_id},
                 status          => $ship_hash->{status},
@@ -248,7 +259,7 @@ sub ws_game_state {
     my @enemy_missiles;
     foreach my $missile_hash (@{$context->param('missiles')}) {
         my $missile;
-        $missile = SpacebotWar::Game::Missile->new({
+        $missile = SpacebotWar::Player::Missile->new({
             id          => $missile_hash->{id},
             owner_id    => $missile_hash->{owner_id},
             status      => $missile_hash->{status},
@@ -276,16 +287,22 @@ sub ws_game_state {
 
     # This is where we call the code to calculate the ship movements
     # 
-    my $compartment = new Safe;
-    my $hole = Safe::Hole->new({});
-    $hole->wrap($data, $compartment, '$data');
-    $compartment->permit('rand','srand');
-
+#    my $compartment = new Safe;
+#    my $hole = Safe::Hole->new({});
+#    $hole->wrap($data, $compartment, '$data');
+#    $compartment->permit('rand','srand');
+    #
     my @ship_moves;
-
+    #
     my $test_code = $scratchpad->{code};
-    $self->log->debug("Code is $test_code");
-    my $result = $compartment->reval($test_code);
+#    $self->log->debug("Code is $test_code");
+#    my $result = $compartment->reval($test_code);
+
+    # insecure alternative.
+    my $result = eval $test_code;    
+    
+
+
     if ($@) {
         $self->log->error("=========== could not evaluate code =========== $@");
         die "Could not evaluate code ==================================== $@";

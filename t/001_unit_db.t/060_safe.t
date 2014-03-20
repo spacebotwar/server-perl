@@ -16,7 +16,7 @@ use SpaceBotWar::Game::Ship::Mine;
 
 
 
-our $ship = SpaceBotWar::Game::Ship::Mine->new({
+our $ship = SpaceBotWar::Game::Ship->new({
     id              => 1,
     owner_id        => 2,
     status          => 'ok',
@@ -31,7 +31,10 @@ our $ship = SpaceBotWar::Game::Ship::Mine->new({
 });
 my $thrust_forward = 0;
 
+
 $ship->thrust_forward(33);
+$ship->fire_missile_relative(0);
+
 diag "++++++ thrust_forward = [".$ship->thrust_forward."]";
 
 my $compartment = new Safe;
@@ -49,6 +52,8 @@ my $test_code = <<'END';
 #    $log .= "thrust_forward now=[$thrust_forward]\n";
     $log .= "ship = [$ship]\n";
     $ship->thrust_forward(10);
+    $ship->fire_missile_absolute(0);
+
 #    $ship->thrust_sideway(rand(10));
 #    $ship->thrust_reverse(rand(20));
 #    $ship->rotation(rand(2) - 1);

@@ -1,7 +1,7 @@
 package SpaceBotWar::Game::Ship::Mine;
 
 use Moose;
-use Log::Log4perl;
+use MooseX::Privacy;
 
 use namespace::autoclean;
 
@@ -15,7 +15,7 @@ extends 'SpaceBotWar::Game::Ship';
 
 # We need to make some attributes read-only so they can't be 
 # changed by the player who owns the ships.
-for my $method ( qw(id owner_id name type status health x y orientation speed direction max_rotation max_thrust_forward max_thrust_sideway max_thrust_reverse missile_reloading missile_launch missile_direction)) {
+for my $method ( qw(id owner_id name type status health x y orientation speed direction max_rotation max_thrust_forward max_thrust_sideway max_thrust_reverse)) {
     before $method => sub {
         my $self = shift;
         if (@_) {
@@ -24,46 +24,18 @@ for my $method ( qw(id owner_id name type status health x y orientation speed di
     };
 }
 
+# Methods that we can't use in a subclass
+#
+sub open_fire { die "Cannot call this method"; }
+sub missile_launch { die "Cannot call this method"; }
+sub missile_direction { die "Cannot call this method"; }
+sub missile_reloading { die "Cannot call this method"; }
+
 # Why do we have to do this in order for 'Safe' to recognise it?
 #
-for my $method (qw(actual_speed speed thrust_forward thrust_sideway thrust_reverse rotation)) {
+for my $method (qw(actual_speed speed thrust_forward thrust_sideway thrust_reverse rotation fire_missile_relative fire_missile_absolute normalize_radians missile_reloading)) {
     before $method => sub {};
 }
 
-# Tell the ship to fire a missile at the start of the next tick
-# specify the angle in Arena absolute terms (not relative to the ship)
-# Note. the direction must be within the angle of fire of the ship
-# if not, it will be range limited
-#
-sub fire_missile_absolute {
-    my ($self, $angle) = @_;
-
-    my $relative_angle = $angle - $self->orientation;
-    $relative_angle = $self->normalize_radians($relative_angle);
-
-    return $self->fire_missile_relative($relative_angle);
-}
-
-# Tell the ship to fire a missile relative to the ships orientation
-# (will accept an angle plus/minus 45 degrees)
-# returns 'undef' if the missile is not ready to fire
-# returns the direction the missile was aimed otherwise
-#
-sub fire_missile_relative {
-    my ($self, $relative_angle) = @_;
-
-    if ($relative_angle > PI/4) {
-        $relative_angle = PI/4;
-    }
-    if ($relative_angle < 0 - PI/4) {
-        $relative_angle = 0 - PI/4;
-    }
-    my $angle = $self->orientation + $relative_angle;
-    if ($self->missile_reloading) {
-        return;
-    }
-    $self->missile_direction($angle);
-    $self->missile_launch(1);
-}
-
-__PACKAGE__->meta->make_immutable;
+#__PACKAGE__->meta->make_immutable;
+1;

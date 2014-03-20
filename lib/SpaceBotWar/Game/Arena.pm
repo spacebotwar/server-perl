@@ -6,7 +6,7 @@ use Moose;
 use namespace::autoclean;
 use Data::Dumper;
 
-use SpaceBotWar::Game::Ship;
+use SpaceBotWar::Player::Ship;
 
 use constant PI => 3.14159;
 
@@ -16,7 +16,7 @@ extends "SpaceBotWar::Game";
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ship]',
+    isa     => 'ArrayRef[SpaceBotWar::Player::Ship]',
     default => sub { [] },
 );
 
@@ -24,7 +24,7 @@ has 'ships' => (
 #
 has 'missiles' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]',
+    isa     => 'ArrayRef[SpaceBotWar::Player::Missile]',
     default => sub { [] },
 );
 
@@ -97,7 +97,7 @@ sub _initialize {
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
 
-        my $ship = SpaceBotWar::Game::Ship->new({
+        my $ship = SpaceBotWar::Player::Ship->new({
             id              => $ship_id,
             owner_id        => int(($ship_id - 1) / 6) + 1,
             type            => 'ship',
@@ -115,7 +115,7 @@ sub _initialize {
 
 #    @ships = ();
     foreach my $i (1..40) {
-        my $ship = SpaceBotWar::Game::Ship->new({
+        my $ship = SpaceBotWar::Player::Ship->new({
             id              => $i,
             owner_id        => $i % 2 + 1,
             type            => 'ship',
@@ -209,8 +209,9 @@ sub tick {
     # 
 
     my $radius_squared = $self->radius * $self->radius;
-
+    my $max_missile_id = 0;
     foreach my $missile (@{$self->missiles}) {
+        $max_missile_id = $missile->id if $missile->id > $max_missile_id;
         my $distance = $missile->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($missile->direction);
         my $delta_y = $distance * sin($missile->direction);
@@ -239,12 +240,19 @@ sub tick {
         }
         $ship->x($end_x);
         $ship->y($end_y);
+
+        # we can also check for the firing of the missiles
+        my $missile = $ship->open_fire($max_missile_id + 1);
+        if ($missile) {
+            push @{$self->missiles}, $missile;
+            $max_missile_id++;
+        }
     }
 
     # Now check for collisions (can we not merge these two loops together?)
     # 
     foreach my $ship (@{$self->ships}) {
-        $log->debug("ship id ".$ship->id);        
+        $self->log->debug("ship id ".$ship->id);        
         # Check for ship-to-ship collisions, in which case come to an early halt
         SHIP:
         foreach my $other_ship (@{$self->ships}) {

@@ -21,7 +21,7 @@ sub BUILD {
 sub DEMOLISH {
     my ($self) = @_;
 
-    $self->log->info("DEMOLISH");
+#    $self->log->info("DEMOLISH");
 }
 
 # Return a list of valid arena servers

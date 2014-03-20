@@ -3,8 +3,6 @@ package SpaceBotWar::Game::Ship::Enemy;
 use Moose;
 use MooseX::Privacy;
 
-use Log::Log4perl;
-
 use namespace::autoclean;
 
 extends 'SpaceBotWar::Game::Ship';
@@ -13,9 +11,19 @@ extends 'SpaceBotWar::Game::Ship';
 
 # Make some of the attributes private
 # So that you can't read or write the enemy values
-has ['+thrust_forward', '+thrust_reverse', '+thrust_sideway', '+rotation', '+max_thrust_forward','+max_thrust_sideway','+max_thrust_reverse','+max_rotation','+missile_launch','+missile_direction','+missile_reloading'] => (
+has ['+thrust_forward', '+thrust_reverse', '+thrust_sideway', 
+    '+rotation', '+max_thrust_forward', '+max_thrust_sideway', '+max_thrust_reverse', '+max_rotation',] => (
     traits  => [qw/Protected/],
 );
+
+# Methods that we can't use in a subclass
+# (can't we make them private?)
+sub open_fire_absolute { die "Cannot call this method"; }
+sub open_fire_relative { die "Cannot call this method"; }
+sub fire_missile { die "Cannot call this method"; }
+sub missile_launch { die "Cannot call this method"; }
+sub missile_direction { die "Cannot call this method"; }
+sub missile_reloading { die "Cannot call this method"; }
 
 # Make some of the attributes read-only
 #has ['+id', '+owner_id', '+name','+type','+status','+health','+x','+y','+orientation'] => (
@@ -45,4 +53,6 @@ sub direction {
     return $self->actual_direction($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse, $self->orientation);
 }
 
-__PACKAGE__->meta->make_immutable;
+#__PACKAGE__->meta->make_immutable;
+1;
+

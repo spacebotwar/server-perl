@@ -3,7 +3,7 @@ package SpaceBotWar::Game::Missile;
 use Moose;
 use MooseX::Privacy;
 use Data::Dumper;
-use Log::Log4perl;
+use Math::Round qw(nearest);
 
 use namespace::autoclean;
 
@@ -29,13 +29,13 @@ has 'owner_id' => (
 has 'type' => (
     is          => 'rw',
     isa         => 'Str',
-    default     => 'ship',
+    default     => 'fireball',
 );
 # The status of the missile, e.g. 'ok' or 'explode'.
 has 'status' => (
     is          => 'rw',
     isa         => 'Str',
-    default     => 'ok',
+    default     => 'launch',
 );
 # Current X co-ordinate
 has 'x' => (
@@ -74,11 +74,6 @@ has 'direction' => (
     default     => 2,
 );
 
-sub log {
-    my ($self) = @_;
-    return Log::Log4perl->get_logger( $self );
-}
-
 # Normalise the direction
 #
 around 'direction' => sub {
@@ -86,12 +81,7 @@ around 'direction' => sub {
 
     return $self->$orig if not defined $angle;
 
-    while ($angle > 2*PI) {
-        $angle -= 2*PI;
-    }
-    while ($angle < 0) {
-        $angle += 2*PI;
-    }
+    $angle = $self->normalize_radians($angle);
     $self->$orig($angle);
 };
 
@@ -103,10 +93,10 @@ sub all_to_hash {
     return {
         id              => $self->id,
         owner_id        => $self->owner_id,
-        x               => decpoint($self->x),
-        y               => decpoint($self->y),
-        direction       => decpoint($self->direction),
-        speed           => decpoint($self->speed),
+        x               => nearest(0.1, $self->x),
+        y               => nearest(0.1, $self->y),
+        direction       => nearest(0.01, $self->direction),
+        speed           => nearest(0.01, $self->speed),
         status          => $self->status,
     };
 }

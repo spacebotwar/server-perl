@@ -1,215 +1,266 @@
-package SpaceBotWar::Game::Ship;
+package SpaceBotWar::Player::Ship;
 
-use Moose;
-use MooseX::Privacy;
+use strict;
+use warnings;
+
+use parent 'SpaceBotWar::Player';
+
+use SpaceBotWar;
+use SpaceBotWar::Player::Missile;
+
 use Data::Dumper;
 use Math::Round qw(nearest);
 use POSIX qw(fmod);
-use SpaceBotWar::Game::Missile;
-
-use namespace::autoclean;
-
-extends 'SpaceBotWar::Game';
 
 # This defines the basic characteristics of a ship
 
 use constant PI => 3.14159;
 
 # The unique ID of the ship
-has 'id' => (
-    is          => 'rw',
-    isa         => 'Int',
-    required    => 1,
-);
+sub id {
+    my $self = shift;
+    if (@_) {
+        $self->{id} = $_[0];
+    }
+    return $self->{id};
+}
+
+
 # The ID of the ships owner
-has 'owner_id' => (
-    is          => 'rw',
-    isa         => 'Int',
-    required    => 1,
-);
+sub owner_id {
+    my $self = shift;
+    if (@_) {
+        $self->{owner_id} = $_[0];
+    }
+    return $self->{owner_id};
+}
+
+
 # The name of the ship
-has 'name' => (
-    is          => 'rw',
-    isa         => 'Str',
-    default     => 'ship',
-);
+sub name {
+    my $self = shift;
+    if (@_) {
+        $self->{name} = $_[0];
+    }
+    return $self->{name};
+}
+
 # The type of the ship, e.g. 'battleship'
-has 'type' => (
-    is          => 'rw',
-    isa         => 'Str',
-    default     => 'ship',
-);
+sub type {
+    my $self = shift;
+    if (@_) {
+        $self->{type} = $_[0];
+    }
+    return $self->{type};
+}
+
 # The status of the ship, e.g. 'ok' or 'dead'.
-has 'status' => (
-    is          => 'rw',
-    isa         => 'Str',
-    default     => 'ok',
-);
+sub status {
+    my $self = shift;
+    if (@_) {
+        $self->{status} = $_[0];
+    }
+    return $self->{status};
+}
+
 # The health of the ship (0 to 100)
-has 'health' => (
-    is          => 'rw',
-    isa         => 'Int',
-    default     => 100,
-);
+sub health {
+    my $self = shift;
+    if (@_) {
+        $self->{health} = $_[0];
+    }
+    return $self->{health};
+}
+
 # Current X co-ordinate
-has 'x' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub x {
+    my $self = shift;
+    if (@_) {
+        $self->{x} = $_[0];
+    }
+    return $self->{x};
+}
+
 # Current Y co-ordinate
-has 'y' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub y {
+    my $self = shift;
+    if (@_) {
+        $self->{y} = $_[0];
+    }
+    return $self->{y};
+}
+
 # Rotation rate of ship (radians per second)
 # +ve = 
-has 'rotation' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 1,
-);
+sub rotation {
+    my $self = shift;
+    if (@_) {
+        my $speed = $self->_limit($_[0], 0 - $self->max_rotation, $self->max_rotation);
+        $self->{rotation} = $speed;
+    }
+    return $self->{rotation};
+}
+
 # Current orientation of travel (in radians)
-has 'orientation' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub orientation {
+    my $self = shift;
+    if (@_) {
+        $self->{orientation} = $self->normalize_radians($_[0]);
+    }
+    return $self->{orientation};
+}
+
+
 # Forward thruster speed
-has 'thrust_forward' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub thrust_forward {
+    my $self = shift;
+    if (@_) {
+        my $speed = $self->_limit($_[0], 0, $self->max_thrust_forward);
+        $self->{thrust_forward} = $speed;
+    }
+    return $self->{thrust_forward};
+}
+
 # Side thruster speed
 # +ve = thrust to the left
 # -ve = thrust to the right
 # 'put your hands on your hips'
 #
-has 'thrust_sideway' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub thrust_sideway {
+    my $self = shift;
+    if (@_) {
+        my $speed = $self->_limit($_[0], 0 - $self->max_thrust_sideway, $self->max_thrust_sideway);
+        $self->{thrust_sideway} = $speed;
+    }
+    return $self->{thrust_sideway};
+}
+
 # Reverse thruster speed
-has 'thrust_reverse' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
+sub thrust_reverse {
+    my $self = shift;
+    if (@_) {
+        my $speed = $self->_limit($_[0], 0, $self->max_thrust_reverse);
+        $self->{thrust_reverse} = $speed;
+    }
+    return $self->{thrust_reverse};
+}
+
 # Max forward speed of ship
-has 'max_thrust_forward' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 60,
-);
+sub max_thrust_forward {
+    my $self = shift;
+    if (@_) {
+        $self->{max_thrust_forward} = $_[0];
+    }
+    return $self->{max_thrust_forward};
+}
+
 # Max sideway speed of ship (note may also be negative)
 # Absolute value
 #
-has 'max_thrust_sideway' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 20,
-);
-# Max reverse speed of ship
-has 'max_thrust_reverse' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 30,
-);
-# Max rotational speed (radians per second)
-has 'max_rotation' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 2,
-);
-# Flag to launch a missile
-has 'missile_launch' => (
-    is          => 'rw',
-    isa         => 'Int',
-    default     => 0,
-    traits      => [qw(Protected)],
-);
-# Direction to fire missile
-has 'missile_direction' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-    traits      => [qw(Protected)],
-);
-# Missile reload period
-has 'missile_reloading' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-    traits      => [qw(Protected)],
-);
-
-before 'normalize_radians' => sub {};
-
-# Limit the requested thrust in any direction
-# 
-for my $direction (qw(forward reverse)) {
-    around "thrust_$direction" => sub {
-        my ($orig,$self,$speed) = @_;
-
-        return $self->$orig unless defined $speed;
-        
-        my $max_method = "max_thrust_$direction";
-        if ($speed > $self->$max_method) {
-            $speed = $self->$max_method;
-        }
-        if ($speed < 0) {
-            $speed = 0;
-        }
-        $self->$orig($speed);
-    };
+sub max_thrust_sideway {
+    my $self = shift;
+    if (@_) {
+        $self->{max_thrust_sideway} = $_[0];
+    }
+    return $self->{max_thrust_sideway};
 }
-# Limit the sideways thrust
+
+# Max reverse speed of ship
+sub max_thrust_reverse {
+    my $self = shift;
+    if (@_) {
+        $self->{max_thrust_reverse} = $_[0];
+    }
+    return $self->{max_thrust_reverse};
+}
+
+
+# Max rotational speed (radians per second)
+sub max_rotation {
+    my $self = shift;
+    if (@_) {
+        $self->{max_rotation} = $_[0];
+    }
+    return $self->{max_rotation};
+}
+
+# Flag to launch a missile
+sub missile_launch {
+    my $self = shift;
+    if (@_) {
+        $self->{missile_launch} = $_[0];
+    }
+    return $self->{missile_launch};
+}
+
+# Direction to fire missile
+sub missile_direction {
+    my $self = shift;
+    if (@_) {
+        $self->{missile_direction} = $self->normalize_radians($_[0]);
+    }
+    return $self->{missile_direction};
+}
+
+# Missile reload period
+sub missile_reloading {
+    my $self = shift;
+    if (@_) {
+        $self->{missile_reloading} = $_[0];
+    }
+    return $self->{missile_reloading};
+}
+
+sub new {
+    my ($class, $args) = @_;
+
+    die "id is a required argument" unless defined $args->{id};
+    die "owner_id is a required argument" unless defined $args->{owner_id};
+
+    my $self = bless {
+        id                      => $args->{id},
+        owner_id                => $args->{owner_id},
+    }, $class;
+    $self->initialize($args);
+    return $self;
+}
+
+# Initialization code
 #
-around 'thrust_sideway' => sub {
-    my ($orig, $self, $speed) = @_;
+sub initialize {
+    my ($self, $args) = @_;
 
-    return $self->$orig unless defined $speed;
+    print STDERR "#### initialize: \n";
+    # Specify default values
+    #
+    $self->name($self->name // 'ship');
+    $self->type($self->type // 'type');
+    $self->status($self->status // 'launch');
+    $self->health($self->health // 100);
+    $self->x($self->x // 0);
+    $self->y($self->y // 0);
+    $self->max_thrust_forward($self->max_thrust_forward // 60);
+    $self->max_thrust_sideway($self->max_thrust_sideway // 20);
+    $self->max_thrust_reverse($self->max_thrust_reverse // 30);
+    $self->max_rotation($self->max_rotation // 2);
+    $self->rotation($self->rotation // 0);
+    $self->orientation($self->orientation // 0);
+    $self->thrust_forward($self->thrust_forward // 0);
+    $self->thrust_sideway($self->thrust_sideway // 0);
+    $self->thrust_reverse($self->thrust_reverse // 0);
+    $self->missile_launch(0);
+    $self->missile_direction(0);
+    $self->missile_reloading(0);
+}
 
-    my $max_speed = $self->max_thrust_sideway;
-    if ($speed > $max_speed) {
-        $speed = $max_speed;
-    }
-    elsif ($speed < - $max_speed) {
-        $speed = - $max_speed;
-    }
-    $self->$orig($speed);
-};
-
-# Limit the rotational speed
+# Limit a value between two numbers
 #
-around "rotation" => sub {
-    my ($orig, $self, $speed) = @_;
+sub _limit {
+    my ($self, $speed, $lower, $higher) = @_;
 
-    return $self->$orig unless defined $speed;
-
-    if ($speed > $self->max_rotation) {
-        $speed = $self->max_rotation;
-    }
-    if ($speed < 0-$self->max_rotation) {
-        $speed = 0-$self->max_rotation;
-    }
-    $self->$orig($speed);
-};
-
-# Normalise methods that are given an angle
-#
-for my $method (qw(orientation missile_direction)) {
-    around $method => sub {
-        my ($orig, $self, $angle) = @_;
-
-        return $self->$orig if not defined $angle;
-
-        $angle = $self->normalize_radians($angle);
-        $self->$orig($angle);
-    };
+    $speed = $higher if $speed > $higher;
+    $speed = $lower if $speed < $lower;
+    return $speed;
 }
 
 # The direction the ship goes is determined by several factors
@@ -223,14 +274,15 @@ sub direction {
 
     return $self->actual_direction($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse, $self->orientation);
 }
-protected_method actual_direction => sub {
+
+sub actual_direction {
     my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse, $orientation) = @_;
 
     my $forward = $thrust_forward - $thrust_reverse;
     my $delta_theta = atan2($thrust_sideway, $thrust_forward);
     my $direction = $orientation + $delta_theta;
     return $direction;
-};
+}
 
 # Speed is a vector of forward,reverse & sideway thrust
 #
@@ -240,13 +292,13 @@ sub speed {
     return $self->actual_speed($self->thrust_forward, $self->thrust_sideway, $self->thrust_reverse);
 }
 
-protected_method actual_speed => sub {
+sub actual_speed {
     my ($self, $thrust_forward, $thrust_sideway, $thrust_reverse) = @_;
 
     my $forward = $thrust_forward - $thrust_reverse;
     my $speed = sqrt($forward * $forward + $thrust_sideway * $thrust_sideway);
     return $speed;
-};
+}
 
 # Tell the ship to fire a missile at the start of the next tick
 # specify the angle in Arena absolute terms (not relative to the ship)
@@ -293,7 +345,7 @@ sub open_fire {
 
     return unless $self->missile_launch;
 
-    my $missile = SpaceBotWar::Game::Missile->new({
+    my $missile = SpaceBotWar::Player::Missile->new({
         id              => $id,
         owner_id        => $self->owner_id,
         x               => $self->x,

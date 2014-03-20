@@ -11,22 +11,22 @@ use namespace::autoclean;
 
 has 'my_ships'  => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Mine]'
+    isa     => 'ArrayRef[SpaceBotWar::Player::Ship::Mine]'
 );
 
 has 'enemy_ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Ship::Enemy]'
+    isa     => 'ArrayRef[SpaceBotWar::Player::Ship::Enemy]'
 );
 
 has 'my_missiles' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]'
+    isa     => 'ArrayRef[SpaceBotWar::Player::Missile]'
 );
 
 has 'enemy_missiles' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]'
+    isa     => 'ArrayRef[SpaceBotWar::Player::Missile]'
 );
 
 has '_log' => (
