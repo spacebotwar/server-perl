@@ -2,7 +2,6 @@ package SpaceBotWar::Queue;
 
 use Moose;
 use Beanstalk::Client;
-use Data::Dumper;
 
 use SpaceBotWar::Queue::Job;
 
