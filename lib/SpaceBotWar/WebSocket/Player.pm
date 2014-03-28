@@ -58,6 +58,13 @@ has stats_start_states => (
 # is a separate connection, so each one needs it's own data.
 # which we can instantiate during the 'on_establish' method call
 #
+# We put this code into a 'jail' using chroot to restrict it's access
+# to the file system
+#
+# Note, since this method runs several different users code, we can't really
+# stop one rogue code from affecting the others also running here. We will
+# look at this issue again later.
+#
 after 'on_establish' => sub {
     my ($self, $connection, $env) = @_;
 
@@ -101,6 +108,9 @@ sub scratchpad {
 sub BUILD {
     my ($self) = @_;
     $self->log->debug("BUILD: PLAYER####### $self");
+
+    # We should chroot at this point?
+    # todo 
 }
 
 
