@@ -6,7 +6,7 @@ use Moose;
 use namespace::autoclean;
 use Data::Dumper;
 
-use SpaceBotWar::Player::Ship;
+use SpaceBotWar::Game::Ship;
 
 use constant PI => 3.14159;
 
@@ -16,7 +16,7 @@ extends "SpaceBotWar::Game";
 #
 has 'ships' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Player::Ship]',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Ship]',
     default => sub { [] },
 );
 
@@ -24,7 +24,7 @@ has 'ships' => (
 #
 has 'missiles' => (
     is      => 'rw',
-    isa     => 'ArrayRef[SpaceBotWar::Player::Missile]',
+    isa     => 'ArrayRef[SpaceBotWar::Game::Missile]',
     default => sub { [] },
 );
 
@@ -68,9 +68,9 @@ sub log {
 # Create an Arena with standard ships
 #
 sub BUILD {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    $self->_initialize;
+	$self->_initialize;
 }
 
 # Set initial ship positions.
@@ -78,8 +78,6 @@ sub _initialize {
     my ($self) = @_;
     
     my $ship_layout = {
-#1 => { x => -250, y => 0, direction => 0},
-#2 => { x => 250, y => 0, direction => PI},
         1   => { x => -140, y => -240, direction => PI/4 },
         2   => { x => -200, y => -240, direction => PI/4 },
         3   => { x => -140, y => -300, direction => PI/4 },
@@ -97,7 +95,7 @@ sub _initialize {
     foreach my $ship_id (sort keys %$ship_layout) {
         my $ship_ref = $ship_layout->{$ship_id};
 
-        my $ship = SpaceBotWar::Player::Ship->new({
+        my $ship = SpaceBotWar::Game::Ship->new({
             id              => $ship_id,
             owner_id        => int(($ship_id - 1) / 6) + 1,
             type            => 'ship',
@@ -106,30 +104,13 @@ sub _initialize {
             thrust_forward  => 0,
             thrust_sideway  => 0,
             thrust_reverse  => 0,
-            orientation     => $ship_ref->{direction} || 0,
+            orientation     => $ship_ref->{direction},
             rotation        => 0,
         });
+print STDERR Dumper($ship);
         push @ships, $ship;
     }
     $self->ships(\@ships);
-
-#    @ships = ();
-    foreach my $i (1..40) {
-        my $ship = SpaceBotWar::Player::Ship->new({
-            id              => $i,
-            owner_id        => $i % 2 + 1,
-            type            => 'ship',
-            x               => int(rand(200)),
-            y               => int(rand(200)),
-            thrust_forward  => 0,
-            thrust_sideway  => 0,
-            thrust_reverse  => 0,
-            orientation     => rand(2 * PI),
-            rotation        => 0,
-        });
-#        push @ships, $ship;
-    }
-#    $self->ships(\@ships);
 
     $self->start_time(-1);
     $self->log->debug("######status = starting at [".$self->start_time."] ############");

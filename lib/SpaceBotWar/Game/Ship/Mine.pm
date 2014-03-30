@@ -26,16 +26,16 @@ for my $method ( qw(id owner_id name type status health x y orientation speed di
 
 # Methods that we can't use in a subclass
 #
-sub open_fire { die "Cannot call this method"; }
-sub missile_launch { die "Cannot call this method"; }
-sub missile_direction { die "Cannot call this method"; }
-sub missile_reloading { die "Cannot call this method"; }
+#sub open_fire { die "Cannot call this method"; }
+#sub missile_launch { die "Cannot call this method"; }
+#sub missile_direction { die "Cannot call this method"; }
+#sub missile_reloading { die "Cannot call this method"; }
 
 # Why do we have to do this in order for 'Safe' to recognise it?
 #
-for my $method (qw(actual_speed speed thrust_forward thrust_sideway thrust_reverse rotation fire_missile_relative fire_missile_absolute normalize_radians missile_reloading)) {
-    before $method => sub {};
-}
+#for my $method (qw(actual_speed speed thrust_forward thrust_sideway thrust_reverse rotation fire_missile_relative fire_missile_absolute normalize_radians missile_reloading)) {
+#    before $method => sub {};
+#}
 
 #__PACKAGE__->meta->make_immutable;
 1;

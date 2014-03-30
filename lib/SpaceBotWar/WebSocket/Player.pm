@@ -7,8 +7,8 @@ use AnyEvent;
 use SpaceBotWar;
 use SpaceBotWar::Game::Arena;
 use SpaceBotWar::Game::Data;
-use SpaceBotWar::Player::Ship::Mine;
-use SpaceBotWar::Player::Ship::Enemy;
+use SpaceBotWar::Game::Ship::Mine;
+use SpaceBotWar::Game::Ship::Enemy;
 use Carp;
 use UUID::Tiny ':std';
 use JSON;
@@ -228,7 +228,7 @@ sub ws_game_state {
 
         my $ship;
         if ($sp_hash->{owner_id} == $player_id) {
-            $ship = SpaceBotWar::Player::Ship::Mine->new({
+            $ship = SpaceBotWar::Game::Ship::Mine->new({
                 id              => $sp_hash->{id},
                 owner_id        => $sp_hash->{owner_id},
                 status          => $sp_hash->{status},
@@ -249,7 +249,7 @@ sub ws_game_state {
             #
         }
         else {
-            $ship = SpaceBotWar::Player::Ship::Enemy->new({
+            $ship = SpaceBotWar::Game::Ship::Enemy->new({
                 id              => $ship_hash->{id},
                 owner_id        => $ship_hash->{owner_id},
                 status          => $ship_hash->{status},
@@ -269,7 +269,7 @@ sub ws_game_state {
     my @enemy_missiles;
     foreach my $missile_hash (@{$context->param('missiles')}) {
         my $missile;
-        $missile = SpacebotWar::Player::Missile->new({
+        $missile = SpacebotWar::Game::Missile->new({
             id          => $missile_hash->{id},
             owner_id    => $missile_hash->{owner_id},
             status      => $missile_hash->{status},

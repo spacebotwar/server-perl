@@ -27,11 +27,13 @@ is($player_ships, 6, "Correct number of ships for player 1");
 
 is($arena->start_time, -1, "Initial start time is correct");
 
-my ($ship) = grep {$_->id == 1} @{$arena->ships};
-my $start_x = $ship->x;
-my $start_y = $ship->y;
+my ($ship)      = grep {$_->id == 1} @{$arena->ships};
+my $start_x     = $ship->x;
+my $start_y     = $ship->y;
 my $orientation = $ship->orientation;
-my $rotation = $ship->rotation;
+my $rotation    = $ship->rotation;
+is($start_x, -140, "Standard x position");
+is($start_y, -240, "Standard y position");
 
 $arena->tick(5);
 
@@ -43,6 +45,11 @@ is($ship->x, $start_x, "Same X position");
 is($ship->y, $start_y, "Same Y position");
 is($ship->orientation, $orientation, "Same Orientation");
 is($ship->rotation, $rotation, "Same Rotation");
+
+done_testing();
+exit;
+
+
 
 # Lets rotate it for 1 second at 1 radian per second
 $ship->orientation(0);

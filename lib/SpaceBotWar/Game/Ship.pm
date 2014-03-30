@@ -129,21 +129,21 @@ has 'missile_launch' => (
     is          => 'rw',
     isa         => 'Int',
     default     => 0,
-    traits      => [qw(Protected)],
+#    traits      => [qw(Protected)],
 );
 # Direction to fire missile
 has 'missile_direction' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw(Protected)],
+#    traits      => [qw(Protected)],
 );
 # Missile reload period
 has 'missile_reloading' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
-    traits      => [qw(Protected)],
+#    traits      => [qw(Protected)],
 );
 
 before 'normalize_radians' => sub {};
