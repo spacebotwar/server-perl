@@ -11,6 +11,7 @@ use Carp;
 use UUID::Tiny ':std';
 use JSON;
 use Try;
+use Data::Dumper;
 
 # This is the common point into which everyone connects to. On this server
 # it is possible to do the necessary commands to log in.
@@ -154,25 +155,35 @@ sub ws_login_with_password {
     };
 }
 
-# Log in with an email code
+# Log in with an email code. Must specify a new password to use
 #
 sub ws_login_with_email_code {
     my ($self, $context) = @_;
 
+    my $log = $self->log;
     my $client_code = $self->check_client_code($context);
-    $self->log->debug("Log in with email code [".$context->content->{email_code}."]");
+    my $email_code  = $context->content->{email_code};
+    $log->debug("Log in with email code [$email_code]");
     # See if the email code is in the cache
     my $email_code = SpaceBotWar::EmailCode->new({
-        id      => $context->content->{email_code},
+        id      => $email_code,
     });
     $email_code->assert_validate;
+    $log->debug("Email code is valid. user_id=[".$email_code->user_id."]");
+
+    my $password = $context->content->{new_password};
+    my $db = SpaceBotWar->db;
+
+    $db->resultset('User')->assert_password_valid($password);
 
     # If the email code is valid (and has not timed out) then it should now contain the user_id
     #
-    $self->log->debug("USER_ID = [".$email_code->user_id."]");
+    $self->log->debug(Dumper($email_code));
 
     if ($email_code->user_id) {
         my $user = SpaceBotWar->db->resultset('User')->assert_id($email_code->user_id);
+        $user->password($password);
+        $user->update;
         return {
             code        => 0,
             message     => 'Welcome',

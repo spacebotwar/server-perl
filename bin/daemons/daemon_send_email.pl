@@ -8,6 +8,7 @@ use App::Daemon qw(daemonize );
 use Data::Dumper;
 use Try::Tiny;
 use Log::Log4perl qw(:levels);
+use SpaceBotWar::EmailCode;
 
 # --------------------------------------------------------------------
 # command line arguments:
@@ -90,6 +91,15 @@ eval {
 
         try {
             # process the job
+            # TODO Cater for different types of email, but for now we just support
+            # forgotten password emails
+            #
+            my $email_code = SpaceBotWar::EmailCode->new({
+                timeout_sec => 5,
+            });
+            $email_code->user_id($payload->{user_id});
+            out("Email code is [".$email_code->id."] user_id is [".$email_code->user_id."]");
+
             out("Processing done. Delete job ".$job->id);
             $job->delete;
         }
