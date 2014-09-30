@@ -165,7 +165,7 @@ sub ws_login_with_email_code {
     my $email_code  = $context->content->{email_code};
     $log->debug("Log in with email code [$email_code]");
     # See if the email code is in the cache
-    my $email_code = SpaceBotWar::EmailCode->new({
+    $email_code = SpaceBotWar::EmailCode->new({
         id      => $email_code,
     });
     $email_code->assert_validate;
