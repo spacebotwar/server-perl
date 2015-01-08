@@ -19,8 +19,9 @@ functionality to allow you to log into your account.
 
 
 ---
+
 Client Code
-========
+===========
 
 A Client Code is used to identify a client to the server. A Client Code is provided by the server
 and once given it should continue to be used, even if you log out and back in again. This

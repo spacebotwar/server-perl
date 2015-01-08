@@ -33,6 +33,15 @@ has cache => (
     },
 );
 
+# The 'secret'
+#
+has secret => (
+    is       => 'ro',
+    default  => sub {
+        return SpaceBotWar->config->get('secret');
+    },
+);    
+
 # How long until the client_code times out due to lack of activity
 #
 has timeout_sec => (
@@ -137,9 +146,8 @@ sub extend {
 #   Add a 'secret' so that people can't invent their own client_code
 #   
 sub _create_client_code_id {
-    my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = create_uuid_as_string(UUID_V4);
-    my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
+    my $digest  = substr(md5_hex($uuid.$self->secret), 0, 6);
     return $uuid."-".$digest;
 }
 
@@ -170,9 +178,8 @@ sub validate_client_code {
     my ($class, $client_code_id) = @_;
 
     return if not defined $client_code_id;
-    my $secret  = SpaceBotWar->config->get('secret');
     my $uuid    = substr($client_code_id, 0, 36);
-    my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
+    my $test    = $uuid."-".substr(md5_hex($uuid.$self->secret), 0, 6);
     if ($test eq $client_code_id) {
         return $class->new({
             id      => $client_code_id,
