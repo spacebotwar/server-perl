@@ -1,7 +1,6 @@
 package SpaceBotWar::Cache;
 
 use Moose;
-use Redis;
 use JSON;
 
 use namespace::autoclean;

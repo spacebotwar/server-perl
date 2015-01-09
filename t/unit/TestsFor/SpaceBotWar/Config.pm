@@ -3,7 +3,6 @@ package TestsFor::SpaceBotWar::Config;
 use lib "lib";
 
 use Test::Class::Moose;
-use Test::Mock::Class ':all';
 use File::Temp qw(tempfile);
 
 use SpaceBotWar::Config;
@@ -17,15 +16,11 @@ sub test_construction_foo {
     print $fh @lines;
     close $fh;
 
-
-    my $mock   = mock_anon_class 'Config::JSON';
-    my $mock_config_json = $mock->new_object( { pathToFile => $filename } );
-        
-    $mock_config_json->mock_return(get => 'baz');
+    my $config_json = Config::JSON->new(pathToFile => $filename);
 
     my $config = SpaceBotWar::Config->new({
         filename    => 'foo',
-        config_json => $mock_config_json,
+        config_json => $config_json,
     });
 
     isa_ok($config, 'SpaceBotWar::Config');
