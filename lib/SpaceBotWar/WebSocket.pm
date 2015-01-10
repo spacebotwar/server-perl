@@ -18,15 +18,21 @@ use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
 # An AnyEvent Websocket server.
-has websocket_server  => (
+has ws_server  => (
     is        => 'ro',
-    default => sub {
-        return AnyEvent::WebSocket::Server->new();
-    },
+    lazy      => 1,
+    builder   => '_build_ws_server,
 );
 
-# The 'name' of the server. It may be useful later...
-has server => (
+sub _build_ws_server {
+    my ($self) = @_;
+
+    return AnyEvent::WebSocket::Server->new;
+}
+
+
+# The 'room' of the server. It may be useful later...
+has room => (
     is      => 'ro',
     default => 'main'
 );
@@ -48,8 +54,8 @@ has connections => (
 
 sub log {
     my ($self) = @_;
-    my $server = $self->server || "null";
-    return Log::Log4perl->get_logger( "WS::".$self->server );
+    my $server = $self->room || "null";
+    return Log::Log4perl->get_logger( "WS::".$self->room );
 }
 
 sub incr_stat {
@@ -99,7 +105,7 @@ sub instance_stats {
 
     my $stats = inner() || {};
     $stats->{time}              = time;
-    $stats->{server}            = $self->server;
+    $stats->{room}            = $self->room;
     $stats->{number_of_clients} = $self->number_of_clients;
     $stats->{new_connections}   = $self->read_and_reset_stat('stats_new_connections');
     $stats->{die_connections}   = $self->read_and_reset_stat('stats_die_connections');
@@ -158,7 +164,7 @@ sub send_json {
     my ($self, $connection, $route, $json) = @_;
 
     my $msg = {
-        server      => $self->server,
+        room        => $self->room,
         route       => $route,
         content     => $json,
     };
@@ -172,7 +178,7 @@ sub broadcast_json {
     my ($self, $route, $content) = @_;
 
     my $json = {
-        server  => $self->server,
+        room    => $self->room,
         route   => $route,
         content => $content,
     };
@@ -196,6 +202,17 @@ sub number_of_clients {
 }
 
 
+sub check_client_code {
+    my ($self, $message) = @_;
+
+    my $client_code;
+    if (defined $message and defined $message->content) {
+        $client_code = $message->content->{client_code};
+    }
+
+    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
+}
+
 # What do we do on a client making a connection to the server?
 # 
 sub on_connect {
@@ -214,7 +231,7 @@ sub on_establish {
     $log->info("Establish: [$connection]");
 
     my $context = SpaceBotWar::WebSocket::Context->new({
-        server      => $self->server,
+        room        => $self->room,
         connection  => $connection,
         content     => {},
     });
@@ -226,7 +243,7 @@ sub on_establish {
     $log->info("START: there are ".scalar(keys %{$self->connections}). " connections");
                 
     my $reply = {
-        server      => $self->server,
+        room        => $self->room,
         route       => '/',
         content     => $self->on_connect($context),
     };
@@ -243,98 +260,8 @@ sub on_establish {
     
     $connection->on(
         message => sub {
-            my ($connection, $msg) = @_;
-
-            $log->info("RCVD: $msg");
-
-            my $json = JSON->new;
-            my $json_msg = eval {$json->decode($msg)};
-            if ($@) {
-                $log->error($@);
-                $self->fatal($connection, $@);
-                return;
-            }
-
-            $log->debug("Establish");
-            my $path    = $json_msg->{route};
-            my $content = $json_msg->{content} || {};
-
-            # If we have a client_code (effectively a session ID) then validate and cache it
-            if (defined $content->{client_code}) {
-                if (not defined $client_code or $content->{client_code} ne $client_code->id) {
-                    $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
-                }
-            }
-            
-            # If a user is logged in, cache the User object
-            if (defined $client_code and defined $client_code->user_id) {
-                if (not defined $user or $client_code->user_id != $user->id) {
-                    $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
-                }
-            }
-
-            my $msg_id  = $content->{msg_id};
-            eval {
-                my ($route, $method) = $path =~ m{(.*)/([^/]*)};
-                $method = "ws_".$method;
-                $route =~ s{/$}{};
-                $route =~ s{^/}{};
-                $route =~ s{/}{::};
-                $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
-                $log->debug("route = [$route]");
-                my $obj;
-                if ($route) {
-                    $log->debug("ROUTE... [$route]");
-                    $route = ref($self)."::".$route;
-                    eval "require $route";
-                    $obj = $route->new({});
-                }
-                else {
-                    $log->debug("ROUTE... [SELF!]");
-                    $route = $self;
-                    $obj = $self;
-                }
-                $log->debug("route = [$route]");
-                my $context = SpaceBotWar::WebSocket::Context->new({
-                    server          => $self->server,
-                    connection      => $connection,
-                    content         => $content,
-                    client_code     => $client_code,
-                    user            => $user,
-                });
-                $log->debug("Call [$obj][$method]");
-                my $reply = $obj->$method($context);
-                if ($reply) {
-                    # Send back the message ID
-                    if ($content->{msg_id}) {
-                        $reply->{msg_id} = $content->{msg_id}
-                    }
-                    $reply = {
-                        server      => $self->server,
-                        route       => $path,
-                        content     => $reply,
-                    };
-
-                    $self->render_json($context, $reply);
-                }
-            };
-
-            my @error;
-            if ($@ and ref($@) eq 'ARRAY') {
-                @error = @{$@};
-            }
-            elsif ($@) {
-                @error = (
-                    1000,
-                    'unknown error',
-                    $@,
-                );
-            }
-            if (@error) {
-                $self->report_error($connection, \@error, $path, $msg_id);
-
-           }
-       }
+            $self->_on_message(@_);
+        }
     );
     $connection->on(
         finish => sub {
@@ -342,6 +269,102 @@ sub on_establish {
             $self->kill_client_data($connection);
         },
     );
+}
+
+sub _on_message {
+    my ($self, $connection, $msg) = @_;
+
+    my $log = $self->log;
+
+    $log->info("RCVD: $msg");
+
+    my $json = JSON->new;
+    my $json_msg = eval {$json->decode($msg)};
+    if ($@) {
+        $log->error($@);
+        $self->fatal($connection, $@);
+        return;
+    }
+
+    $log->debug("Establish");
+    my $path    = $json_msg->{route};
+    my $content = $json_msg->{content} || {};
+
+    # If we have a client_code (effectively a session ID) then validate and cache it
+    if (defined $content->{client_code}) {
+        if (not defined $client_code or $content->{client_code} ne $client_code->id) {
+            $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
+        }
+    }
+            
+    # If a user is logged in, cache the User object
+    if (defined $client_code and defined $client_code->user_id) {
+        if (not defined $user or $client_code->user_id != $user->id) {
+            $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
+        }
+    }
+
+    my $msg_id  = $content->{msg_id};
+    eval {
+        my ($route, $method) = $path =~ m{(.*)/([^/]*)};
+        $method = "ws_".$method;
+        $route =~ s{/$}{};
+        $route =~ s{^/}{};
+        $route =~ s{/}{::};
+        $route =~ s/([\w']+)/\u\L$1/g;      # Capitalize user::foo to User::Foo
+        $log->debug("route = [$route]");
+        my $obj;
+        if ($route) {
+            $log->debug("ROUTE... [$route]");
+            $route = ref($self)."::".$route;
+            eval "require $route";
+            $obj = $route->new({});
+        }
+        else {
+            $log->debug("ROUTE... [SELF!]");
+            $route = $self;
+            $obj = $self;
+        }
+        $log->debug("route = [$route]");
+        my $context = SpaceBotWar::WebSocket::Context->new({
+            room            => $self->room,
+            connection      => $connection,
+            content         => $content,
+            client_code     => $client_code,
+            user            => $user,
+        });
+        $log->debug("Call [$obj][$method]");
+        my $reply = $obj->$method($context);
+        if ($reply) {
+            # Send back the message ID
+            if ($content->{msg_id}) {
+                $reply->{msg_id} = $content->{msg_id}
+            }
+            $reply = {
+                room        => $self->room,
+                route       => $path,
+                content     => $reply,
+            };
+
+            $self->render_json($context, $reply);
+        }
+    };
+
+    my @error;
+    if ($@ and ref($@) eq 'ARRAY') {
+        @error = @{$@};
+    }
+    elsif ($@) {
+        @error = (
+            1000,
+            'unknown error',
+            $@,
+        );
+    }
+    if (@error) {
+        $self->report_error($connection, \@error, $path, $msg_id);
+
+    }
 }
 
 
@@ -366,7 +389,7 @@ sub report_error {
 
     my $msg = {
         route   => $path,
-        server  => $self->server,
+        room    => $self->room,
         content => {
             code        => $error->[0],
             message     => $error->[1],
@@ -398,7 +421,7 @@ sub call {
         $env->{$ERROR_ENV} = "not supported by the PSGI server";
         return $self->on_error($env);
     }
-    my $cv_conn = $self->{websocket_server}->establish_psgi($env, $env->{"psgix.io"});
+    my $cv_conn = $self->ws_server->establish_psgi($env, $env->{"psgix.io"});
     return sub {
         my $responder = shift;
         $cv_conn->cb(sub {
@@ -450,15 +473,5 @@ sub on_error {
     return $res->finalize;
 }
 
-sub check_client_code {
-    my ($self, $message) = @_;
-
-    my $client_code;
-    if (defined $message and defined $message->content) {
-        $client_code = $message->content->{client_code};
-    }
-
-    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
-}
 
 1;

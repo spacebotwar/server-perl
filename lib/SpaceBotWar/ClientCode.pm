@@ -72,7 +72,6 @@ has logged_in => (
 #
 sub _build_secret {
     my ($self) = @_;
-print STDERR "BUILDSECRET: \n";
     return SpaceBotWar::Config->new->get('secret');
 }    
 
@@ -162,7 +161,7 @@ sub is_valid {
 
     return if $test ne $self->id;
 
-    return $self;
+    return 1;
 }
 
 # Validate a client_code variable with confess
@@ -171,10 +170,10 @@ sub assert_valid {
     my ($self) = @_;
 
     confess [1001, "Client Code is missing"] if not defined $self->id;
-    if (not $self->validate_client_code) {
+    if (not $self->is_valid) {
         confess [1001, "Client Code is invalid! [".$self->id."]" ];
     }
-    return $self;
+    return 1;
 }
 
 __PACKAGE__->meta->make_immutable;
