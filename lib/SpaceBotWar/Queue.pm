@@ -1,6 +1,6 @@
 package SpaceBotWar::Queue;
 
-use Moose;
+use MooseX::Singleton;
 use Beanstalk::Client;
 
 use SpaceBotWar::Queue::Job;

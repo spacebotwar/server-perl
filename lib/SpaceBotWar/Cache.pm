@@ -1,14 +1,24 @@
 package SpaceBotWar::Cache;
 
-use Moose;
+use MooseX::Singleton;
+
+use SpaceBotWar::Redis;
+
 use JSON;
 
 use namespace::autoclean;
 
 has 'redis' => (
     is          => 'ro',
-    required    => 1,
+    lazy        => 1,
+    builder     => '_build_redis',
 );
+
+sub _build_redis {
+    my ($self) = @_;
+
+    return SpaceBotWar::Redis->instance;
+}
 
 # Create a key from 'namespace' and a 'key'
 #

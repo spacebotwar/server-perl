@@ -12,16 +12,24 @@ use Try::Tiny;
 use Plack::App::WebSocket::Connection;
 use JSON;
 use Data::Dumper;
+use Log::Log4perl;
 
-use SpaceBotWar;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
 
-# An AnyEvent Websocket server.
-has ws_server  => (
-    is        => 'ro',
-    lazy      => 1,
-    builder   => '_build_ws_server,
+has ws_server => (
+    is      => 'ro',
+    lazy    => 1,
+    builder => '_build_ws_server',
+);
+
+has room => (
+    is      => 'rw',
+    default => 'main',
+);
+
+has hb_timer => (
+    is      => 'rw',
 );
 
 sub _build_ws_server {
@@ -30,27 +38,12 @@ sub _build_ws_server {
     return AnyEvent::WebSocket::Server->new;
 }
 
-
-# The 'room' of the server. It may be useful later...
-has room => (
-    is      => 'ro',
-    default => 'main'
-);
-
-# 'heartbeat' timer to ensure the module is healthy
-#
-has hb_timer => (
-    is      => 'rw',
-);
-
-
 # A hash of all clients that are connected to this server
 has connections => (
     is      => 'rw',
     isa     => 'HashRef',
     default => sub { {} },
 );
-
 
 sub log {
     my ($self) = @_;
@@ -121,8 +114,7 @@ sub heartbeat {
 
     my $stats = $self->instance_stats;
     # Put the stats onto the stats queue
-    my $queue = SpaceBotWar->queue;
-    my $job = $queue->publish('stats', {
+    my $job = SpaceBotWar::Queue->instance->publish('stats', {
         task        => 'websocket',
         stats       => $stats,
     },{
@@ -202,16 +194,16 @@ sub number_of_clients {
 }
 
 
-sub check_client_code {
-    my ($self, $message) = @_;
-
-    my $client_code;
-    if (defined $message and defined $message->content) {
-        $client_code = $message->content->{client_code};
-    }
-
-    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
-}
+#sub check_client_code {
+#    my ($self, $message) = @_;
+#
+#    my $client_code;
+#    if (defined $message and defined $message->content) {
+#        $client_code = $message->content->{client_code};
+#    }
+#
+#    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
+#}
 
 # What do we do on a client making a connection to the server?
 # 
@@ -251,16 +243,15 @@ sub on_establish {
     if ($reply) {
         $self->render_json($context, $reply);
     }
-    # Not sure about this. it is the DB user object
-    # should we be retaining this in memory like this?
-    # Should the web socket care?
-    my $user;
-    my $client_code;
+    my $state = {
+        client_code => undef,
+        user_id     => undef,
+    };
     $log->debug("Establish");
     
     $connection->on(
         message => sub {
-            $self->_on_message(@_);
+            $self->_on_message($state, @_);
         }
     );
     $connection->on(
@@ -272,7 +263,7 @@ sub on_establish {
 }
 
 sub _on_message {
-    my ($self, $connection, $msg) = @_;
+    my ($self, $state, $connection, $msg) = @_;
 
     my $log = $self->log;
 
@@ -292,15 +283,15 @@ sub _on_message {
 
     # If we have a client_code (effectively a session ID) then validate and cache it
     if (defined $content->{client_code}) {
-        if (not defined $client_code or $content->{client_code} ne $client_code->id) {
-            $client_code = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
+        if (not defined $state->{client_code} or $content->{client_code} ne $state->{client_code}->id) {
+            $state->{client_code} = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
         }
     }
             
     # If a user is logged in, cache the User object
-    if (defined $client_code and defined $client_code->user_id) {
-        if (not defined $user or $client_code->user_id != $user->id) {
-            $user = SpaceBotWar->db->resultset('User')->find($client_code->user_id);
+    if (defined $state->{client_code} and defined $state->{client_code}->user_id) {
+        if (not defined $state->{user} or $state->{client_code}->user_id != $state->{user}->id) {
+            $state->{user} = SpaceBotWar->db->resultset('User')->find($state->{client_code}->user_id);
         }
     }
 
@@ -330,8 +321,8 @@ sub _on_message {
             room            => $self->room,
             connection      => $connection,
             content         => $content,
-            client_code     => $client_code,
-            user            => $user,
+            client_code     => $state->{client_code},
+            user            => $state->{user},
         });
         $log->debug("Call [$obj][$method]");
         my $reply = $obj->$method($context);
