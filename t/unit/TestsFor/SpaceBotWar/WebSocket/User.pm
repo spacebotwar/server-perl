@@ -18,11 +18,12 @@ sub test_construction {
 sub test_client_code {
     my ($self) = @_;
 
+    my $content = {
+        msg_id      => '123',
+        client_code => 'invalid',
+    };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content => {
-            msg_id      => '123',
-            client_code => 'invalid',
-        }
+        content => $content,
     });
 
     my $user = SpaceBotWar::WebSocket::User->new;
@@ -40,26 +41,15 @@ sub test_client_code {
 
     is($client_code->is_valid, 1, "Client Code is valid");
     
-    # now use a valid client code
-    $context = SpaceBotWar::WebSocket::Context->new({
-        content => {
-            msg_id      => '124',
-            client_code => $client_code->id,
-        }
-    });
+    # change the content in the context to use a valid client code
+    $content->{msg_id}      = 124;
+    $content->{client_code} = $client_code->id;
+
     $response = $user->ws_client_code($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "GOOD Client Code", "Response: message");
     is($response->{client_code},    $client_code->id,   "Response: client_code unchanged");
-
 }
 
 1;
-__DATA__
-# config-file-type: JSON 1
-{   
-    "foo" : {
-        "bar" : "baz"
-    }
-}
 
