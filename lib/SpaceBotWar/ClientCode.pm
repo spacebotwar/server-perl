@@ -3,6 +3,8 @@ package SpaceBotWar::ClientCode;
 use Moose;
 use namespace::autoclean;
 
+use SpaceBotWar::Cache;
+
 use UUID::Tiny ':std';
 use Digest::MD5 qw(md5_hex);
 use Data::Dumper;

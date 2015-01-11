@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use lib "../lib";
 
-use SpaceBotWar::WebSocket::Test;
+use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
 use SpaceBotWar::Config;
@@ -17,7 +17,7 @@ use Plack::App::IndexFile;
 #--- Initialize singleton objects
 #
 SpaceBotWar::Config->initialize({
-    filename => 'Users/icydee/sandbox/space-bot-war/spacebotwar.conf',
+    filename => '/Users/icydee/sandbox/space-bot-war/spacebotwar.conf',
 });
 
 SpaceBotWar::Queue->initialize({
@@ -33,9 +33,8 @@ SpaceBotWar::Redis->initialize({
 
 Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
 
-
 my $app = builder {
-    mount "/ws"           => SpaceBotWar::WebSocket::Test->new({ room => 'Test'    })->to_app;
+    mount "/ws"           => SpaceBotWar::WebSocket::User->new({ room => 'Test'    })->to_app;
 };
 $app;
 

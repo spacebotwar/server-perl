@@ -1,6 +1,7 @@
 package SpaceBotWar::WebSocket::User;
 
 use Moose;
+use Log::Log4perl;
 
 extends 'SpaceBotWar::WebSocket';
 
@@ -14,6 +15,9 @@ sub BUILD {
 #
 sub ws_client_code {
     my ($self, $context) = @_;
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    $log->debug("client_code");
 
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
