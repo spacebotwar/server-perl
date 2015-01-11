@@ -11,7 +11,7 @@ use Data::Dumper;
 # 
 # If one is not supplied, a valid client code is generated
 has id => (
-    is      => 'ro',
+    is      => 'rw',
     lazy    => 1,
     builder => 'create_valid_id',
 );
@@ -27,7 +27,8 @@ has namespace => (
 # 
 has cache => (
     is          => 'ro',
-    required    => 1,
+    lazy        => 1,
+    builder     => '_build_cache',
 );
 
 # The 'secret'
@@ -72,8 +73,15 @@ has logged_in => (
 #
 sub _build_secret {
     my ($self) = @_;
-    return SpaceBotWar::Config->new->get('secret');
+    return SpaceBotWar::Config->instance->get('secret');
 }    
+
+#--- Buid the cache
+#
+sub _build_cache {
+    my ($self) = @_;
+    return SpaceBotWar::Cache->instance;
+}
 
 #--- Automatically extend the client_code if we update any values
 #
@@ -138,7 +146,7 @@ sub extend {
 }
 
 
-#--- Create a new random Client Code id
+#--- Create a random Client Code id
 #   Add a 'secret' so that people can't invent their own Client Code
 #   
 sub create_valid_id {
@@ -147,6 +155,13 @@ sub create_valid_id {
     my $uuid    = create_uuid_as_string(UUID_V4);
     my $digest  = substr(md5_hex($uuid.$self->secret), 0, 6);
     return $uuid."-".$digest;
+}
+
+#--- Get a new Client Code id
+#
+sub get_new_id {
+    my ($self) = @_;
+    $self->id($self->create_valid_id);
 }
 
 #--- Validate the client code

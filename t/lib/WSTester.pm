@@ -11,7 +11,6 @@ use AnyEvent::WebSocket::Client;
 use JSON;
 use Data::Dumper;
 use Test::More;
-use SpaceBotWar;
 
 
 has 'route' => (

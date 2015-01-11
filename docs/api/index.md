@@ -46,12 +46,12 @@ my $client = AnyEvent::WebSocket::Client->new;
 
 my $connection;
 
-$client->connect("ws://spacebotwar.com/ws/start")->cb(sub {
+$client->connect("ws://spacebotwar.com/ws")->cb(sub {
     ...
 });
 {% endhighlight %}
 
-A more complete example can be found in the examples directory.
+More complete examples can be found in the examples directory.
 
 API hierarchy
 -------------
@@ -60,85 +60,81 @@ The API call is split into several components.
 
 ###Connection
 
-A Connection is to a specific **server**, there are three functional areas in Space Bot War,
-one that controls the game, one for the chat system, one for the system that competes players
-in matches. These functional areas are each served by several servers and servers are free to
-be added and removed as needed. To access these areas you make a connection as follows.
+A Connection is to a specific **server**. Multiple servers can be added to scale out
+horizontally. Servers may offer different functional areas, e.g. chat, game control etc. Each
+functional area may be scaled out by adding (or removing) servers based on the demand.
 
-#### Start
+Typically you will only make a connection to one server in each functional area, for example to one chat
+server or to one game server so the first objective is to get a list of all servers for each
+of the functional areas.
 
-Connect to the **/ws/start** server which will allow you to log on and to obtain the server
-names for all the servers controlling the operation of the game.
+Connect to the "ws://spacebotwar.com/ws" server. This will give you a list of servers and
+server types to which you can connect and is the sole purpose of this server.
 
-#### Lobby
+Each of the connections will require a separate web-socket.
 
-The Lobby is the entry point to the chat system and is always on **/ws/lobby** server. From here
-you can obtain a list of all other chat servers.
 
-#### Arena
+#### Chat servers
+A Chat server allows you communicate with other players, either globally, or privately.
 
-The Arena is where matches between competitors is organized. Connect to **/ws/arena** to get a
-list of all servers which are currently available.
+#### Arena servers
+The Arena is where matches between competitors is organized. This is a one-to-one competition
+between two competitors but other competitors can view the match in progress.
 
-Each of these three areas requires a separate Web Socket connection. You may run one connection
-to each functional area at a time.
+#### Game servers
+Other Game functionality is controlled by the game servers.
 
-###Route
+Routes
+------
 
 A **route** defines a specific command in the API and these routes use a path-like structure to
 group commands with similar functionality. e.g. user account commands are **/user/register**, 
 **/user/login** and **/user/logout**
 
 
-###Putting it together
-
-Putting the connection and the Route together.
-
-  * Connection - **ws://spacebotwar.com/ws/start**
-  * Route - **/general/post_message**
-
-Gives the connection string of **ws://spacebotwar.com/chat/general/post_message**
-
 Web Socket Message Structure
 ----------------------------
 
-A web-socket message has a JSON encoded string as it's payload. This is an example of a server response.
-
-{% highlight JSON %}
-{ "server" : "Kingsley", "route" : "/user/register", "content" : { "code" : "0", "message" : "Registered" } }
-{% endhighlight %}
-
-The **server** identifies which server the response came from. The **route** identifies the message and
-the **content** is the message payload.
-
-This might be documented as follows...
-
-###Client : Register
-
-Send a registration message from the client to the server.
+A web-socket message has a JSON encoded string as its payload. This is an example of a client request
+to log in.
 
 {% highlight json %}
 {
     "username"  : "james_bond",
     "password"  : "topS3cret",
-    "email"     : "agent007@mi5.gov.co.uk",
     "msg_id"    : "123",
+    ...
 }
 {% endhighlight %}
 
 This shows a message from a client to the server. In this case a 'registration' for a new user.
 
-The arguments are self explanatory except for the **msg_id**
+The arguments are self explanatory except for the **msg_id** which will be described below.
 
-####msg_id
+A server response will have a similar JSON message structure.
 
-This is a unique number for the message. Due to the asynchronous nature of Web Sockets
-there is often no correlation between a client request and the server response. The **msg_id**
-is a way for the client to match a server response to an earlier client request.
+{% highlight JSON %}
+{ 
+  "server"   : "Kingsley",
+  "type"     : "game", 
+  "route"    : "/user/login", 
+  "content"  : { 
+    "code"     : "0", 
+    "msg_id"   : "123",
+    ...
+    "message"  : "Welcome" 
+  } 
+}
+{% endhighlight %}
 
-The simplest way to implement this is to have a counter on the client which is incremented for
-each message sent. So sending a *Client : Register* request (message number 123) will result in
-a *Server Register* response with msg_id 123.
+The **code** is the success or failure of the request (zero is always success, failure is
+denoted by a none zero error code).
+
+The **msg_id** is used to link the client request with the server response. This is required
+since the response may be asynchronous. There is no guarantee that the response will be sent
+back immediately with the return code so the client needs some way to tie in some future
+response back with the previous request. It does so by the unique msg_id. The simplest way
+to implement this is by an auto incrementing number.
 
 Note that there will be cases where the server sends messages which were not requested (such as
 status changes) where the msg_id will not be relevant and may not be included.

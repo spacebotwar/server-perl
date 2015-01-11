@@ -19,6 +19,11 @@
     {% else %}
       <h3><a href="/api/start/">Start</a></h3>
     {% endif %}
+    {% if page.on_page == "api_user" %}
+      User
+    {% else %}
+      <h3><a href="/api/user/">User</a></h3>
+    {% endif %}
     {% if page.on_page == "api_arena" %}
       Arena
     {% else %}

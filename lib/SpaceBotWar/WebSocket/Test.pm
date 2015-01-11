@@ -32,6 +32,15 @@ sub DEMOLISH {
     $self->log->info("DEMOLISH: START #### $self");
 }
 
+sub ws_test {
+    my ($self, $context) = @_;
+
+    return {
+        code        => 0,
+        message     => 'foobar',
+    };
+}
+
 # A user has joined the server
 #
 sub on_connect {

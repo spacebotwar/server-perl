@@ -7,6 +7,7 @@ use lib "../lib";
 use SpaceBotWar::WebSocket::Test;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
+use SpaceBotWar::Config;
 use Log::Log4perl;
 use Redis;
 
@@ -15,6 +16,10 @@ use Plack::App::IndexFile;
 
 #--- Initialize singleton objects
 #
+SpaceBotWar::Config->initialize({
+    filename => 'Users/icydee/sandbox/space-bot-war/spacebotwar.conf',
+});
+
 SpaceBotWar::Queue->initialize({
     server  => 'localhost:11300',
     ttr     => 120,
@@ -30,7 +35,7 @@ Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
 
 
 my $app = builder {
-    mount "/ws/start"           => SpaceBotWar::WebSocket::Test->new({ room => 'Test'    })->to_app;
+    mount "/ws"           => SpaceBotWar::WebSocket::Test->new({ room => 'Test'    })->to_app;
 };
 $app;
 
