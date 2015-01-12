@@ -72,9 +72,10 @@ Client : client_code
 
 This is on the route **/client_code**
 
-Get a new Client Code. Note you should only do this if you do not have a Client Code.
-e.g. if this is the first time on this computer, or with this Web Browser. If you do have 
-one (even if it is timed out) you should reuse it.
+The first action you should do on making a connection is to obtain, or validate your
+Client Code. If you have an existing Client Code on this computer, browser or client then
+you should always reuse it, even if it is timed out. This call will serve both to
+validate and refresh an existing Client Code or (if you don't have one) get a new one.
 
 {% highlight JSON %}
 {
@@ -95,7 +96,7 @@ client_code (optional)
 You can validate/refresh your existing client code. If valid the server will return
 the same Client Code. If not valid it will return a new one.
 
-If you do not supply a Client code, then you will get a new one.
+If you do not supply a Client code, or your code is invalid, then you will get a new one.
 
 RESPONSE
 --------
@@ -105,8 +106,8 @@ The server will respond with a **Server : client_code** message.
 
 ---
 
-Server : reply_client_code
-==========================
+Server : client_code
+====================
 
 Server response to the **Client : client_code** request
 
@@ -173,13 +174,13 @@ RESPONSE
 An email will be sent to the user which contains their registration details. A link in the email
 will be used to validate the email address.
 
-The server will respond with a **Server : reply_register** message.
+The server will respond with a **Server : register** message.
 
 
 ---
 
-Server : reply_register
-=======================
+Server : register
+=================
 
 In response to a **Client : register** request.
 
@@ -229,8 +230,8 @@ There will be a **Server : forgot_password** response.
 
 ---
 
-Server : reply_forgot_password
-==============================
+Server : forgot_password
+========================
 
 The response to a **Client : forgot_password** request.
 
@@ -278,8 +279,8 @@ The server will respond with a **Server : login_with_password** message
 
 ---
 
-Server : reply_login_with_password
-==================================
+Server : login_with_password
+============================
 
 The server response to a **Client : login_with_password** message.
 
@@ -317,13 +318,13 @@ The code sent in the email.
 RESPONSE
 --------
 
-The server responds with a **Server : reply_login_with_email_code**
+The server responds with a **Server : login_with_email_code**
 
 
 ---
 
-Server : reply_login_with_email_code
-====================================
+Server : login_with_email_code
+==============================
 
 The server response to a **Client : login_with_email_code** message.
 
@@ -353,14 +354,14 @@ The client is logged out of the server.
 RESPONSE
 --------
 
-The server will log the user out and respond with a **Server : reply_logout** 
+The server will log the user out and respond with a **Server : logout** 
 message.
 
 
 ---
 
-Server : reply_logout
-=====================
+Server : logout
+===============
 
 The server response to a **Client : logout** message.
 

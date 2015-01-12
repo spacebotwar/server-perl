@@ -2,6 +2,7 @@ package SpaceBotWar::WebSocket::User;
 
 use Moose;
 use Log::Log4perl;
+use Data::Dumper;
 
 extends 'SpaceBotWar::WebSocket';
 
@@ -38,5 +39,25 @@ sub ws_client_code {
         client_code     => $client_code->id,
     };
 }
+
+#--- Register a new user
+#
+sub ws_register {
+    my ($self, $context) = @_;
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+
+    $log->debug("ws_register: ".Dumper($context));
+    # validate the Client Code
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->content->{client_code},
+    })->assert_valid;
+
+    return {
+        code           => 1000,
+        message        => "ERROR: bad client code",
+    };
+}
+
 
 1;
