@@ -54,8 +54,8 @@ sub ws_register {
     })->assert_valid;
 
     return {
-        code           => 1000,
-        message        => "ERROR: bad client code",
+        code           => 0,
+        message        => "OK: Registered",
     };
 }
 

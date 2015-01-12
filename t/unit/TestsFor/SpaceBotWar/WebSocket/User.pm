@@ -4,6 +4,8 @@ use lib "lib";
 
 use Test::Class::Moose;
 use Test::Mock::Class ':all';
+use Test::Exception;
+use Data::Dumper;
 
 use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
@@ -63,18 +65,18 @@ sub test_register {
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
-    # An invalid client code should return an error
-    my $response = $ws_user->ws_register($context);
-    is($response->{code},       1000,                       "Response: code");
-    is($response->{message},    "ERROR: bad client code",   "Response: message");
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
 
     # A good client code
     my $client_code = SpaceBotWar::ClientCode->new;
     $content->{client_code} = $client_code->id;
 
-    $response = $ws_user->ws_register($context);
+    my $response = $ws_user->ws_register($context);
     is($response->{code},       0,                          "Response: code good");
-    is($response->{message},    "OK: registered",           "Response: message registered");
+    is($response->{message},    "OK: Registered",           "Response: message registered");
 
 
 }
