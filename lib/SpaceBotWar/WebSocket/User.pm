@@ -59,7 +59,13 @@ sub ws_register {
     if ($username eq "") {
         confess [1002, "Username is missing!" ];
     }
-    
+   
+    my $email = $context->content->{email} || "";
+    trim $email;
+    if ($email eq "") {
+        confess [1002, "Email is missing!" ];
+    }
+ 
     return {
         code           => 0,
         message        => "OK: Registered",
