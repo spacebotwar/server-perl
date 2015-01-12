@@ -4,6 +4,7 @@ use Moose;
 use Log::Log4perl;
 use Data::Dumper;
 use Text::Trim qw(trim);
+use Email::Valid;
 
 extends 'SpaceBotWar::WebSocket';
 
@@ -65,7 +66,10 @@ sub ws_register {
     if ($email eq "") {
         confess [1002, "Email is missing!" ];
     }
- 
+    $email = Email::Valid->address($email);
+    if (! $email ) {
+        confess [1003, "Email is invalid!" ];
+    }     
     return {
         code           => 0,
         message        => "OK: Registered",

@@ -85,14 +85,26 @@ sub test_register {
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no username';
     is($@->[0], 1002, "Code, no username");
     like($@->[1], qr/^Username is missing/, "Message, no username"); 
+    $content->{username} = 'bert';
 
     # A missing email should throw an error
-    $content->{username} = 'bert';
     delete $content->{email};
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no email';
     is($@->[0], 1002, "Code, no email");
     like($@->[1], qr/^Email is missing/, "Message, no email");
-    
+   
+    # Various invalid email addresses
+    my @bad_emails = (
+        'foo',
+        'bar@',
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com',
+    );
+    foreach my $email (@bad_emails) {
+        $content->{email} = $email;
+        throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, bad email [$email]";
+        is($@->[0], 1003, "Code, bad emaili");
+        like($@->[1], qr/^Email is invalid/, "Message, bad email");
+    }
 }
 
 
