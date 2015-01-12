@@ -59,6 +59,7 @@ sub test_register {
     my $content = {
         msg_id      => 456,
         client_code => '123',
+        username    => 'bert',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -78,6 +79,11 @@ sub test_register {
     is($response->{code},       0,                          "Response: code good");
     is($response->{message},    "OK: Registered",           "Response: message registered");
 
+    # A missing username should throw an error
+    delete $content->{username};
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no username';
+    is($@->[0], 1002, "Code, no username");
+    like($@->[1], qr/^Username is missing/, "Message, no username"); 
 
 }
 

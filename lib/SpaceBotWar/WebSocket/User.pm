@@ -3,6 +3,7 @@ package SpaceBotWar::WebSocket::User;
 use Moose;
 use Log::Log4perl;
 use Data::Dumper;
+use Text::Trim qw(trim);
 
 extends 'SpaceBotWar::WebSocket';
 
@@ -53,6 +54,12 @@ sub ws_register {
         id      => $context->content->{client_code},
     })->assert_valid;
 
+    my $username = $context->content->{username} || "";
+    trim $username;
+    if ($username eq "") {
+        confess [1002, "Username is missing!" ];
+    }
+    
     return {
         code           => 0,
         message        => "OK: Registered",
