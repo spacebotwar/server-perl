@@ -10,18 +10,20 @@ use SpaceBotWar::Config;
 sub test_construction_foo {
     my ($self) = @_;
 
-    # unfortunately we need a physical file
-    my ($fh, $filename) = tempfile();
-    my @lines = <DATA>;
-    print $fh @lines;
-    close $fh;
+#    # unfortunately we need a physical file
+#    my ($fh, $filename) = tempfile();
+#    my @lines = <DATA>;
+#    print $fh @lines;
+#    close $fh;
 
-    my $config_json = Config::JSON->new(pathToFile => $filename);
+ #   my $config_json = Config::JSON->new(pathToFile => $filename);
 
-    my $config = SpaceBotWar::Config->new({
-        filename    => 'foo',
-        config_json => $config_json,
-    });
+#    my $config = SpaceBotWar::Config->new({
+#        filename    => 'foo',
+#        config_json => $config_json,
+#    });
+
+my $config = SpaceBotWar::Config->instance;
 
     isa_ok($config, 'SpaceBotWar::Config');
 
