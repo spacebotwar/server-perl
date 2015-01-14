@@ -126,6 +126,13 @@ sub test_register {
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
     is($@->[0], 1004, "Code, existing username");
     like($@->[1], qr/^Username already in use/, "Message, username already in use");
+
+    # Email address should not already be in use
+    $content->{username} = 'joe90';
+    $content->{email} = 'bert@example.com';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing email";
+    is($@->[0], 1004, "Code, existing email");
+    like($@->[1], qr/^Email already in use/, "Message, email already in use");
 }
 
 

@@ -74,9 +74,15 @@ sub ws_register {
     }     
 
     my $db = SpaceBotWar::SDB->instance->db;
+
     # Username must not already exist
     if ($db->resultset('User')->search({ username => $username }) > 0) {
         confess [1004, "Username already in use"];
+    }
+
+    # Email must not already be in use
+    if ($db->resultset('User')->search({ email => $email }) > 0) {
+        confess [1004, "Email already in use"];
     }
 
     return {
