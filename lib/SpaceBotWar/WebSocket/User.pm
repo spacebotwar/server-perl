@@ -6,6 +6,8 @@ use Data::Dumper;
 use Text::Trim qw(trim);
 use Email::Valid;
 
+use SpaceBotWar::SDB;
+
 extends 'SpaceBotWar::WebSocket';
 
 sub BUILD {
@@ -70,6 +72,13 @@ sub ws_register {
     if (! $email ) {
         confess [1003, "Email is invalid!" ];
     }     
+
+    my $db = SpaceBotWar::SDB->instance->db;
+    # Username must not already exist
+    if ($db->resultset('User')->search({ username => $username }) > 0) {
+        confess [1004, "Username already in use"];
+    }
+
     return {
         code           => 0,
         message        => "OK: Registered",

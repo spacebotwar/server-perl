@@ -6,6 +6,7 @@ use Test::Class::Moose;
 use Test::Mock::Class ':all';
 use Test::Exception;
 use Data::Dumper;
+use Log::Log4perl;
 
 use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
@@ -56,11 +57,13 @@ sub test_client_code {
 sub test_register {
     my ($self) = @_;
 
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
     my $content = {
         msg_id      => 456,
         client_code => '123',
-        username    => 'bert',
-        email       => 'jo@example.com',
+        username    => 'joe3',
+        email       => 'joe3@example.com',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -68,17 +71,22 @@ sub test_register {
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
+
 
     # A good client code
     my $client_code = SpaceBotWar::ClientCode->new;
     $content->{client_code} = $client_code->id;
-
-    my $response = $ws_user->ws_register($context);
-    is($response->{code},       0,                          "Response: code good");
-    is($response->{message},    "OK: Registered",           "Response: message registered");
+    my $response;
+    if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK: Registered",           "Response: message registered");
+    }
+    else {
+        diag(Dumper($@));
+    }
 
     # A missing username should throw an error
     delete $content->{username};
@@ -102,9 +110,22 @@ sub test_register {
     foreach my $email (@bad_emails) {
         $content->{email} = $email;
         throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, bad email [$email]";
-        is($@->[0], 1003, "Code, bad emaili");
+        is($@->[0], 1003, "Code, bad email");
         like($@->[1], qr/^Email is invalid/, "Message, bad email");
     }
+    $content->{email} = 'me@example.com';
+
+    # Username should not already be in use
+    my $db = SpaceBotWar::SDB->db;
+    $db->resultset('User')->create({
+        username    => 'bert',
+        password    => 'secret',
+        email       => 'bert@example.com',
+    });
+    $content->{username} = 'bert';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
+    is($@->[0], 1004, "Code, existing username");
+    like($@->[1], qr/^Username already in use/, "Message, username already in use");
 }
 
 

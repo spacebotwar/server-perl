@@ -31,6 +31,18 @@ SpaceBotWar::Redis->initialize({
     redis => $redis,
 });
 
+my $_db = SpaceBotWar::DB->connect(
+    'DBI:mysql:sbw',
+    'root',
+    '', {
+        mysql_enable_utf8   => 1,
+        AutoCommit          => 1,
+    },
+);
+SpaceBotWar::SDB->initialize({
+    db => $db,
+});
+
 Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
 
 my $app = builder {

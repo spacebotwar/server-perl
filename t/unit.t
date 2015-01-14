@@ -9,6 +9,7 @@ use Redis;
 use SpaceBotWar::Config;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
+use SpaceBotWar::DB;
 
 use Test::Class::Moose::Load 't/unit';
 use Test::Class::Moose::Runner;
@@ -32,6 +33,18 @@ SpaceBotWar::Redis->initialize({
 });
 
 Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
+
+my $db = SpaceBotWar::DB->connect(
+    'DBI:mysql:sbw',
+    'root',
+    '', {
+        mysql_enable_utf8   => 1,
+        AutoCommit          => 1,
+    },
+);
+SpaceBotWar::SDB->initialize({
+    db => $db,
+});
 
 my $runner = Test::Class::Moose::Runner->new(test_classes => \@ARGV);
 $runner->runtests;
