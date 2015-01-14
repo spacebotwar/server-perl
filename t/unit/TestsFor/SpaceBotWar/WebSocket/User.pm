@@ -74,19 +74,8 @@ sub test_register {
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-
-
-    # A good client code
     my $client_code = SpaceBotWar::ClientCode->new;
     $content->{client_code} = $client_code->id;
-    my $response;
-    if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
-        is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK: Registered",           "Response: message registered");
-    }
-    else {
-        diag(Dumper($@));
-    }
 
     # A missing username should throw an error
     delete $content->{username};
@@ -116,6 +105,9 @@ sub test_register {
     $content->{email} = 'me@example.com';
 
     # Username should not already be in use
+    # TODO PUT THIS IN A FIXTURES FILE
+    ##################################
+
     my $db = SpaceBotWar::SDB->db;
     $db->resultset('User')->create({
         username    => 'bert',
@@ -133,6 +125,20 @@ sub test_register {
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing email";
     is($@->[0], 1004, "Code, existing email");
     like($@->[1], qr/^Email already in use/, "Message, email already in use");
+    $content->{email} = 'joe@example.com';
+
+    # A good client code, username and email should now work...
+    my $response;
+    if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK: Registered",           "Response: message registered");
+    }
+    else {
+        diag(Dumper($@));
+    }
+
+     
+
 }
 
 

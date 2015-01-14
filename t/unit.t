@@ -35,13 +35,10 @@ SpaceBotWar::Redis->initialize({
 Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
 
 my $db = SpaceBotWar::DB->connect(
-    'DBI:mysql:sbw',
-    'root',
-    '', {
-        mysql_enable_utf8   => 1,
-        AutoCommit          => 1,
-    },
+    'DBI:SQLite:log/test.db',
 );
+$db->deploy({ add_drop_table => 1 });
+
 SpaceBotWar::SDB->initialize({
     db => $db,
 });
