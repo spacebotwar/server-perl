@@ -7,6 +7,7 @@ use Text::Trim qw(trim);
 use Email::Valid;
 
 use SpaceBotWar::SDB;
+use SpaceBotWar::Queue;
 
 extends 'SpaceBotWar::WebSocket';
 
@@ -75,6 +76,10 @@ sub ws_register {
 
     my $db = SpaceBotWar::SDB->instance->db;
 
+    # TODO Can we refactor to just attempt to create the record
+    # but rely on database integrity to create the exception?
+    #
+
     # Username must not already exist
     if ($db->resultset('User')->search({ username => $username }) > 0) {
         confess [1004, "Username already in use"];
@@ -85,11 +90,70 @@ sub ws_register {
         confess [1004, "Email already in use"];
     }
 
+    # Password must not be too short
+    my $password = $context->content->{password} || "";
+    trim $password;
+    if (length($password) < 5) {
+        confess [1003, "Password should be at least 5 characters long"];
+    }
+
+    # Password must include at least one upper case characters
+    if (not $password =~ m/[A-Z]/) {
+        confess [1003, "Password should contain upper case characters"];
+    }
+
+    # Password must include at least one lower case characters
+    if (not $password =~ m/[a-z]/) {
+        confess [1003, "Password should contain lower case characters"];
+    }
+
+    # Password must include at least one numeric characters
+    if (not $password =~ m/[0-9]/) {
+        confess [1003, "Password should contain numeric characters"];
+    }
+
+    # Register the account
+    my $user = $db->resultset('User')->create({
+        email       => $email,
+        username    => $username,
+    });
+
+    # Create a Job to send a registration email
+    my $queue = SpaceBotWar::Queue->instance;
+    $queue->publish('email_register', {
+        username    => $username,
+        email       => $email,
+    });
+
     return {
         code           => 0,
         message        => "OK: Registered",
     };
 }
 
+#-- Forgot password
+#
+sub ws_forgot_password {
+    my ($self, $context) = @_;
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+
+    $log->debug("ws_forgot_password: ".Dumper($context));
+    # validate the Client Code
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->content->{client_code},
+    })->assert_valid;
+
+    my $username_or_email = $context->content->{username_or_email} || "";
+    trim $username_or_email;
+    if ($username_or_email eq "") {
+        confess [1002, "username_or_email is required" ];
+    }
+
+    return {
+        code           => 0,
+        message        => "OK",
+    };
+}
 
 1;

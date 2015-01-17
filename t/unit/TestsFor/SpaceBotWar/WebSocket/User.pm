@@ -64,6 +64,7 @@ sub test_register {
         client_code => '123',
         username    => 'joe3',
         email       => 'joe3@example.com',
+        password    => 'TopS3kret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -127,7 +128,33 @@ sub test_register {
     like($@->[1], qr/^Email already in use/, "Message, email already in use");
     $content->{email} = 'joe@example.com';
 
-    # A good client code, username and email should now work...
+    # Password should not be too short
+    $content->{password} = 'T1ny';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, short password";
+    is($@->[0], 1003, "Code, password too short");
+    like($@->[1], qr/^Password should be at least 5 characters long/, "Message, password is too short");
+
+    # Password should contain upper case characters
+    $content->{password} = 'onlylow3r';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no upper case";
+    is($@->[0], 1003, "Code, password has no upper case characters");
+    like($@->[1], qr/^Password should contain upper case characters/, "Message, password has no upper case characters");
+
+    # Password should contain lower case characters
+    $content->{password} = '0NLYUPR';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no lower case";
+    is($@->[0], 1003, "Code, password has no lower case characters");
+    like($@->[1], qr/^Password should contain lower case characters/, "Message, password has no lower case characters");
+
+    # Password should contain numeric characters
+    $content->{password} = 'noNumBers';
+    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no numbers";
+    is($@->[0], 1003, "Code, password has no numbers");
+    like($@->[1], qr/^Password should contain numeric characters/, "Message, password has no numeric characters");
+
+    $content->{password} = 'TopS3cr3t';
+
+    # A good client code, username, email and password should now work...
     my $response;
     if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
@@ -137,7 +164,56 @@ sub test_register {
         diag(Dumper($@));
     }
 
-     
+    # A registration should have put a job on the job queue
+    my $queue = SpaceBotWar::Queue->instance;
+    my $job = $queue->peek_ready;
+    isnt($job, undef, "Job is ready"); 
+    #diag(Dumper($job));
+}
+
+
+sub test_forgot_password {
+    my ($self) = @_;
+
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    my $content = {
+        msg_id              => 457,
+        client_code         => SpaceBotWar::ClientCode->new->id,
+        username_or_email   => 'joe',
+    };
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        content => $content,
+    });
+    my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # Blank username or email should return error
+    $content->{username_or_email} = "   ";
+    throws_ok { $ws_user->ws_forgot_password($context) } qr/^ARRAY/, "Throw, username/email is blank";
+    is($@->[0], 1002, "Code, username/email is blank");
+    like($@->[1], qr/^username_or_email is required/, "Message, username_or_email is required");
+
+    # non-existing username should return success
+    $content->{username_or_email} = "username_unknown";
+    my $response = $ws_user->ws_forgot_password($context);
+    diag(Dumper($response));
+
+    is($response->{code}, 0, "Response: code good");
+    is($response->{message}, "OK", "Response: message OK");
+
+
+    # but no email job should be raised
+
+
+    # non-existing email should return success
+    # but no email job should be raised
+
+    # existing username should return success
+    # email job should be raised
+
+
+    # existing email should return success
+    # email job should be raised
 
 }
 
