@@ -193,20 +193,17 @@ sub test_forgot_password {
     is($@->[0], 1002, "Code, username/email is blank");
     like($@->[1], qr/^username_or_email is required/, "Message, username_or_email is required");
 
-    # non-existing username should return success
+    # non-existing username or email should return success
     $content->{username_or_email} = "username_unknown";
     my $response = $ws_user->ws_forgot_password($context);
-    diag(Dumper($response));
-
     is($response->{code}, 0, "Response: code good");
     is($response->{message}, "OK", "Response: message OK");
 
-
     # but no email job should be raised
-
-
-    # non-existing email should return success
-    # but no email job should be raised
+    my $queue = SpaceBotWar::Queue->instance;
+    my $job = $queue->peek_ready;
+    isnt($job, undef, "Job is ready"); 
+ 
 
     # existing username should return success
     # email job should be raised
