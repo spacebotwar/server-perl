@@ -10,6 +10,7 @@ use Log::Log4perl;
 
 use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
+use TestsFor::SpaceBotWar::WebSocket::User::Fixtures;
 
 sub test_construction {
     my ($self) = @_;
@@ -110,11 +111,9 @@ sub test_register {
     ##################################
 
     my $db = SpaceBotWar::SDB->db;
-    $db->resultset('User')->create({
-        username    => 'bert',
-        password    => 'secret',
-        email       => 'bert@example.com',
-    });
+    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
     $content->{username} = 'bert';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
     is($@->[0], 1004, "Code, existing username");
@@ -169,6 +168,7 @@ sub test_register {
     my $job = $queue->peek_ready;
     isnt($job, undef, "Job is ready"); 
     #diag(Dumper($job));
+    $fixtures->unload;
 }
 
 
@@ -187,6 +187,10 @@ sub test_forgot_password {
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
     # Blank username or email should return error
     $content->{username_or_email} = "   ";
     throws_ok { $ws_user->ws_forgot_password($context) } qr/^ARRAY/, "Throw, username/email is blank";
@@ -202,15 +206,24 @@ sub test_forgot_password {
     # but no email job should be raised
     my $queue = SpaceBotWar::Queue->instance;
     my $job = $queue->peek_ready;
-    isnt($job, undef, "Job is ready"); 
+    is($job, undef, "No email job"); 
  
-
     # existing username should return success
     # email job should be raised
+    $content->{username_or_email} = "bert";
+    if ( lives_ok { $response = $ws_user->ws_forgot_password($context) } 'good client code' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
 
 
     # existing email should return success
     # email job should be raised
+
+    $fixtures->unload;
 
 }
 
