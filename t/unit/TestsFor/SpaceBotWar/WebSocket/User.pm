@@ -246,6 +246,42 @@ sub test_forgot_password {
 
 }
 
+sub test_login_with_password {
+    my ($self) = @_;
+
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    my $content = {
+        msg_id              => 458,
+        client_code         => SpaceBotWar::ClientCode->new->id,
+        username            => 'bert',
+        password            => 'secret',
+    };
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        content => $content,
+    });
+    my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
+    # No client_code should return an error
+    $content->{client_code} = "";
+    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, client code is blank";
+    is($@->[0], 1001, "Code, no client code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+
+    # No matching username should return an error
+    $content->{username} = "someone_else";
+    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, unknown username";
+    is($@->[0], 1002, "Code, Unknown username");
+    like($@->[1], qr/^that username\/password combination not recognised/, "Message");
+    
+
+}
+
 
 1;
 

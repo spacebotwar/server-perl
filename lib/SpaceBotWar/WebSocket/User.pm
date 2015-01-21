@@ -139,7 +139,7 @@ sub ws_forgot_password {
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
 
-    $log->debug("ws_forgot_password: ".Dumper($context));
+    $log->debug("ws_forgot_password: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
@@ -171,6 +171,38 @@ sub ws_forgot_password {
         code           => 0,
         message        => "OK",
     };
+}
+
+#-- Login with password
+#
+sub ws_login_with_password {
+    my ($self, $context) = @_;
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
+
+    $log->debug("ws_login_with_password: ");
+    # validate the Client Code
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->content->{client_code},
+    })->assert_valid;
+
+    my $username = $context->content->{username};
+    trim($username);
+    my $password = $context->content->{password};
+    trim($password);
+
+    my ($user) = $db->resultset('User')->search({
+        username    => $username,
+        password    => $password,
+    });
+    if (not $user) {
+        confess [1002, "that username/password combination not recognised" ];
+    }
+    return {
+        code    => 0,
+        message => "OK",
+    }
 }
 
 1;
