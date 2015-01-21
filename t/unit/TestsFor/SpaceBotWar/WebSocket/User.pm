@@ -224,17 +224,23 @@ sub test_forgot_password {
     isnt($job, undef, "Email Job should be raised");
     $queue->delete($job->job->id);
 
-#    diag(Dumper($job));
-
     # existing email should return success
+    $content->{username_or_email} = 'bert@example.com';
+    if ( lives_ok { $response = $ws_user->ws_forgot_password($context) } 'good client code' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
     # email job should be raised
+    $job = $queue->peek_ready;
+    isnt($job, undef, "Email Job should be raised");
+    $queue->delete($job->job->id);
 
+    # Job queue should now be empty
     $job = $queue->peek_ready;
     is($job, undef, "No more jobs");
-
-    diag(Dumper($job));
-
-
 
     $fixtures->unload;
 

@@ -155,7 +155,7 @@ sub ws_forgot_password {
     my ($user) = $db->resultset('User')->search({
         -or     => [
             username    => $username_or_email,
-            password    => $username_or_email,
+            email       => $username_or_email,
         ]
     });
     if ($user) {
