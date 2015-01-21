@@ -137,6 +137,7 @@ sub ws_forgot_password {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
 
     $log->debug("ws_forgot_password: ".Dumper($context));
     # validate the Client Code
@@ -148,6 +149,22 @@ sub ws_forgot_password {
     trim $username_or_email;
     if ($username_or_email eq "") {
         confess [1002, "username_or_email is required" ];
+    }
+
+    # does username_or_email match an existing username or email
+    my ($user) = $db->resultset('User')->search({
+        -or     => [
+            username    => $username_or_email,
+            password    => $username_or_email,
+        ]
+    });
+    if ($user) {
+        # Create a Job to send a forgotten password email
+        my $queue = SpaceBotWar::Queue->instance;
+        $queue->publish('email_forgot_password', {
+            username    => $user->username,
+            email       => $user->email,
+        });
     }
 
     return {

@@ -168,6 +168,8 @@ sub test_register {
     my $job = $queue->peek_ready;
     isnt($job, undef, "Job is ready"); 
     #diag(Dumper($job));
+    $queue->delete($job->job->id);
+
     $fixtures->unload;
 }
 
@@ -209,7 +211,6 @@ sub test_forgot_password {
     is($job, undef, "No email job"); 
  
     # existing username should return success
-    # email job should be raised
     $content->{username_or_email} = "bert";
     if ( lives_ok { $response = $ws_user->ws_forgot_password($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
@@ -218,10 +219,22 @@ sub test_forgot_password {
     else {
         diag(Dumper($@));
     }
+    # email job should be raised
+    $job = $queue->peek_ready;
+    isnt($job, undef, "Email Job should be raised");
+    $queue->delete($job->job->id);
 
+#    diag(Dumper($job));
 
     # existing email should return success
     # email job should be raised
+
+    $job = $queue->peek_ready;
+    is($job, undef, "No more jobs");
+
+    diag(Dumper($job));
+
+
 
     $fixtures->unload;
 
