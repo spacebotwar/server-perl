@@ -180,6 +180,7 @@ sub ws_login_with_password {
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
+    $log->debug(Dumper($context));
 
     $log->debug("ws_login_with_password: ");
     # validate the Client Code
@@ -191,14 +192,15 @@ sub ws_login_with_password {
     trim($username);
     my $password = $context->content->{password};
     trim($password);
-
+    $log->debug("SEARCH [$username][$password]");
     my ($user) = $db->resultset('User')->search({
         username    => $username,
         password    => $password,
     });
-    if (not $user) {
+    if (not defined $user) { 
         confess [1002, "that username/password combination not recognised" ];
     }
+    $log->debug("SEARCH RESULT [$user] username [".$user->username."] password [".$user->password."]");
     return {
         code    => 0,
         message => "OK",

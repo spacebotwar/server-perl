@@ -278,8 +278,25 @@ sub test_login_with_password {
     throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, unknown username";
     is($@->[0], 1002, "Code, Unknown username");
     like($@->[1], qr/^that username\/password combination not recognised/, "Message");
-    
+    $content->{username} = 'bert';
 
+    # No matching password should return an error
+    $content->{password} = "hack_attack";
+    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, incorrect password";
+    is($@->[0], 1002, "Code, Incorrect Password");
+    like($@->[1], qr/^that username\/password combination not recognised/, "Message");
+    $content->{password} = '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14';
+
+    # Correct username and password should log in
+    my $response;
+    if ( lives_ok { $response = $ws_user->ws_login_with_password($context) } 'good login' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
+    $fixtures->unload;
 }
 
 

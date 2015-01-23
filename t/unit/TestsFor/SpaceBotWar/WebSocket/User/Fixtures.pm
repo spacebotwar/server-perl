@@ -9,7 +9,7 @@ my %definitions = (
         new => 'User',
         using => {
             username	=> 'bert',
-            password    => 'secret',
+            password    => '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14', # this is encrypted 'secret'
             email       => 'bert@example.com',
         },
     }

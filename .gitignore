@@ -7,3 +7,4 @@ _config.yml
 log
 log4perl.conf
 docs/_site
+bin/dump.rdb

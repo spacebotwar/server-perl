@@ -33,6 +33,8 @@ sub check_password {
 }
 
 # Encrypt the password
+# When reading the password, return it as-is (it should already be encrypted in the database)
+# when writing the password, encrypt it
 #
 around password => sub {
     my ($orig, $self) = (shift,shift);
@@ -40,6 +42,12 @@ around password => sub {
     return $self->$orig() unless @_;
 
     my $password = shift;
+    if ($password =~ m/^{SSHA}/) {
+        # it is already encrypted
+        return $self->$orig($password);
+    }
+
+    # otherwise encrypt it
     my $csh = Crypt::SaltedHash->new;
     $csh->add($password);
     $password = $csh->generate;
@@ -48,6 +56,7 @@ around password => sub {
 };
 
 # Encrypt on insert
+# encrypt the password, if it is not already encrypted
 #
 around insert => sub {
     my ($orig, $self) = (shift,shift);
