@@ -136,19 +136,11 @@ sub ws_login_with_password {
         id      => $context->content->{client_code},
     })->assert_valid;
 
-    my $username = $context->content->{username};
-    trim($username);
-    my $password = $context->content->{password};
-    trim($password);
-    $log->debug("SEARCH [$username][$password]");
-    my ($user) = $db->resultset('User')->search({
-        username    => $username,
-        password    => $password,
+    $db->resultset('User')->assert_login_with_password({
+        username    => $context->content->{username},
+        password    => $context->content->{password},
     });
-    if (not defined $user) { 
-        confess [1002, "that username/password combination not recognised" ];
-    }
-    $log->debug("SEARCH RESULT [$user] username [".$user->username."] password [".$user->password."]");
+
     return {
         code    => 0,
         message => "OK",

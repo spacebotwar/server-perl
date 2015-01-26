@@ -279,16 +279,16 @@ sub test_login_with_password {
     # No matching username should return an error
     $content->{username} = "someone_else";
     throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, unknown username";
-    is($@->[0], 1002, "Code, Unknown username");
-    like($@->[1], qr/^that username\/password combination not recognised/, "Message");
+    is($@->[0], 1001, "Code, Unknown username");
+    like($@->[1], qr/^Incorrect credentials 1/, "Message");
     $content->{username} = 'bert';
 
     # No matching password should return an error
     $content->{password} = "hack_attack";
     throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, incorrect password";
-    is($@->[0], 1002, "Code, Incorrect Password");
-    like($@->[1], qr/^that username\/password combination not recognised/, "Message");
-    $content->{password} = '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14';
+    is($@->[0], 1001, "Code, Incorrect Password");
+    like($@->[1], qr/^Incorrect credentials 2/, "Message");
+    $content->{password} = 'secret';
 
     # Correct username and password should log in
     my $response;
