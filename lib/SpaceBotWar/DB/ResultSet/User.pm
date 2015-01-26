@@ -4,6 +4,8 @@ use Moose;
 use namespace::autoclean;
 use Data::Validate::Email qw(is_email);
 use Crypt::SaltedHash;
+use Text::Trim qw(trim);
+use Email::Valid;
 
 extends 'SpaceBotWar::DB::ResultSet';
 
@@ -14,6 +16,7 @@ sub assert_username_available {
     my ($self, $username) = @_;
 
     confess [1001, 'Username must be at least 3 characters long' ] if not defined $username;
+    trim $username;
     confess [1001, 'Username must be at least 3 characters long', $username] if length($username) < 3;
 
     my ($row) = $self->search({
@@ -30,7 +33,25 @@ sub assert_email_valid {
     my ($self, $email) = @_;
 
     confess [1001, 'Email is missing' ]         if not defined $email;
-    confess [1001, 'Email is invalid', $email]  if not is_email($email);
+    trim($email);
+
+    $email = Email::Valid->address($email);
+    if (not $email or not is_email($email) ) {
+        confess [1001, 'Email is invalid', $email];
+    }
+    return $email;
+}
+
+# Assert that an email address is available
+#
+sub assert_email_available {
+    my ($self, $email) = @_;
+
+    $email = $self->assert_email_valid($email);    
+    my ($row) = $self->search({
+        email       => $email,
+    });
+    confess [1001, 'Email is not available', $email] if $row;
     return 1;
 }
 
@@ -40,6 +61,7 @@ sub assert_password_valid {
     my ($self, $password) = @_;
 
     confess [1001, 'Password is missing' ]                                                  if not defined $password;
+    trim($password);
     confess [1001, 'Password must be at least 5 characters long', $password ]               if length($password) < 5;
     confess [1001, 'Password must contain numbers, lowercase and uppercase', $password ]    if not $password =~ m/[0-9]/;
     confess [1001, 'Password must contain numbers, lowercase and uppercase', $password ]    if not $password =~ m/[a-z]/;
@@ -53,7 +75,7 @@ sub assert_create {
     my ($self, $args) = @_;
 
     $self->assert_username_available($args->{username});
-    $self->assert_email_valid($args->{email});
+    $self->assert_email_available($args->{email});
     $self->assert_password_valid($args->{password});
 
     my $csh = Crypt::SaltedHash->new->add($args->{password})->generate;

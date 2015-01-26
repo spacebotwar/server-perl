@@ -51,6 +51,7 @@ sub ws_register {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
 
     $log->debug("ws_register: ".Dumper($context));
     # validate the Client Code
@@ -58,71 +59,18 @@ sub ws_register {
         id      => $context->content->{client_code},
     })->assert_valid;
 
-    my $username = $context->content->{username} || "";
-    trim $username;
-    if ($username eq "") {
-        confess [1002, "Username is missing!" ];
-    }
-   
-    my $email = $context->content->{email} || "";
-    trim $email;
-    if ($email eq "") {
-        confess [1002, "Email is missing!" ];
-    }
-    $email = Email::Valid->address($email);
-    if (! $email ) {
-        confess [1003, "Email is invalid!" ];
-    }     
-
-    my $db = SpaceBotWar::SDB->instance->db;
-
-    # TODO Can we refactor to just attempt to create the record
-    # but rely on database integrity to create the exception?
-    #
-
-    # Username must not already exist
-    if ($db->resultset('User')->search({ username => $username }) > 0) {
-        confess [1004, "Username already in use"];
-    }
-
-    # Email must not already be in use
-    if ($db->resultset('User')->search({ email => $email }) > 0) {
-        confess [1004, "Email already in use"];
-    }
-
-    # Password must not be too short
-    my $password = $context->content->{password} || "";
-    trim $password;
-    if (length($password) < 5) {
-        confess [1003, "Password should be at least 5 characters long"];
-    }
-
-    # Password must include at least one upper case characters
-    if (not $password =~ m/[A-Z]/) {
-        confess [1003, "Password should contain upper case characters"];
-    }
-
-    # Password must include at least one lower case characters
-    if (not $password =~ m/[a-z]/) {
-        confess [1003, "Password should contain lower case characters"];
-    }
-
-    # Password must include at least one numeric characters
-    if (not $password =~ m/[0-9]/) {
-        confess [1003, "Password should contain numeric characters"];
-    }
-
     # Register the account
-    my $user = $db->resultset('User')->create({
-        email       => $email,
-        username    => $username,
+    my $user = $db->resultset('User')->assert_create({
+        email       => $context->content->{email},
+        username    => $context->content->{username},
+        password    => $context->content->{password},
     });
 
     # Create a Job to send a registration email
     my $queue = SpaceBotWar::Queue->instance;
     $queue->publish('email_register', {
-        username    => $username,
-        email       => $email,
+        username    => $user->username,
+        email       => $user->email,
     });
 
     return {

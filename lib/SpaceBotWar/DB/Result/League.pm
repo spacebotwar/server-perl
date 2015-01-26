@@ -16,7 +16,6 @@ __PACKAGE__->add_columns(
 sub sqlt_deploy_hook {
     my ($self, $sqlt_table) = @_;
     $sqlt_table->add_index(name => 'idx_program_name_key', fields => ['name']);
-    $sqlt_table->add_index(name => 'idx_program_commit_key', fields => ['commit_key']);
 }
 
 __PACKAGE__->meta->make_immutable(inline_constructor => 0);

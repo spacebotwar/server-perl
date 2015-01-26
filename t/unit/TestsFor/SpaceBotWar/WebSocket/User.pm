@@ -79,17 +79,20 @@ sub test_register {
     my $client_code = SpaceBotWar::ClientCode->new;
     $content->{client_code} = $client_code->id;
 
-    # A missing username should throw an error
-    delete $content->{username};
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no username';
-    is($@->[0], 1002, "Code, no username");
-    like($@->[1], qr/^Username is missing/, "Message, no username"); 
+    # Missing or too short a username should throw an error
+    my @user_tests = ('', qw(a ab ));
+    foreach my $username (@user_tests) {
+        $content->{username} = $username;
+        throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, no username [$username]";
+        is($@->[0], 1001, "Code, too short a username");
+        like($@->[1], qr/^Username must be at least 3 characters long/, "Message, username too short"); 
+    }
     $content->{username} = 'bert';
 
     # A missing email should throw an error
     delete $content->{email};
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no email';
-    is($@->[0], 1002, "Code, no email");
+    is($@->[0], 1001, "Code, no email");
     like($@->[1], qr/^Email is missing/, "Message, no email");
    
     # Various invalid email addresses
@@ -101,7 +104,7 @@ sub test_register {
     foreach my $email (@bad_emails) {
         $content->{email} = $email;
         throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, bad email [$email]";
-        is($@->[0], 1003, "Code, bad email");
+        is($@->[0], 1001, "Code, bad email");
         like($@->[1], qr/^Email is invalid/, "Message, bad email");
     }
     $content->{email} = 'me@example.com';
@@ -116,40 +119,40 @@ sub test_register {
 
     $content->{username} = 'bert';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
-    is($@->[0], 1004, "Code, existing username");
-    like($@->[1], qr/^Username already in use/, "Message, username already in use");
+    is($@->[0], 1001, "Code, existing username");
+    like($@->[1], qr/^Username not available/, "Message, username already in use");
 
     # Email address should not already be in use
     $content->{username} = 'joe90';
     $content->{email} = 'bert@example.com';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing email";
-    is($@->[0], 1004, "Code, existing email");
-    like($@->[1], qr/^Email already in use/, "Message, email already in use");
+    is($@->[0], 1001, "Code, existing email");
+    like($@->[1], qr/^Email is not available/, "Message, email already in use");
     $content->{email} = 'joe@example.com';
 
     # Password should not be too short
     $content->{password} = 'T1ny';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, short password";
-    is($@->[0], 1003, "Code, password too short");
-    like($@->[1], qr/^Password should be at least 5 characters long/, "Message, password is too short");
+    is($@->[0], 1001, "Code, password too short");
+    like($@->[1], qr/^Password must be at least 5 characters long/, "Message, password is too short");
 
     # Password should contain upper case characters
     $content->{password} = 'onlylow3r';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no upper case";
-    is($@->[0], 1003, "Code, password has no upper case characters");
-    like($@->[1], qr/^Password should contain upper case characters/, "Message, password has no upper case characters");
+    is($@->[0], 1001, "Code, password has no upper case characters");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no upper case characters");
 
     # Password should contain lower case characters
     $content->{password} = '0NLYUPR';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no lower case";
-    is($@->[0], 1003, "Code, password has no lower case characters");
-    like($@->[1], qr/^Password should contain lower case characters/, "Message, password has no lower case characters");
+    is($@->[0], 1001, "Code, password has no lower case characters");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no lower case characters");
 
     # Password should contain numeric characters
     $content->{password} = 'noNumBers';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no numbers";
-    is($@->[0], 1003, "Code, password has no numbers");
-    like($@->[1], qr/^Password should contain numeric characters/, "Message, password has no numeric characters");
+    is($@->[0], 1001, "Code, password has no numbers");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no numeric characters");
 
     $content->{password} = 'TopS3cr3t';
 
