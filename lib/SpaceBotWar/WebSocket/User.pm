@@ -55,7 +55,7 @@ sub ws_register {
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
 
-    $log->debug("ws_register: ".Dumper($context));
+#    $log->debug("ws_register: ".Dumper($context));
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},

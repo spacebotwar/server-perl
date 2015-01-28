@@ -38,6 +38,8 @@ sub test_client_code {
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "NEW Client Code",  "Response: message");
     isnt($response->{client_code},  'invalid',          "Response: client_code changed");
+    isnt($context->client_code,     undef,              "There is a client code");
+    isa_ok($context->client_code,   "SpaceBotWar::ClientCode");
 
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $response->{client_code},
@@ -53,6 +55,8 @@ sub test_client_code {
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "GOOD Client Code", "Response: message");
     is($response->{client_code},    $client_code->id,   "Response: client_code unchanged");
+    isnt($context->client_code,     undef,              "there is a client code");
+    is($context->client_code->id,   $client_code->id,   "Same client_code");
 }
 
 sub test_register {
@@ -184,13 +188,19 @@ sub test_forgot_password {
 
     my $content = {
         msg_id              => 457,
-        client_code         => SpaceBotWar::ClientCode->new->id,
+        client_code         => 'rubbish',
         username_or_email   => 'joe',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_forgot_password($context) } qr/^ARRAY/, 'test throw 1';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
@@ -254,20 +264,22 @@ sub test_login_with_password {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
-    my $client_code = SpaceBotWar::ClientCode->new;
     my $content = {
         msg_id              => 458,
-        client_code         => $client_code->id,
+        client_code         => 'incorrect',
         username            => 'bert',
         password            => 'secret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content => $content,
-        state               => {
-            client_code         => $client_code,
-        },
+        content     => $content,
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, 'test throw 1';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
