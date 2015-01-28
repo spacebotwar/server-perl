@@ -254,14 +254,18 @@ sub test_login_with_password {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
+    my $client_code = SpaceBotWar::ClientCode->new;
     my $content = {
         msg_id              => 458,
-        client_code         => SpaceBotWar::ClientCode->new->id,
+        client_code         => $client_code->id,
         username            => 'bert',
         password            => 'secret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
+        state               => {
+            client_code         => $client_code,
+        },
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
@@ -299,6 +303,8 @@ sub test_login_with_password {
     else {
         diag(Dumper($@));
     }
+#    diag(Dumper($context));
+    is($context->user->id, 1, "Correct user id");
     $fixtures->unload;
 }
 

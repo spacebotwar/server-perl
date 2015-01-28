@@ -245,7 +245,6 @@ sub on_establish {
     }
     my $state = {
         client_code => undef,
-        user_id     => undef,
     };
     $log->debug("Establish");
     
@@ -281,20 +280,6 @@ sub _on_message {
     my $path    = $json_msg->{route};
     my $content = $json_msg->{content} || {};
 
-    # If we have a client_code (effectively a session ID) then validate and cache it
-#    if (defined $content->{client_code}) {
-#        if (not defined $state->{client_code} or $content->{client_code} ne $state->{client_code}->id) {
-#            $state->{client_code} = SpaceBotWar::ClientCode->validate_client_code($content->{client_code});
-#        }
-#    }
-            
-    # If a user is logged in, cache the User object
-#    if (defined $state->{client_code} and defined $state->{client_code}->user_id) {
-#        if (not defined $state->{user} or $state->{client_code}->user_id != $state->{user}->id) {
-#            $state->{user} = SpaceBotWar->db->resultset('User')->find($state->{client_code}->user_id);
-#        }
-#    }
-
     my $msg_id  = $content->{msg_id};
     eval {
         my ($route, $method) = $path =~ m{(.*)/([^/]*)};
@@ -322,7 +307,6 @@ sub _on_message {
             connection      => $connection,
             content         => $content,
             client_code     => $state->{client_code},
-            user            => $state->{user},
         });
         $log->debug("Call [$obj][$method]");
         my $reply = $obj->$method($context);

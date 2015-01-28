@@ -38,6 +38,8 @@ sub ws_client_code {
         $client_code->get_new_id;
     }
 
+    $context->client_code($client_code);
+
     return {
         code            => 0,
         message         => $message,
@@ -136,10 +138,12 @@ sub ws_login_with_password {
         id      => $context->content->{client_code},
     })->assert_valid;
 
-    $db->resultset('User')->assert_login_with_password({
+    my $user = $db->resultset('User')->assert_login_with_password({
         username    => $context->content->{username},
         password    => $context->content->{password},
     });
+
+    $context->user($user);
 
     return {
         code    => 0,
