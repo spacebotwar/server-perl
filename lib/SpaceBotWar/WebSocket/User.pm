@@ -151,4 +151,33 @@ sub ws_login_with_password {
     }
 }
 
+#-- Login with email code
+#
+sub ws_login_with_email_code {
+    my ($self, $context) = @_;
+
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
+    $log->debug(Dumper($context));
+
+    $log->debug("ws_login_with_email_code: ");
+    # validate the Client Code
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->content->{client_code},
+    })->assert_valid;
+
+    # validate the Email Code
+    my $email_code = SpaceBotWar::EmailCode->new({
+        id      => $context->content->{email_code},
+        user_id => 0,
+    })->assert_valid;
+
+    return {
+        code    => 0,
+        message => "OK",
+    }
+}
+
+
 1;

@@ -93,9 +93,6 @@ for my $func (qw(user_id logged_in)) {
         my $self = shift;
 
         return $self->$orig() if not @_;
-
-        #print STDERR "IN $func [$orig][$self]\n";
-        #print STDERR Dumper(\@_);    
         my $ret = $self->$orig(@_);
         $self->extend;
         return $ret;

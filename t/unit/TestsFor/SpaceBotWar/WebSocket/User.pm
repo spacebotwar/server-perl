@@ -10,6 +10,8 @@ use Log::Log4perl;
 
 use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
+use SpaceBotWar::EmailCode;
+
 use TestsFor::SpaceBotWar::WebSocket::User::Fixtures;
 
 sub test_construction {
@@ -113,14 +115,11 @@ sub test_register {
     }
     $content->{email} = 'me@example.com';
 
-    # Username should not already be in use
-    # TODO PUT THIS IN A FIXTURES FILE
-    ##################################
-
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
+    # Username should not already be in use
     $content->{username} = 'bert';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
     is($@->[0], 1001, "Code, existing username");
@@ -315,11 +314,49 @@ sub test_login_with_password {
     else {
         diag(Dumper($@));
     }
-#    diag(Dumper($context));
     is($context->user->id, 1, "Correct user id");
     $fixtures->unload;
 }
 
+sub test_login_with_email_code {
+    my ($self) = @_;
+
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    my $content = {
+        msg_id              => 467,
+        client_code         => 'incorrect',
+        email_code          => SpaceBotWar::EmailCode->new({
+            user_id             => 1,
+        }),
+    };
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        content     => $content,
+    });
+    my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, 'test throw 1';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
+    # No email_code should return an error
+    $content->{email_code} = "";
+    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, email code is blank";
+    is($@->[0], 1001, "Code, no email code");
+    like($@->[1], qr/^Invalid Email Code/, "Message");
+
+    # No matching email_code should return an error
+    $content->{email_code} = "something_else";
+    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, unknown email_code";
+    is($@->[0], 1001, "Code Invalid Email Code");
+    like($@->[1], qr/^Invalid Email Code/, "Message");
+}
 
 1;
 

@@ -3,16 +3,16 @@ package SpaceBotWar::EmailCode;
 use Moose;
 use namespace::autoclean;
 use UUID::Tiny ':std';
-use SpaceBotWar;
+use SpaceBotWar::Cache;
+
 use Digest::MD5 qw(md5_hex);
 
-# A unique ID for the client_code key
+# A unique ID for the email_code key
 #
 has id => (
     is      => 'ro',
-    default => sub {
-        return _create_id();
-    },
+    lazy    => 1,
+    builder => '_build_id',
 );
 
 # Namespace to use in cache
@@ -26,9 +26,16 @@ has namespace => (
 #
 has cache => (
     is      => 'ro',
-    default => sub {
-        return SpaceBotWar->cache;
-    },
+    lazy    => 1,
+    builder => '_build_cache',
+);
+
+# The 'secret'
+#
+has secret => (
+    is       => 'ro',
+    lazy     => 1,
+    builder  => '_build_secret',
 );
 
 # How long until the email_code times out
@@ -41,8 +48,9 @@ has timeout_sec => (
 # The ID of the User who requested the email code
 #
 has user_id => (
-    is      => 'rw',
-    isa     => 'Int',
+    is      	=> 'rw',
+    isa     	=> 'Int',
+    required	=> 1,
 );
 
 sub log {
@@ -61,16 +69,30 @@ sub BUILD {
 
 
 # Create a new random id
-#   Add a 'secret' so that people can't invent their own client_code
+#   Add a 'secret' so that people can't invent their own email_code
 #
-sub _create_id {
-    my $secret  = SpaceBotWar->config->get('email_secret');
+sub _build_id {
+    my ($self) = @_;
     my $uuid    = create_uuid_as_string(UUID_V4);
-    my $digest  = substr(md5_hex($uuid.$secret), 0, 6);
+    my $digest  = substr(md5_hex($uuid.$self->secret), 0, 6);
     return $uuid."-".$digest;
 }
 
-# Automatically store the client_code if we update any values
+#--- Build the secret
+#
+sub _build_secret {
+    my ($self) = @_;
+    return SpaceBotWar::Config->instance->get('email_secret');
+}
+
+#--- Buid the cache
+#
+sub _build_cache {
+    my ($self) = @_;
+    return SpaceBotWar::Cache->instance;
+}
+
+# Automatically store the email_code if we update any values
 #
 for my $func (qw(user_id)) {
     around $func => sub {
@@ -94,7 +116,7 @@ sub store {
     return $self;
 }
 
-# Create a hash of this client_code
+# Create a hash of this email_code
 #
 sub to_hash {
     my ($self) = @_;
@@ -114,8 +136,6 @@ sub from_hash {
     }
 }
 
-
-
 # Validate an email code
 #
 sub validate {
@@ -123,9 +143,8 @@ sub validate {
 
     my $log = $self->log;
     return if not defined $self->id;
-    my $secret  = SpaceBotWar->config->get('email_secret');
     my $uuid    = substr($self->id, 0, 36);
-    my $test    = $uuid."-".substr(md5_hex($uuid.$secret), 0, 6);
+    my $test    = $uuid."-".substr(md5_hex($uuid.$self->secret), 0, 6);
     $log->debug("test = [$test]");
     $log->debug("retn = [".$self->id."]");
     return $test eq $self->id ? $self : undef;
@@ -133,14 +152,13 @@ sub validate {
 
 # Validate an email code with confess
 #
-sub assert_validate {
+sub assert_valid {
     my ($self) = @_;
 
     confess [1000, "Email Code is missing" ]            if not defined $self->id;
     confess [1001, "Invalid Email Code", $self->id ]    if not $self->validate;
     return $self;
 }
-
 
 __PACKAGE__->meta->make_immutable;
 
