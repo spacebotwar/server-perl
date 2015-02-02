@@ -323,12 +323,12 @@ sub test_login_with_email_code {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
+    my $email_code = SpaceBotWar::EmailCode->new({ user_id => 1 });
+
     my $content = {
         msg_id              => 467,
         client_code         => 'incorrect',
-        email_code          => SpaceBotWar::EmailCode->new({
-            user_id             => 1,
-        }),
+        email_code          => $email_code->id,
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content     => $content,
@@ -356,7 +356,19 @@ sub test_login_with_email_code {
     throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, unknown email_code";
     is($@->[0], 1001, "Code Invalid Email Code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
+
+    # Correct email code should return success
+    $content->{email_code} = $email_code->id;
+    my $response;
+    if ( lives_ok { $response = $ws_user->ws_login_with_email_code($context) } 'good login' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
+    is($context->user->id, 1, "Correct user id");
+    $fixtures->unload;
 }
 
 1;
-

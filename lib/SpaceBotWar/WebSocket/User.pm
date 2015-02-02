@@ -173,6 +173,11 @@ sub ws_login_with_email_code {
         user_id => 0,
     })->assert_valid;
 
+    $log->debug("Looking for User ID [".$email_code->user_id."]");
+    $context->{user} = $db->resultset('User')->find({
+        id      => $email_code->user_id,
+    });
+
     return {
         code    => 0,
         message => "OK",

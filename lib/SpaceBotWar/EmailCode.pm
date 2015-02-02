@@ -65,6 +65,7 @@ sub BUILD {
     my ($self,$args) = @_;
 
     $self->from_hash($self->cache->get_and_deserialize($self->namespace, $self->id));
+    $self->store;
 }
 
 
