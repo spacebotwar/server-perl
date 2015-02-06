@@ -184,5 +184,26 @@ sub ws_login_with_email_code {
     }
 }
 
+#--- Logout
+#
+sub ws_logout {
+    my ($self, $context) = @_;
 
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
+    $log->debug(Dumper($context));
+
+    $log->debug("ws_logout: ");
+    # validate the Client Code
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->content->{client_code},
+    })->assert_valid;
+
+    $context->user(undef);
+
+    return {
+        code    => 0,
+        message => "OK",
+    }
+}
 1;

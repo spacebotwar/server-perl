@@ -371,4 +371,65 @@ sub test_login_with_email_code {
     $fixtures->unload;
 }
 
+sub test_logout {
+    my ($self) = @_;
+
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    my $content = {
+        msg_id              => 467,
+        client_code         => 'incorrect',
+    };
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        content     => $content,
+    });
+    my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_logout($context) } qr/^ARRAY/, 'test throw 1';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
+    # If you are not logged in, it should return success
+    my $response;
+    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good login' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
+
+    # If you *are* logged in, it should return success
+    $content = {
+        msg_id              => 458,
+        client_code         => SpaceBotWar::ClientCode->new->id,
+        username            => 'bert',
+        password            => 'secret',
+    };
+    $context->content($content);
+
+    unless (lives_ok { $response = $ws_user->ws_login_with_password($context) } 'good login' ) {
+        fail('User failed to log on');
+        diag(Dumper($@));
+    }
+
+    is($context->user->id, 1, "First check user is logged on");
+
+    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good login' ) {
+        is($response->{code},       0,                          "Response: code good");
+        is($response->{message},    "OK",                       "Response: message good");
+    }
+    else {
+        diag(Dumper($@));
+    }
+
+    is($context->user, undef, "User is logged out");
+    $fixtures->unload;
+}
 1;
