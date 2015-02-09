@@ -32,7 +32,7 @@ advantages over HTTP requests, even AJAX calls using HTTP.
   * By only supporting Web Sockets, the server can be significantly trimmed down making it faster and cheaper. We can then scale out horizontally, providing more power at a cheaper cost.
 
 The consequence however is that your client code needs to be a little more sophisticated. We have provided
-several examples of simple web servers you can build upon if you wish.
+several examples of simple web clients you can build upon if you wish.
 
 Example Calls
 -------------
