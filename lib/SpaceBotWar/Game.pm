@@ -20,15 +20,10 @@ sub log {
 sub normalize_radians {
     my ($self, $angle) = @_;
 
-#    my $log = $self->log;
-
-#    $log->debug("angle = [$angle]");
     my $f_angle = fmod($angle, 2*PI);
-#    $log->debug("f_angle = [$f_angle]");
 
     $f_angle -= 2*PI if $f_angle > PI;
     $f_angle += 2*PI if $f_angle < 0 - PI;
-#    $log->debug("return = [$f_angle]");
 
     return $f_angle;
 }

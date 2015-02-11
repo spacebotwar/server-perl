@@ -27,7 +27,7 @@ sub test_normalize {
     isa_ok($game, 'SpaceBotWar::Game');
 
     foreach my $input (sort keys %$tests) {
-        foreach my $delta (0, PI*2, -PI*2, PI*100, -PI*100) {
+        foreach my $delta (0, PI*2, PI* -2, PI*100, PI* -100) {
             my $output = $game->normalize_radians($input + $delta);
             delta_ok($output, $tests->{$input}, "Normalize: $input Delta: $delta");
         }
