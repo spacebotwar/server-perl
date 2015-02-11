@@ -47,31 +47,35 @@ data
 Supplimentary data, for example the time at which the server is due back on line.
 
 
-
 ---
-Client : battle_status
-=====================
+Client : view_battle
+====================
 
-Request the current status of the battle you have just joined.
+Request to join a specific battle and continue to view it until either the battle ends
+or you leave the battle server.
 
 {% highlight JSON %}
 {
     "client_code"   : "1660686c-8b5d-3b7c-825d-1d828db8f9ca-2f928",
+    "battle_id"     : "23f621",
 }
+
 {% endhighlight %}
 
 msg_id (not required)
 --------------------
 
 Do not issue a **msg_id** with this request, since the server will send multiple
-responses the msg_id is not honoured.
+responses the msg_id is not honoured, however if you need to keep track of the
+messages you can use the battle_id.
+
 
 RESPONSE
 --------
 
 The server will respond with a **Server : battle_status** message, immediately
-with the current battle status, then in the future if any changes take
-place in the room.
+with the current battle status, and again in the future if any changes take
+place in the battle.
 
 
 
