@@ -5,6 +5,7 @@ use Data::Dumper;
 use Math::Round qw(nearest);
 use POSIX qw(fmod);
 #use SpaceBotWar::Game::Missile;
+use Test::More;
 
 use namespace::autoclean;
 
@@ -208,6 +209,12 @@ for my $method (qw(orientation missile_direction)) {
     };
 }
 
+sub log {
+    my ($self) = @_;
+    my $log = Log::Log4perl->get_logger( __PACKAGE__ );
+    return $log;
+}   
+
 # The direction the ship goes is determined by several factors
 #  the 'orientation' of the ship, i.e. which direction it is facing
 #  the 'thrust_forward' this being the main engine of the ship
@@ -218,9 +225,10 @@ sub direction {
     my ($self) = @_;
 
     my $forward = $self->thrust_forward - $self->thrust_reverse;
-    my $delta_theta = atan2($self->thrust_sideway, $self->thrust_forward);
+    my $delta_theta = atan2($self->thrust_sideway, $forward);
     my $direction = $self->orientation + $delta_theta;
-    return $direction;
+    #diag("Ori: [".$self->orientation."] theta: [$delta_theta] dir: [$direction] side: [".$self->thrust_sideway."] forward [".$self->thrust_forward."] reverse [".$self->thrust_reverse."] actual fwd [$forward]");
+    return $self->normalize_radians($direction);
 };
 
 # Speed is a vector of forward,reverse & sideway thrust
