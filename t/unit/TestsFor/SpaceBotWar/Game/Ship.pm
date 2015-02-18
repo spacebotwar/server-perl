@@ -108,6 +108,31 @@ sub test_rotation {
     }
 }
 
+sub test_speed {
+    my ($self) = @_;
+
+    my $ship = SpaceBotWar::Game::Ship->new({
+        id                  => 1,
+        owner_id            => 2,
+        max_thrust_forward  => 100,
+        max_thrust_reverse  => 10,
+        max_thrust_sideway  => 5,
+        max_rotation        => 2,
+    });
+
+    $ship->thrust_forward(8);
+    delta_ok($ship->speed, 8, "Forward speed");
+    $ship->thrust_reverse(4);
+    delta_ok($ship->speed, 4, "Some reverse");
+    $ship->thrust_sideway(3);
+    delta_ok($ship->speed, 5, "pythagorus lives");
+    $ship->thrust_sideway(-3);
+    delta_ok($ship->speed, 5, "reverse pythagorus");
+    $ship->thrust_forward(0);
+    $ship->thrust_reverse(4);
+    delta_ok($ship->speed, 5, "in reverse");
+}
+ 
 sub test_limits {
     my ($self) = @_;
 

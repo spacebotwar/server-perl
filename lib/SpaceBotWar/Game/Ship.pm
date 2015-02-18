@@ -227,8 +227,8 @@ sub direction {
     my $forward = $self->thrust_forward - $self->thrust_reverse;
     my $delta_theta = atan2($self->thrust_sideway, $forward);
     my $direction = $self->orientation + $delta_theta;
-    #diag("Ori: [".$self->orientation."] theta: [$delta_theta] dir: [$direction] side: [".$self->thrust_sideway."] forward [".$self->thrust_forward."] reverse [".$self->thrust_reverse."] actual fwd [$forward]");
-    return $self->normalize_radians($direction);
+    $direction = $self->normalize_radians($direction);
+    return $direction;
 };
 
 # Speed is a vector of forward,reverse & sideway thrust
