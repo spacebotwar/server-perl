@@ -1,6 +1,7 @@
 *.db
 *.pid
 *.conf
+*.swp
 start_plack.sh
 start_redis.sh
 _config.yml
