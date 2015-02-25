@@ -77,10 +77,35 @@ sub BUILD {
 sub _build_ships {
     my ($self) = @_;
 
+    my $ship_layout = {
+        1   => { x => -140, y => -240, direction => PI/4 },
+        2   => { x => -200, y => -240, direction => PI/4 },
+        3   => { x => -140, y => -300, direction => PI/4 },
+        4   => { x => -140, y => -360, direction => PI/4 },
+        5   => { x => -200, y => -300, direction => PI/4 },
+        6   => { x => -260, y => -240, direction => PI/4 },
+        7   => { x => 140, y => 240, direction => PI/4 + PI },
+        8   => { x => 200, y => 240, direction => PI/4 + PI },
+        9   => { x => 140, y => 300, direction => PI/4 + PI },
+        10  => { x => 140, y => 360, direction => PI/4 + PI },
+        11  => { x => 200, y => 300, direction => PI/4 + PI },
+        12  => { x => 260, y => 240, direction => PI/4 + PI },
+    };
+
     my @ships;
-    foreach (1..12) {
+    foreach my $ship_id (sort keys %$ship_layout) {
+        my $ship_ref = $ship_layout->{$ship_id};
         my $ship = SpaceBotWar::Game::Ship->new({
-            id          => 1,
+            id              => $ship_id,
+            owner_id        => int(($ship_id - 1) / 6) + 1,
+            type            => 'ship',
+            x               => $ship_ref->{x},
+            y               => $ship_ref->{y},
+            thrust_forward  => 0,
+            thrust_sideway  => 0,
+            thrust_reverse  => 0,
+            orientation     => $ship_ref->{direction},
+            rotation        => 0,
             owner_id    => 1,
         });
         push @ships, $ship;
