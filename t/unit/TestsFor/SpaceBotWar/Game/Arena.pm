@@ -23,8 +23,12 @@ sub test_construct {
     # Test for defaults
     my $ships = $arena->ships;
     isnt($ships, undef, "Default ships are defined");
-
-
+    # Default ships should consist of 12 ships
+    is(scalar(@$ships), 12, "Should be 12 ships"); 
+    # Each ship should be a SBW::Ship
+    foreach my $ship (@$ships) {
+        isa_ok($ship, 'SpaceBotWar::Game::Ship', "Ship is of the correct type");
+    }
 }
 
 

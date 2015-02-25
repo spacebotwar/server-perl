@@ -77,11 +77,15 @@ sub BUILD {
 sub _build_ships {
     my ($self) = @_;
 
-    my $ship = SpaceBotWar::Game::Ship->new({
-        id          => 1,
-        owner_id    => 1,
-    });
-    $self->ships([$ship]);
+    my @ships;
+    foreach (1..12) {
+        my $ship = SpaceBotWar::Game::Ship->new({
+            id          => 1,
+            owner_id    => 1,
+        });
+        push @ships, $ship;
+    }
+    $self->ships(\@ships);
 }
 
 # Set initial ship positions.
