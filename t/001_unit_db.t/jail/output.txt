@@ -1,4 +1,0 @@
-..
-.
-output.txt
-foo.txt
