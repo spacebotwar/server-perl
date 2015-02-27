@@ -57,6 +57,30 @@ sub test_construct {
     }
 }
 
+#--- Test the ship tick routine
+#
+sub test_tick {
+    my ($self) = @_;
+
+    # default ship, not moving
+    my $ship = SpaceBotWar::Game::Ship->new({
+        id              => 1,
+        owner_id        => 1,
+    });
+
+    my $arena = SpaceBotWar::Game::Arena->new({
+        ships       => [$ship],
+    });
+    isa_ok($arena, 'SpaceBotWar::Game::Arena');
+    can_ok($arena, qw(ships accept_move tick));
+
+    $arena->tick(5);
+}
+
+
+
+# TODO: Factor this out into a standard test module. (for CPAN?)
+#
 sub angle_ok {
     my ($got, $like, $test_name) = @_;
 

@@ -68,7 +68,7 @@ has 'y' => (
 has 'rotation' => (
     is          => 'rw',
     isa         => 'Num',
-    default     => 1,
+    default     => 0,
 );
 # Current orientation of travel (in radians)
 has 'orientation' => (

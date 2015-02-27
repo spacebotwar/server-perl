@@ -117,41 +117,6 @@ sub _build_ships {
 sub _initialize {
     my ($self) = @_;
     
-    my $ship_layout = {
-        1   => { x => -140, y => -240, direction => PI/4 },
-        2   => { x => -200, y => -240, direction => PI/4 },
-        3   => { x => -140, y => -300, direction => PI/4 },
-        4   => { x => -140, y => -360, direction => PI/4 },
-        5   => { x => -200, y => -300, direction => PI/4 },
-        6   => { x => -260, y => -240, direction => PI/4 },
-        7   => { x => 140, y => 240, direction => PI/4 + PI },
-        8   => { x => 200, y => 240, direction => PI/4 + PI },
-        9   => { x => 140, y => 300, direction => PI/4 + PI },
-        10  => { x => 140, y => 360, direction => PI/4 + PI },
-        11  => { x => 200, y => 300, direction => PI/4 + PI },
-        12  => { x => 260, y => 240, direction => PI/4 + PI },
-    };
-    my @ships;
-    foreach my $ship_id (sort keys %$ship_layout) {
-        my $ship_ref = $ship_layout->{$ship_id};
-
-        my $ship = SpaceBotWar::Game::Ship->new({
-            id              => $ship_id,
-            owner_id        => int(($ship_id - 1) / 6) + 1,
-            type            => 'ship',
-            x               => $ship_ref->{x},
-            y               => $ship_ref->{y},
-            thrust_forward  => 0,
-            thrust_sideway  => 0,
-            thrust_reverse  => 0,
-            orientation     => $ship_ref->{direction},
-            rotation        => 0,
-        });
-print STDERR Dumper($ship);
-        push @ships, $ship;
-    }
-    $self->ships(\@ships);
-
     $self->start_time(-1);
     $self->log->debug("######status = starting at [".$self->start_time."] ############");
     $self->status('starting');
@@ -179,13 +144,13 @@ sub accept_move {
     if ($data->{ships}) {
         foreach my $ship_data (@{$data->{ships}}) {
 
-        my ($ship) = grep {$_->id == $ship_data->{ship_id}} @{$self->{ships}};
-        confess [1000, "Cannot find ship with id [".$ship_data->{id}."]" ] if not defined $ship;
-        confess [1000, "Can only control your own ships! [".$ship_data->{id}."]" ] if $ship->owner_id != $owner_id;
-        $ship->thrust_forward($ship_data->{thrust_forward});
-        $ship->thrust_reverse($ship_data->{thrust_reverse});
-        $ship->thrust_sideway($ship_data->{thrust_sideway});
-        $ship->rotation($ship_data->{rotation});
+            my ($ship) = grep {$_->id == $ship_data->{ship_id}} @{$self->{ships}};
+            confess [1000, "Cannot find ship with id [".$ship_data->{id}."]" ] if not defined $ship;
+            confess [1000, "Can only control your own ships! [".$ship_data->{id}."]" ] if $ship->owner_id != $owner_id;
+            $ship->thrust_forward($ship_data->{thrust_forward});
+            $ship->thrust_reverse($ship_data->{thrust_reverse});
+            $ship->thrust_sideway($ship_data->{thrust_sideway});
+            $ship->rotation($ship_data->{rotation});
         }
     }
 }
@@ -263,11 +228,11 @@ sub tick {
         $ship->y($end_y);
 
         # we can also check for the firing of the missiles
-        my $missile = $ship->open_fire($max_missile_id + 1);
-        if ($missile) {
-            push @{$self->missiles}, $missile;
-            $max_missile_id++;
-        }
+#        my $missile = $ship->open_fire($max_missile_id + 1);
+#        if ($missile) {
+#            push @{$self->missiles}, $missile;
+#            $max_missile_id++;
+#        }
     }
 
     # Now check for collisions (can we not merge these two loops together?)
