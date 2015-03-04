@@ -172,27 +172,30 @@ sub tick {
         $self->status('running');
     }
 
-    # In practice, on each tick, we give the current actual position of all
+    # In practice, at the start of each tick, we give the current position of all
     # ships and the thrust and rotation (as we currently know it)
     #
-    # Up until the next tick, each ship's new thrust and rotation will be received
-    # from each player and this will be used to compute the actual position for
-    # the next tick.
+    # During the tick each side will only be informed of the position, direction
+    # and speed of the opponent based on the information from the *start* of the
+    # tick.
     #
-    # The competing programs will only know the predicted thrust and rotation for
-    # the opposing fleet, not what will happen during the tick (e.g. full forward to
-    # full reverse) so the predictions will often be 'wrong'.
-    #
-    # For this reason we can't use the predicted value to display the game in the
-    # browser, we have to use the actual values. This means the browser display
-    # has to lag by 1 tick behind the actual game play.
-    #
-    # We will have to look at what this means when players are playing 'manually'.
+    # At any time during the tick, a player may send in changes to their fleet to
+    # change the thrust, rotation etc. and this will be used to compute the final
+    # position at the *end* of the tick (i.e. the start of the next tick).
     # 
+    # However, to reduce the issue of lag affecting a players move, the calculation
+    # of the final position of each ship will be performed 'as-if' the changes
+    # had been received at the *start* of the tick.
     #
-    # So, as mentioned above. This code currently assumes that the thrust and rotation
-    # were received during the previous tick period, only to be acted upon now 'as if'
-    # the command were received at the start of the previous tick period.
+    # In practice, this means that each player will not have full information 
+    # about where the opponent is, but this is as it should be...
+    #
+    # For this reason, we can't display the path each ship takes until the end
+    # of each tick (when each players moves are known) so the browser display
+    # of the movements must lag by up to 1 tick behind the actual game play.
+    #
+    # This should have minimal affect on the game play, except when (if) we allow
+    # manual input (auto off) where there will be 1 tick lag.
     # 
 
     my $radius_squared = $self->radius * $self->radius;
@@ -220,15 +223,13 @@ sub tick {
         
         my $end_x = round($ship->x + $delta_x);
         my $end_y = round($ship->y + $delta_y);
-        #my $end_x = int($ship->x + $delta_x);
-        #my $end_y = int($ship->y + $delta_y);
     
         # check for limits.
         if ($end_x * $end_x + $end_y * $end_y > $radius_squared) {
             # Then outside the bounds of the arena, bring it back.
             my $angle = atan2($end_y, $end_x);
-            $end_x = cos($angle) * 1000;
-            $end_y = sin($angle) * 1000;
+            $end_x = round(cos($angle) * 1000);
+            $end_y = round(sin($angle) * 1000);
         }
         $ship->x($end_x);
         $ship->y($end_y);

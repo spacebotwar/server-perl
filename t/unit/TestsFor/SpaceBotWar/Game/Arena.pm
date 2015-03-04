@@ -83,9 +83,14 @@ sub test_tick {
     is($ship->direction, 0, "Start direction");
     is($ship->orientation, 0, "Start orientation");
 
+    # test ship movement in a variety of starting position, direction and speed.
     my $tests = {
         move_x_pos  => { x => 0, y => 0, direction => 0, speed => 1, result_x => 1, result_y => 0, },
         move_x_neg  => { x => 0, y => 0, direction => PI, speed => 2, result_x => -2, result_y => 0, },
+        move_y_pos  => { x => 9, y => 9, direction => PI / 2, speed => 4, result_x => 9, result_y => 13, },
+        move_y_neg  => { x => 5, y => 5, direction => PI / -2, speed => 3, result_x => 5, result_y => 2, },
+        move_diag1  => { x => 0, y => 10, direction => PI / 4, speed => 9.8, result_x => 7, result_y => 17, },
+        move_diag2  => { x => 100, y => 100, direction => 3 * PI / -4, speed => 5.6, result_x => 96, result_y => 96, },
     };
 
     foreach my $test (sort keys %$tests) {
@@ -103,6 +108,30 @@ sub test_tick {
         is($ship->direction, $data->{direction}, "Ship test $test, direction");
         is($ship->orientation, $data->{direction}, "Ship test $test, orientation");
     }
+
+    # Test the limits of the arena
+    my $test_limits = {
+        limit_x1 => { start_x => 1000, start_y => 0, direction => 0, final_x => 1000, final_y => 0},
+        limit_x2 => { start_x => 999, start_y => 0, direction => 0, final_x => 1000, final_y => 0},
+        limit_x3 => { start_x => 2000, start_y => 0, direction => 0, final_x => 1000, final_y => 0},
+        limit_y1 => { start_x => 0, start_y => 1001, direction => PI / 2, final_x => 0, final_y => 1000},
+        limit_y2 => { start_x => 0, start_y => -1001, direction => PI / -2, final_x => 0, final_y => -1000},
+        limit_y3 => { start_x => -900, start_y => -900, direction => -3 * PI / 4, final_x => -707, final_y => -707},
+    };
+    foreach my $test (sort keys %$test_limits) {
+        my $data = $test_limits->{$test};
+
+        $ship->x($data->{start_x});
+        $ship->y($data->{start_y});
+        $ship->direction($data->{direction});
+        $ship->orientation($data->{direction});
+        $ship->thrust_forward(10);
+
+        $arena->tick(10);
+        is($ship->x, $data->{final_x}, "test $test - Pulled back X to within arena limit");
+        is($ship->y, $data->{final_y}, "test $test - Pulled back Y to within arena limit");
+    }
+
 }
 
 
