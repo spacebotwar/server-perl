@@ -5,6 +5,7 @@ package SpaceBotWar::Game::Arena;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Math::Round;
 
 use SpaceBotWar::Game::Ship;
 
@@ -212,10 +213,15 @@ sub tick {
         # No longer check for limits here, all done in the Ship module!
         # Calculate the final position based on thrust and direction
         my $distance = $ship->speed * $duration_millisec / 1000;
+        $self->log->debug("Ship distance = [$distance]");
         my $delta_x = $distance * cos($ship->direction);
         my $delta_y = $distance * sin($ship->direction);
-        my $end_x = int($ship->x + $delta_x);
-        my $end_y = int($ship->y + $delta_y);
+        $self->log->debug("Delta x = [$delta_x] delta y = [$delta_y]");
+        
+        my $end_x = round($ship->x + $delta_x);
+        my $end_y = round($ship->y + $delta_y);
+        #my $end_x = int($ship->x + $delta_x);
+        #my $end_y = int($ship->y + $delta_y);
     
         # check for limits.
         if ($end_x * $end_x + $end_y * $end_y > $radius_squared) {

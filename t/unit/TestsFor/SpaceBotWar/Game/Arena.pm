@@ -75,6 +75,34 @@ sub test_tick {
     can_ok($arena, qw(ships accept_move tick));
 
     $arena->tick(5);
+    is($arena->start_time, 0.5, "Start time increments");
+    
+    # ships with no speed should not move
+    is($ship->x, 0, "Start X position");
+    is($ship->y, 0, "Start Y position");
+    is($ship->direction, 0, "Start direction");
+    is($ship->orientation, 0, "Start orientation");
+
+    my $tests = {
+        move_x_pos  => { x => 0, y => 0, direction => 0, speed => 1, result_x => 1, result_y => 0, },
+        move_x_neg  => { x => 0, y => 0, direction => PI, speed => 2, result_x => -2, result_y => 0, },
+    };
+
+    foreach my $test (sort keys %$tests) {
+        my $data = $tests->{$test};
+        $ship->x($data->{x});
+        $ship->y($data->{y});
+        $ship->direction($data->{direction});
+        $ship->orientation($data->{direction});
+        $ship->thrust_forward($data->{speed});
+        is($ship->thrust_forward, $data->{speed}, "Correct forward thrust");
+        is($ship->speed, $data->{speed}, "Correct ship speed");
+        $arena->tick(10);
+        is($ship->x, $data->{result_x}, "Ship test $test, x movement");
+        is($ship->y, $data->{result_y}, "Ship test $test, y movement");
+        is($ship->direction, $data->{direction}, "Ship test $test, direction");
+        is($ship->orientation, $data->{direction}, "Ship test $test, orientation");
+    }
 }
 
 
