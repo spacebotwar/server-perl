@@ -1,6 +1,7 @@
-package TestsFor::SpaceBotWar::Game;
+package UnitTestsFor::SpaceBotWar::Game;
 
 use lib "lib";
+use lib "t/lib";
 
 use Test::Class::Moose;
 use Test::Number::Delta within => 1e-5;

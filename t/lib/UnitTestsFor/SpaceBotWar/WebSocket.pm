@@ -1,4 +1,4 @@
-package TestsFor::SpaceBotWar::WebSocket;
+package UnitTestsFor::SpaceBotWar::WebSocket;
 
 use lib "lib";
 

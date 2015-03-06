@@ -1,6 +1,7 @@
-package TestsFor::SpaceBotWar::WebSocket::User;
+package UnitTestsFor::SpaceBotWar::WebSocket::User;
 
 use lib "lib";
+use lib "t/lib";
 
 use Test::Class::Moose;
 use Test::Mock::Class ':all';
@@ -12,7 +13,7 @@ use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::EmailCode;
 
-use TestsFor::SpaceBotWar::WebSocket::User::Fixtures;
+use UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures;
 
 sub test_construction {
     my ($self) = @_;
@@ -116,7 +117,7 @@ sub test_register {
     $content->{email} = 'me@example.com';
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # Username should not already be in use
@@ -202,7 +203,7 @@ sub test_forgot_password {
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # Blank username or email should return error
@@ -281,7 +282,7 @@ sub test_login_with_password {
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No client_code should return an error
@@ -342,7 +343,7 @@ sub test_login_with_email_code {
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No email_code should return an error
@@ -392,7 +393,7 @@ sub test_logout {
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = TestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # If you are not logged in, it should return success

@@ -4,6 +4,7 @@ use Test::Most;
 use Log::Log4perl;
 
 use lib "lib";
+use lib "t/lib";
 
 use Redis;
 use SpaceBotWar::Config;
@@ -11,7 +12,7 @@ use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
 use SpaceBotWar::DB;
 
-use Test::Class::Moose::Load 't/unit';
+use Test::Class::Moose::Load 't/lib/UnitTestsFor';
 use Test::Class::Moose::Runner;
 
 
