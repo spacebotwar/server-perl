@@ -9,3 +9,4 @@ log
 log4perl.conf
 docs/_site
 bin/dump.rdb
+cover_db

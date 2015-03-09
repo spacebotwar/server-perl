@@ -1,4 +1,4 @@
-package TestsFor::SpaceBotWar::Game::Arena;
+package UnitTestsFor::SpaceBotWar::Game::Arena;
 
 use lib "lib";
 use POSIX qw(fmod);
