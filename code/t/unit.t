@@ -19,7 +19,7 @@ use Test::Class::Moose::Runner;
 #--- Initialize singleton objects
 #
 SpaceBotWar::Config->initialize({
-    filename => '/Users/icydee/sandbox/space-bot-war/spacebotwar.conf',
+    filename => '/opt/code/etc/spacebotwar.conf',
 });
 
 SpaceBotWar::Queue->initialize({
@@ -28,15 +28,15 @@ SpaceBotWar::Queue->initialize({
     debug   => 0,
 });
 
-my $redis = Redis->new(server => 'localhost:6379');
-SpaceBotWar::Redis->initialize({
-    redis => $redis,
-});
+#my $redis = Redis->new(server => 'localhost:6379');
+#SpaceBotWar::Redis->initialize({
+#    redis => $redis,
+#});
 
-Log::Log4perl->init('/Users/icydee/sandbox/space-bot-war/log4perl.conf');
+Log::Log4perl->init('/opt/code/etc/log4perl.conf');
 
 my $db = SpaceBotWar::DB->connect(
-    'DBI:SQLite:log/test.db',
+    'DBI:SQLite:/opt/code/log/test.db',
 );
 $db->deploy({ add_drop_table => 1 });
 

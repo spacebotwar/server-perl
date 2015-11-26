@@ -5,13 +5,13 @@ use warnings;
 use lib "../lib";
 
 use SpaceBotWar::WebSocket::Start;
-use SpaceBotWar::WebSocket::Game;
-use SpaceBotWar::WebSocket::Lobby;
-use SpaceBotWar::WebSocket::Chat;
-use SpaceBotWar::WebSocket::Arena;
-use SpaceBotWar::WebSocket::Match;
-use SpaceBotWar::WebSocket::Player;
-use SpaceBotWar::AjaxChat;
+#use SpaceBotWar::WebSocket::Game;
+#use SpaceBotWar::WebSocket::Lobby;
+#use SpaceBotWar::WebSocket::Chat;
+#use SpaceBotWar::WebSocket::Arena;
+#use SpaceBotWar::WebSocket::Match;
+#use SpaceBotWar::WebSocket::Player;
+#use SpaceBotWar::AjaxChat;
 use Plack::Builder;
 use Plack::App::IndexFile;
 
@@ -35,12 +35,12 @@ my $app = builder {
 #    mount "/ws/chat/Carroll"    => SpaceBotWar::WebSocket::Chat->new({  server => 'Carroll'     })->to_app;
 
     # private servers to run the code that is used in matches.
-    mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
+#    mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
 
     # The 'arena' where you go to find out what matches are being run
-    mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
-    mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
-    mount "/"                   => Plack::App::IndexFile->new(root => "/home/icydee/space-bot-war-client/src")->to_app;
+#    mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
+#    mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
+#    mount "/"                   => Plack::App::IndexFile->new(root => "/home/icydee/space-bot-war-client/src")->to_app;
 
 };
 $app;
