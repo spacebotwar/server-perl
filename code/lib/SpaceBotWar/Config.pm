@@ -8,8 +8,7 @@ use Config::JSON;
 has filename => (
     is          => 'rw',
     isa         => 'Str',
-    lazy        => 1,
-    builder     => '_build_filename',
+    default    => '/opt/code/etc/spacebotwar.conf',
 );
 
 has config_json => (
@@ -21,12 +20,6 @@ has config_json => (
     lazy        => 1,
     builder     => '_build_config_json',
 );
-
-sub _build_filename {
-    my ($self) = @_;
-
-    return $ENV{SPACEBOTWAR_DIR} || "/data/spacebotwar";
-}
 
 sub _build_config_json {
     my ($self) = @_;

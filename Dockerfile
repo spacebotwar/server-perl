@@ -3,7 +3,7 @@ FROM icydee/perl:latest
 RUN cpanm Moose
 RUN cpanm Twiggy
 RUN cpanm Plack
-RUN cpanm --verbose Server::Starter
+RUN cpanm Server::Starter
 RUN cpanm namespace::autoclean
 RUN cpanm MooseX::Singleton
 RUN cpanm JSON

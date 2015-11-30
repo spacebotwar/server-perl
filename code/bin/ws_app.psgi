@@ -5,6 +5,11 @@ use warnings;
 use lib "../lib";
 
 use SpaceBotWar::WebSocket::Start;
+use SpaceBotWar::Queue;
+use SpaceBotWar::Config;
+
+use Log::Log4perl;
+
 #use SpaceBotWar::WebSocket::Game;
 #use SpaceBotWar::WebSocket::Lobby;
 #use SpaceBotWar::WebSocket::Chat;
@@ -14,6 +19,17 @@ use SpaceBotWar::WebSocket::Start;
 #use SpaceBotWar::AjaxChat;
 use Plack::Builder;
 use Plack::App::IndexFile;
+
+# Initialize the singletons
+#
+SpaceBotWar::Config->initialize;
+
+SpaceBotWar::Queue->initialize({
+    server      => '176.58.100.163:11300',
+    
+});
+
+Log::Log4perl->init('/opt/code/etc/log4perl.conf');
 
 # Each of these 'servers' can potentially be on separate servers and we can add new servers to increase capacity
 #   'start'     - Should always be present, it is the first place to connect to

@@ -2,6 +2,7 @@ package SpaceBotWar::Queue;
 
 use MooseX::Singleton;
 use Beanstalk::Client;
+use Data::Dumper;
 
 use SpaceBotWar::Queue::Job;
 
@@ -61,11 +62,16 @@ sub __build_beanstalk {
         ttr         => $self->ttr,
         debug       => $self->debug,
     });
+    $self->log->debug("BEANSTALK: [$beanstalk]");
+
     return $beanstalk;
 }
 
 sub publish {
     my ($self, $queue, $payload, $options) = @_;
+
+    my $log         = $self->log;
+    $log->debug("queue [$queue] payload [".Dumper($payload)."] options [".Dumper($options)."]");
 
     my $beanstalk   = $self->_beanstalk;
     $queue          = $queue || 'default';
@@ -73,6 +79,7 @@ sub publish {
     $beanstalk->use($queue);
 
     my $job = $beanstalk->put($options, $payload);
+    $log->debug("JOB: [$job]");
 
     return SpaceBotWar::Queue::Job->new({job => $job});
 }

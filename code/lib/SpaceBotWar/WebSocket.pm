@@ -16,6 +16,7 @@ use Log::Log4perl;
 
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::WebSocket::Context;
+use SpaceBotWar::Queue;
 
 has ws_server => (
     is      => 'ro',
@@ -98,7 +99,7 @@ sub instance_stats {
 
     my $stats = inner() || {};
     $stats->{time}              = time;
-    $stats->{room}            = $self->room;
+    $stats->{room}              = $self->room;
     $stats->{number_of_clients} = $self->number_of_clients;
     $stats->{new_connections}   = $self->read_and_reset_stat('stats_new_connections');
     $stats->{die_connections}   = $self->read_and_reset_stat('stats_die_connections');
@@ -114,7 +115,8 @@ sub heartbeat {
 
     my $stats = $self->instance_stats;
     # Put the stats onto the stats queue
-    my $job = SpaceBotWar::Queue->instance->publish('stats', {
+    my $queue = SpaceBotWar::Queue->instance;
+    my $job = $queue->publish('stats', {
         task        => 'websocket',
         stats       => $stats,
     },{
