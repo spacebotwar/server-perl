@@ -56,7 +56,7 @@ my $app = builder {
     # The 'arena' where you go to find out what matches are being run
 #    mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
 #    mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
-#    mount "/"                   => Plack::App::IndexFile->new(root => "/home/icydee/space-bot-war-client/src")->to_app;
+    mount "/"                   => Plack::App::IndexFile->new(root => "/opt/code/src")->to_app;
 
 };
 $app;
