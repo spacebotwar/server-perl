@@ -4,9 +4,13 @@ use strict;
 use warnings;
 use lib "../lib";
 
+use Redis;
+
 use SpaceBotWar::WebSocket::Start;
+use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Config;
+use SpaceBotWar::Redis;
 
 use Log::Log4perl;
 
@@ -19,9 +23,15 @@ use Log::Log4perl;
 #use SpaceBotWar::AjaxChat;
 use Plack::Builder;
 use Plack::App::IndexFile;
+use Plack::Middleware::Headers;
 
 # Initialize the singletons
 #
+my $redis = Redis->new(server => 'spacebotwar.com:6379');
+SpaceBotWar::Redis->initialize({
+    redis => $redis,
+});
+
 SpaceBotWar::Config->initialize;
 
 SpaceBotWar::Queue->initialize({
@@ -40,22 +50,15 @@ Log::Log4perl->init('/opt/code/etc/log4perl.conf');
 #   the 'game', the 'chat' and the 'match' servers of which there can be many.
 #
 my $app = builder {
+    enable 'Headers',
+        set     => ['Access-Control-Allow-Origin' => 'http://spacebotwar.com:8080'];
+    enable 'Headers',
+        set     => ['Access-Control-Allow-Credentials' => 'true'];
 #    mount "/ajax/chat"          => SpaceBotWar::AjaxChat->new()->to_app;
     # the 'start' of the game, where you go to get connection to a game server.
     mount "/ws/start"           => SpaceBotWar::WebSocket::Start->new({ server => 'Kingsley'    })->to_app;
-#    mount "/ws/game/alpha"      => SpaceBotWar::WebSocket::Game->new({  server => 'Livingstone' })->to_app;
+    mount "/ws/user"            => SpaceBotWar::WebSocket::User->new({ server => 'Livingstone'  })->to_app;
 
-    # The 'lobby' where you connect to gain access to the chat servers.
-#    mount "/ws/lobby"           => SpaceBotWar::WebSocket::Lobby->new({ server => 'Dickens'     })->to_app;
-#    mount "/ws/chat/bronte"     => SpaceBotWar::WebSocket::Chat->new({  server => 'Bronte'      })->to_app;
-#    mount "/ws/chat/Carroll"    => SpaceBotWar::WebSocket::Chat->new({  server => 'Carroll'     })->to_app;
-
-    # private servers to run the code that is used in matches.
-#    mount "/ws/player/darwin"   => SpaceBotWar::WebSocket::Player->new({server => 'Darwin'      })->to_app;
-
-    # The 'arena' where you go to find out what matches are being run
-#    mount "/ws/arena"           => SpaceBotWar::WebSocket::Arena->new({ server => 'Franklin'    })->to_app;
-#    mount "/ws/match"           => SpaceBotWar::WebSocket::Match->new({ server => 'Rae'         })->to_app;
     mount "/"                   => Plack::App::IndexFile->new(root => "/opt/code/src")->to_app;
 
 };

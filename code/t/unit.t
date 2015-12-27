@@ -28,10 +28,10 @@ SpaceBotWar::Queue->initialize({
     debug   => 0,
 });
 
-#my $redis = Redis->new(server => 'localhost:6379');
-#SpaceBotWar::Redis->initialize({
-#    redis => $redis,
-#});
+my $redis = Redis->new(server => 'spacebotwar.com:6379');
+SpaceBotWar::Redis->initialize({
+    redis => $redis,
+});
 
 Log::Log4perl->init('/opt/code/etc/log4perl.conf');
 
