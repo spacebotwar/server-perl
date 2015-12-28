@@ -14,13 +14,6 @@ use SpaceBotWar::Redis;
 
 use Log::Log4perl;
 
-#use SpaceBotWar::WebSocket::Game;
-#use SpaceBotWar::WebSocket::Lobby;
-#use SpaceBotWar::WebSocket::Chat;
-#use SpaceBotWar::WebSocket::Arena;
-#use SpaceBotWar::WebSocket::Match;
-#use SpaceBotWar::WebSocket::Player;
-#use SpaceBotWar::AjaxChat;
 use Plack::Builder;
 use Plack::App::IndexFile;
 use Plack::Middleware::Headers;
@@ -54,7 +47,6 @@ my $app = builder {
         set     => ['Access-Control-Allow-Origin' => 'http://spacebotwar.com:8080'];
     enable 'Headers',
         set     => ['Access-Control-Allow-Credentials' => 'true'];
-#    mount "/ajax/chat"          => SpaceBotWar::AjaxChat->new()->to_app;
     # the 'start' of the game, where you go to get connection to a game server.
     mount "/ws/start"           => SpaceBotWar::WebSocket::Start->new({ server => 'Kingsley'    })->to_app;
     mount "/ws/user"            => SpaceBotWar::WebSocket::User->new({ server => 'Livingstone'  })->to_app;

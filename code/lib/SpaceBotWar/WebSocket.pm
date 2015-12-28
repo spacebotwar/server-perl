@@ -329,13 +329,15 @@ sub _on_message {
 
     my @error;
     if ($@ and ref($@) eq 'ARRAY') {
+        $log->warn("ARRAY ERROR");
         @error = @{$@};
     }
     elsif ($@) {
+        $log->warn("UNKNOWN ERROR [".$@."]");
         @error = (
             1000,
             'unknown error',
-            $@,
+            'please refer to server error log!',
         );
     }
     if (@error) {
@@ -364,6 +366,7 @@ sub kill_client_data {
 sub report_error {
     my ($self, $connection, $error, $path, $msg_id) = @_;
 
+#    $self->log->warn("ERROR DATA: ".$error->[2]);
     my $msg = {
         route   => $path,
         room    => $self->room,
@@ -374,7 +377,16 @@ sub report_error {
             msg_id      => $msg_id,
         },
     };
-    $msg = JSON->new->encode($msg);
+#    $self->log->warn(Dumper($msg));
+#    $self->log->warn("GOT HERE 0 [".$error->[0]."] 1 [".$error->[1]."] 2 [".$error->[2]."]");
+    eval {
+        $msg = JSON->new->encode($msg);
+    };
+    if ($@) {
+        $self->log->error("JSON ERROR ".$@);
+    }
+    $self->log->warn("MSG: ".$msg);
+
     $self->send($connection, $msg);
 }
 
