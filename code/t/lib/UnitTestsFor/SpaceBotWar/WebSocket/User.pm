@@ -37,7 +37,7 @@ sub test_client_code {
 
     # An invalid client_code should return a valid one
     #
-    my $response = $ws_user->ws_client_code($context);
+    my $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "NEW Client Code",  "Response: message");
     isnt($response->{client_code},  'invalid',          "Response: client_code changed");
@@ -54,7 +54,7 @@ sub test_client_code {
     $content->{msg_id}      = 124;
     $content->{client_code} = $client_code->id;
 
-    $response = $ws_user->ws_client_code($context);
+    $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "GOOD Client Code", "Response: message");
     is($response->{client_code},    $client_code->id,   "Response: client_code unchanged");
@@ -197,7 +197,7 @@ sub test_forgot_password {
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
-    throws_ok { $ws_user->ws_forgot_password($context) } qr/^ARRAY/, 'test throw 1';
+    throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
@@ -208,13 +208,13 @@ sub test_forgot_password {
 
     # Blank username or email should return error
     $content->{username_or_email} = "   ";
-    throws_ok { $ws_user->ws_forgot_password($context) } qr/^ARRAY/, "Throw, username/email is blank";
+    throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, "Throw, username/email is blank";
     is($@->[0], 1002, "Code, username/email is blank");
     like($@->[1], qr/^username_or_email is required/, "Message, username_or_email is required");
 
     # non-existing username or email should return success
     $content->{username_or_email} = "username_unknown";
-    my $response = $ws_user->ws_forgot_password($context);
+    my $response = $ws_user->ws_forgotPassword($context);
     is($response->{code}, 0, "Response: code good");
     is($response->{message}, "OK", "Response: message OK");
 
@@ -225,7 +225,7 @@ sub test_forgot_password {
  
     # existing username should return success
     $content->{username_or_email} = "bert";
-    if ( lives_ok { $response = $ws_user->ws_forgot_password($context) } 'good client code' ) {
+    if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
     }
@@ -239,7 +239,7 @@ sub test_forgot_password {
 
     # existing email should return success
     $content->{username_or_email} = 'bert@example.com';
-    if ( lives_ok { $response = $ws_user->ws_forgot_password($context) } 'good client code' ) {
+    if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
     }
@@ -276,7 +276,7 @@ sub test_login_with_password {
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
-    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, 'test throw 1';
+    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
@@ -287,28 +287,28 @@ sub test_login_with_password {
 
     # No client_code should return an error
     $content->{client_code} = "";
-    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, client code is blank";
+    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, client code is blank";
     is($@->[0], 1001, "Code, no client code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $content->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     # No matching username should return an error
     $content->{username} = "someone_else";
-    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, unknown username";
+    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, unknown username";
     is($@->[0], 1001, "Code, Unknown username");
     like($@->[1], qr/^Incorrect credentials 1/, "Message");
     $content->{username} = 'bert';
 
     # No matching password should return an error
     $content->{password} = "hack_attack";
-    throws_ok { $ws_user->ws_login_with_password($context) } qr/^ARRAY/, "Throw, incorrect password";
+    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, incorrect password";
     is($@->[0], 1001, "Code, Incorrect Password");
     like($@->[1], qr/^Incorrect credentials 2/, "Message");
     $content->{password} = 'secret';
 
     # Correct username and password should log in
     my $response;
-    if ( lives_ok { $response = $ws_user->ws_login_with_password($context) } 'good login' ) {
+    if ( lives_ok { $response = $ws_user->ws_loginWithPassword($context) } 'good login' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
     }
@@ -415,7 +415,7 @@ sub test_logout {
     };
     $context->content($content);
 
-    unless (lives_ok { $response = $ws_user->ws_login_with_password($context) } 'good login' ) {
+    unless (lives_ok { $response = $ws_user->ws_loginWithPassword($context) } 'good login' ) {
         fail('User failed to log on');
         diag(Dumper($@));
     }

@@ -19,7 +19,7 @@ sub BUILD {
 
 #--- Get or confirm that a client_code is valid
 #
-sub ws_client_code {
+sub ws_clientCode {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
@@ -55,7 +55,6 @@ sub ws_register {
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
 
-#    $log->debug("ws_register: ".Dumper($context));
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
@@ -83,13 +82,13 @@ sub ws_register {
 
 #-- Forgot password
 #
-sub ws_forgot_password {
+sub ws_forgotPassword {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
 
-    $log->debug("ws_forgot_password: ");
+    $log->debug("ws_forgotPassword: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
@@ -125,14 +124,14 @@ sub ws_forgot_password {
 
 #-- Login with password
 #
-sub ws_login_with_password {
+sub ws_loginWithPassword {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
     $log->debug(Dumper($context));
 
-    $log->debug("ws_login_with_password: ");
+    $log->debug("ws_loginWithPassword: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
@@ -153,7 +152,7 @@ sub ws_login_with_password {
 
 #-- Login with email code
 #
-sub ws_login_with_email_code {
+sub ws_loginWithEmailCode {
     my ($self, $context) = @_;
 
 
@@ -161,7 +160,7 @@ sub ws_login_with_email_code {
     my $db = SpaceBotWar::SDB->instance->db;
     $log->debug(Dumper($context));
 
-    $log->debug("ws_login_with_email_code: ");
+    $log->debug("ws_loginWithEmailCode: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
         id      => $context->content->{client_code},
