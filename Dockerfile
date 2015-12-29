@@ -34,3 +34,4 @@ RUN cpanm Test::Mock::Class
 RUN cpanm DBIx::Class::EasyFixture
 RUN cpanm Redis
 RUN cpanm Plack::Middleware::Headers
+RUN cpanm DBD::mysql

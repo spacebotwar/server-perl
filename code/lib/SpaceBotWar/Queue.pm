@@ -58,7 +58,7 @@ sub __build_beanstalk {
 
     $self->log->debug("beanstalk connect: [".$self->server."][".$self->ttr."][".$self->debug."]");
     my $beanstalk = Beanstalk::Client->new({
-        server      => $self->server,
+        server      => $ENV{SBW_BEANSTALK_PORT_11300_TCP_ADDR}.':'.$ENV{SBW_BEANSTALK_PORT_11300_TCP_PORT},
         ttr         => $self->ttr,
         debug       => $self->debug,
     });

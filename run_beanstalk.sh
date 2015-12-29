@@ -1,1 +1,1 @@
-docker run -d -p 11300:11300 schickling/beanstalkd
+docker run -d --name=sbw-beanstalk schickling/beanstalkd

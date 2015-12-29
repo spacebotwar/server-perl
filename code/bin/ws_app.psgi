@@ -11,6 +11,8 @@ use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Config;
 use SpaceBotWar::Redis;
+use SpaceBotWar::SDB;
+use SpaceBotWar::DB;
 
 use Log::Log4perl;
 
@@ -20,17 +22,39 @@ use Plack::Middleware::Headers;
 
 # Initialize the singletons
 #
-my $redis = Redis->new(server => 'spacebotwar.com:6379');
+
+# Connect to the Redis Docker image
+#
+my $redis = Redis->new(server => $ENV{SBW_REDIS_PORT_6379_TCP_ADDR}.":".$ENV{SBW_REDIS_PORT_6379_TCP_PORT});
 SpaceBotWar::Redis->initialize({
     redis => $redis,
 });
 
 SpaceBotWar::Config->initialize;
 
+# Connect to the beanstalk Docker image
+#
 SpaceBotWar::Queue->initialize({
-    server      => '176.58.100.163:11300',
+    server      => $ENV{SBW_BEANSTALK_PORT_11300_TCP_ADDR}.":".$ENV{SBW_BEANSTALK_PORT_11300_TCP_PORT},
     
 });
+
+# Connect to the mysql Docker image
+#
+my $dsn = "dbi:mysql:sbw:".$ENV{SBW_MYSQL_PORT_3306_TCP_ADDR}.":".$ENV{SBW_MYSQL_PORT_3306_TCP_PORT};
+
+my $db = SpaceBotWar::DB->connect(
+    $dsn,
+    'sbw',
+    'sbw', {
+        mysql_enable_utf8   => 1,
+        AutoCommit          => 1,
+    },
+);
+SpaceBotWar::SDB->initialize({
+    db => $db,
+});
+
 
 Log::Log4perl->init('/opt/code/etc/log4perl.conf');
 

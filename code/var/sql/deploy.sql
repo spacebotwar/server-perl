@@ -1,3 +1,6 @@
+create database sbw;
+grant all privileges on sbw.* to 'sbw'@'%' with GRANT OPTION;
+use sbw;
 
 create table user (
     id          int(11) not null auto_increment,
