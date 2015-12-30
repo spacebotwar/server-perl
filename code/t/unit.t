@@ -12,7 +12,7 @@ use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
 use SpaceBotWar::DB;
 
-use Test::Class::Moose::Load 't/lib/UnitTestsFor';
+use Test::Class::Moose::Load 't/lib';
 use Test::Class::Moose::Runner;
 
 

@@ -26,8 +26,8 @@ sub test_client_code {
     my ($self) = @_;
 
     my $content = {
-        msg_id      => '123',
-        client_code => 'invalid',
+        msgId       => '123',
+        clientCode  => 'invalid',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -35,29 +35,29 @@ sub test_client_code {
 
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
-    # An invalid client_code should return a valid one
+    # An invalid clientCode should return a valid one
     #
     my $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "NEW Client Code",  "Response: message");
-    isnt($response->{client_code},  'invalid',          "Response: client_code changed");
+    isnt($response->{clientCode},  'invalid',          "Response: clientCode changed");
     isnt($context->client_code,     undef,              "There is a client code");
     isa_ok($context->client_code,   "SpaceBotWar::ClientCode");
 
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $response->{client_code},
+        id      => $response->{clientCode},
     });
 
     is($client_code->is_valid, 1, "Client Code is valid");
     
     # change the content in the context to use a valid client code
-    $content->{msg_id}      = 124;
-    $content->{client_code} = $client_code->id;
+    $content->{msgId}      = 124;
+    $content->{clientCode} = $client_code->id;
 
     $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "GOOD Client Code", "Response: message");
-    is($response->{client_code},    $client_code->id,   "Response: client_code unchanged");
+    is($response->{clientCode},    $client_code->id,   "Response: client_code unchanged");
     isnt($context->client_code,     undef,              "there is a client code");
     is($context->client_code->id,   $client_code->id,   "Same client_code");
 }
@@ -68,8 +68,8 @@ sub test_register {
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
     my $content = {
-        msg_id      => 456,
-        client_code => '123',
+        msgId       => 456,
+        clientCode  => '123',
         username    => 'joe3',
         email       => 'joe3@example.com',
         password    => 'TopS3kret',
@@ -84,7 +84,7 @@ sub test_register {
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     my $client_code = SpaceBotWar::ClientCode->new;
-    $content->{client_code} = $client_code->id;
+    $content->{clientCode} = $client_code->id;
 
     # Missing or too short a username should throw an error
     my @user_tests = ('', qw(a ab ));
@@ -187,9 +187,9 @@ sub test_forgot_password {
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
     my $content = {
-        msg_id              => 457,
-        client_code         => 'rubbish',
-        username_or_email   => 'joe',
+        msgId              => 457,
+        clientCode         => 'rubbish',
+        usernameOrEmail    => 'joe',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -200,20 +200,20 @@ sub test_forgot_password {
     throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # Blank username or email should return error
-    $content->{username_or_email} = "   ";
+    $content->{usernameOrEmail} = "   ";
     throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, "Throw, username/email is blank";
     is($@->[0], 1002, "Code, username/email is blank");
     like($@->[1], qr/^username_or_email is required/, "Message, username_or_email is required");
 
     # non-existing username or email should return success
-    $content->{username_or_email} = "username_unknown";
+    $content->{usernameOrEmail} = "username_unknown";
     my $response = $ws_user->ws_forgotPassword($context);
     is($response->{code}, 0, "Response: code good");
     is($response->{message}, "OK", "Response: message OK");
@@ -224,7 +224,7 @@ sub test_forgot_password {
     is($job, undef, "No email job"); 
  
     # existing username should return success
-    $content->{username_or_email} = "bert";
+    $content->{usernameOrEmail} = "bert";
     if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
@@ -238,7 +238,7 @@ sub test_forgot_password {
     $queue->delete($job->job->id);
 
     # existing email should return success
-    $content->{username_or_email} = 'bert@example.com';
+    $content->{usernameOrEmail} = 'bert@example.com';
     if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
@@ -265,8 +265,8 @@ sub test_login_with_password {
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
     my $content = {
-        msg_id              => 458,
-        client_code         => 'incorrect',
+        msgId               => 458,
+        clientCode          => 'incorrect',
         username            => 'bert',
         password            => 'secret',
     };
@@ -279,18 +279,18 @@ sub test_login_with_password {
     throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No client_code should return an error
-    $content->{client_code} = "";
+    $content->{clientCode} = "";
     throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, client code is blank";
     is($@->[0], 1001, "Code, no client code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     # No matching username should return an error
     $content->{username} = "someone_else";
@@ -327,7 +327,7 @@ sub test_login_with_email_code {
     my $email_code = SpaceBotWar::EmailCode->new({ user_id => 1 });
 
     my $content = {
-        msg_id              => 467,
+        msgId              => 467,
         client_code         => 'incorrect',
         email_code          => $email_code->id,
     };
@@ -340,26 +340,26 @@ sub test_login_with_email_code {
     throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No email_code should return an error
-    $content->{email_code} = "";
+    $content->{emailCode} = "";
     throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, email code is blank";
     is($@->[0], 1001, "Code, no email code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
 
     # No matching email_code should return an error
-    $content->{email_code} = "something_else";
+    $content->{emailCode} = "something_else";
     throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, unknown email_code";
     is($@->[0], 1001, "Code Invalid Email Code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
 
     # Correct email code should return success
-    $content->{email_code} = $email_code->id;
+    $content->{emailCode} = $email_code->id;
     my $response;
     if ( lives_ok { $response = $ws_user->ws_login_with_email_code($context) } 'good login' ) {
         is($response->{code},       0,                          "Response: code good");
@@ -378,8 +378,8 @@ sub test_logout {
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
     my $content = {
-        msg_id              => 467,
-        client_code         => 'incorrect',
+        msgId               => 467,
+        clientCode          => 'incorrect',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content     => $content,
@@ -390,7 +390,7 @@ sub test_logout {
     throws_ok { $ws_user->ws_logout($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{client_code} = SpaceBotWar::ClientCode->new->id;
+    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
@@ -408,8 +408,8 @@ sub test_logout {
 
     # If you *are* logged in, it should return success
     $content = {
-        msg_id              => 458,
-        client_code         => SpaceBotWar::ClientCode->new->id,
+        msgId               => 458,
+        clientCode          => SpaceBotWar::ClientCode->new->id,
         username            => 'bert',
         password            => 'secret',
     };

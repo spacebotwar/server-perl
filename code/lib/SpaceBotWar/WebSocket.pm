@@ -201,7 +201,7 @@ sub number_of_clients {
 #
 #    my $client_code;
 #    if (defined $message and defined $message->content) {
-#        $client_code = $message->content->{client_code};
+#        $client_code = $message->content->{clientCode};
 #    }
 #
 #    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
@@ -246,7 +246,7 @@ sub on_establish {
         $self->render_json($context, $reply);
     }
     my $state = {
-        client_code => undef,
+        clientCode => undef,
     };
     $log->debug("Establish");
     
@@ -282,7 +282,7 @@ sub _on_message {
     my $path    = $json_msg->{route};
     my $content = $json_msg->{content} || {};
 
-    my $msg_id  = $content->{msg_id};
+    my $msg_id  = $content->{msgId};
     eval {
         my ($route, $method) = $path =~ m{(.*)/([^/]*)};
         $method = "ws_".$method;
@@ -308,14 +308,14 @@ sub _on_message {
             room            => $self->room,
             connection      => $connection,
             content         => $content,
-            client_code     => $state->{client_code},
+            clientCode      => $state->{clientCode},
         });
         $log->debug("Call [$obj][$method]");
         my $reply = $obj->$method($context);
         if ($reply) {
             # Send back the message ID
-            if ($content->{msg_id}) {
-                $reply->{msg_id} = $content->{msg_id}
+            if ($content->{msgId}) {
+                $reply->{msgId} = $content->{msgId}
             }
             $reply = {
                 room        => $self->room,
@@ -374,7 +374,7 @@ sub report_error {
             code        => $error->[0],
             message     => $error->[1],
             data        => $error->[2],
-            msg_id      => $msg_id,
+            msgId       => $msg_id,
         },
     };
 #    $self->log->warn(Dumper($msg));

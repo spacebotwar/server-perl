@@ -17,16 +17,16 @@ sub BUILD {
     $self->log->debug("BUILD: USER $self");
 }
 
-#--- Get or confirm that a client_code is valid
+#--- Get or confirm that a clientCode is valid
 #
 sub ws_clientCode {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
-    $log->debug("client_code");
+    $log->debug("clientCode");
 
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     });
     my $message = "";
     # if the client code is valid, use it
@@ -43,7 +43,7 @@ sub ws_clientCode {
     return {
         code            => 0,
         message         => $message,
-        client_code     => $client_code->id,
+        clientCode     => $client_code->id,
     };
 }
 
@@ -57,7 +57,7 @@ sub ws_register {
 
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     })->assert_valid;
 
     # Register the account
@@ -91,10 +91,10 @@ sub ws_forgotPassword {
     $log->debug("ws_forgotPassword: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     })->assert_valid;
 
-    my $username_or_email = $context->content->{username_or_email} || "";
+    my $username_or_email = $context->content->{usernameOrEmail} || "";
     trim $username_or_email;
     if ($username_or_email eq "") {
         confess [1002, "username_or_email is required" ];
@@ -134,7 +134,7 @@ sub ws_loginWithPassword {
     $log->debug("ws_loginWithPassword: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     })->assert_valid;
 
     my $user = $db->resultset('User')->assert_login_with_password({
@@ -163,12 +163,12 @@ sub ws_loginWithEmailCode {
     $log->debug("ws_loginWithEmailCode: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     })->assert_valid;
 
     # validate the Email Code
     my $email_code = SpaceBotWar::EmailCode->new({
-        id      => $context->content->{email_code},
+        id      => $context->content->{emailCode},
         user_id => 0,
     })->assert_valid;
 
@@ -195,7 +195,7 @@ sub ws_logout {
     $log->debug("ws_logout: ");
     # validate the Client Code
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{client_code},
+        id      => $context->content->{clientCode},
     })->assert_valid;
 
     $context->user(undef);
