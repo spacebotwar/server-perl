@@ -17,6 +17,18 @@ sub BUILD {
     $self->log->debug("BUILD: USER $self");
 }
 
+# A user has joined the server
+#
+sub on_connect {
+    my ($self, $context) = @_;
+
+    return {
+        code        => 0,
+        message     => 'Welcome to SpaceBotWar User server',
+    };
+}
+
+
 #--- Get or confirm that a clientCode is valid
 #
 sub ws_clientCode {

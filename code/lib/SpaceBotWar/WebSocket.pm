@@ -238,13 +238,12 @@ sub on_establish {
                 
     my $reply = {
         room        => $self->room,
-        route       => '/',
+        route       => '/welcome',
         content     => $self->on_connect($context),
     };
     $log->debug("Establish");
-    if ($reply) {
-        $self->render_json($context, $reply);
-    }
+    $self->render_json($context, $reply);
+
     my $state = {
         clientCode => undef,
     };
@@ -263,6 +262,8 @@ sub on_establish {
     );
 }
 
+# On receiving a message from a client
+#
 sub _on_message {
     my ($self, $state, $connection, $msg) = @_;
 
