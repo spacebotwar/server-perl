@@ -1,4 +1,4 @@
-package TestsFor::SpaceBotWar::WebSocket::User::Fixtures;
+package UnitTestsFor::Fixtures::WebSocket::User;
 
 use Moose;
 extends 'DBIx::Class::EasyFixture';

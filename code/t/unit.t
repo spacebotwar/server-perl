@@ -11,26 +11,29 @@ use SpaceBotWar::Config;
 use SpaceBotWar::Queue;
 use SpaceBotWar::Redis;
 use SpaceBotWar::DB;
+use SpaceBotWar::SDB;
 
-use Test::Class::Moose::Load 't/lib';
+use Test::Class::Moose::Load 't/tests';
 use Test::Class::Moose::Runner;
 
 
 #--- Initialize singleton objects
 #
-SpaceBotWar::Config->initialize({
-    filename => '/opt/code/etc/spacebotwar.conf',
-});
-
-SpaceBotWar::Queue->initialize({
-    server  => 'localhost:11300',
-    ttr     => 120,
-    debug   => 0,
-});
-
-my $redis = Redis->new(server => 'spacebotwar.com:6379');
+# Connect to the Redis Docker image
+#
+my $redis = Redis->new(server => $ENV{SBW_REDIS_PORT_6379_TCP_ADDR}.":".$ENV{SBW_REDIS_PORT_6379_TCP_PORT});
 SpaceBotWar::Redis->initialize({
     redis => $redis,
+});
+
+SpaceBotWar::Config->initialize;
+
+# Connect to the beanstalk Docker image
+#
+SpaceBotWar::Queue->initialize({
+    server      => $ENV{SBW_BEANSTALK_PORT_11300_TCP_ADDR}.":".$ENV{SBW_BEANSTALK_PORT_11300_TCP_PORT},
+    ttr         => 120,
+    debug       => 0,
 });
 
 Log::Log4perl->init('/opt/code/etc/log4perl.conf');
@@ -44,7 +47,7 @@ SpaceBotWar::SDB->initialize({
     db => $db,
 });
 
-my $runner = Test::Class::Moose::Runner->new(test_classes => \@ARGV);
+my $runner = Test::Class::Moose::Runner->new(statistics => 1, test_classes => \@ARGV);
 $runner->runtests;
 1;
 

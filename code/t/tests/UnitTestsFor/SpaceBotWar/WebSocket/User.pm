@@ -13,7 +13,7 @@ use SpaceBotWar::WebSocket::User;
 use SpaceBotWar::ClientCode;
 use SpaceBotWar::EmailCode;
 
-use UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures;
+use UnitTestsFor::Fixtures::WebSocket::User;
 
 sub test_construction {
     my ($self) = @_;
@@ -40,7 +40,7 @@ sub test_client_code {
     my $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "NEW Client Code",  "Response: message");
-    isnt($response->{clientCode},  'invalid',          "Response: clientCode changed");
+    isnt($response->{clientCode},   'invalid',          "Response: clientCode changed");
     isnt($context->client_code,     undef,              "There is a client code");
     isa_ok($context->client_code,   "SpaceBotWar::ClientCode");
 
@@ -117,7 +117,7 @@ sub test_register {
     $content->{email} = 'me@example.com';
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # Username should not already be in use
@@ -203,7 +203,7 @@ sub test_forgot_password {
     $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # Blank username or email should return error
@@ -282,7 +282,7 @@ sub test_login_with_password {
     $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No client_code should return an error
@@ -328,8 +328,8 @@ sub test_login_with_email_code {
 
     my $content = {
         msgId              => 467,
-        client_code         => 'incorrect',
-        email_code          => $email_code->id,
+        clientCode         => 'incorrect',
+        emailCode          => $email_code->id,
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content     => $content,
@@ -337,31 +337,31 @@ sub test_login_with_email_code {
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
-    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, 'test throw 1';
+    throws_ok { $ws_user->ws_loginWithEmailCode($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # No email_code should return an error
     $content->{emailCode} = "";
-    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, email code is blank";
+    throws_ok { $ws_user->ws_loginWithEmailCode($context) } qr/^ARRAY/, "Throw, email code is blank";
     is($@->[0], 1001, "Code, no email code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
 
     # No matching email_code should return an error
     $content->{emailCode} = "something_else";
-    throws_ok { $ws_user->ws_login_with_email_code($context) } qr/^ARRAY/, "Throw, unknown email_code";
+    throws_ok { $ws_user->ws_loginWithEmailCode($context) } qr/^ARRAY/, "Throw, unknown email_code";
     is($@->[0], 1001, "Code Invalid Email Code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
 
     # Correct email code should return success
     $content->{emailCode} = $email_code->id;
     my $response;
-    if ( lives_ok { $response = $ws_user->ws_login_with_email_code($context) } 'good login' ) {
+    if ( lives_ok { $response = $ws_user->ws_loginWithEmailCode($context) } 'good login' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
     }
@@ -393,7 +393,7 @@ sub test_logout {
     $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::SpaceBotWar::WebSocket::User::Fixtures->new( { schema => $db } );
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
 
     # If you are not logged in, it should return success
