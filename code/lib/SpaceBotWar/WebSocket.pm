@@ -195,19 +195,8 @@ sub number_of_clients {
     return scalar(keys %{$self->connections});
 }
 
-
-#sub check_client_code {
-#    my ($self, $message) = @_;
-#
-#    my $client_code;
-#    if (defined $message and defined $message->content) {
-#        $client_code = $message->content->{clientCode};
-#    }
-#
-#    return SpaceBotWar::ClientCode->assert_validate_client_code($client_code);
-#}
-
-# What do we do on a client making a connection to the server?
+# What we do on a client making a connection to the server
+# over-ride this in each class (usually a welcome message)
 # 
 sub on_connect {
     my ($self, $context) = @_;
@@ -282,8 +271,8 @@ sub _on_message {
     $log->debug("Establish");
     my $path    = $json_msg->{route};
     my $content = $json_msg->{content} || {};
+    my $msg_id  = $json_msg->{msgId};
 
-    my $msg_id  = $content->{msgId};
     eval {
         my ($route, $method) = $path =~ m{(.*)/([^/]*)};
         $method = "ws_".$method;
@@ -312,17 +301,20 @@ sub _on_message {
             clientCode      => $state->{clientCode},
         });
         $log->debug("Call [$obj][$method]");
-        my $reply = $obj->$method($context);
-        if ($reply) {
-            # Send back the message ID
-            if ($content->{msgId}) {
-                $reply->{msgId} = $content->{msgId}
-            }
-            $reply = {
+
+        # If the method returns content, then render
+        # a JSON reply
+        # 
+        my $content = $obj->$method($context);
+        if ($content) {
+            my $reply = {
                 room        => $self->room,
                 route       => $path,
-                content     => $reply,
+                content     => $content,
             };
+            if ($msg_id) {
+                $reply->{msgId} = $msg_id;
+            }
 
             $self->render_json($context, $reply);
         }
@@ -370,12 +362,12 @@ sub report_error {
 #    $self->log->warn("ERROR DATA: ".$error->[2]);
     my $msg = {
         route   => $path,
+        msgId   => $msg_id,
         room    => $self->room,
         content => {
             code        => $error->[0],
             message     => $error->[1],
             data        => $error->[2],
-            msgId       => $msg_id,
         },
     };
 #    $self->log->warn(Dumper($msg));

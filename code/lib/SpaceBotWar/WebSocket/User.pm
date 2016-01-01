@@ -35,11 +35,9 @@ sub ws_clientCode {
     my ($self, $context) = @_;
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
-    $log->debug("clientCode");
-
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    });
+    
+    my $client_code = $context->client_code;
+    $log->debug("clientCode: client_code [$client_code]");
     my $message = "";
     # if the client code is valid, use it
     if ($client_code->is_valid) {
@@ -53,11 +51,24 @@ sub ws_clientCode {
     $context->client_code($client_code);
 
     return {
-        code            => 0,
-        message         => $message,
-        clientCode     => $client_code->id,
+        code         => 0,
+        message      => $message,
+        clientCode   => $client_code->id,
     };
 }
+
+#--- Assert that the client_code is valid
+#
+sub assert_valid_client_code {
+    my ($self, $context) = @_;
+
+    if (not defined $context->client_code) {
+        confess [1002, "clientCode is required." ]
+    }
+    $context->client_code->assert_valid;
+    return $context->client_code;
+}
+
 
 #--- Register a new user
 #
@@ -68,15 +79,13 @@ sub ws_register {
     my $db = SpaceBotWar::SDB->instance->db;
 
     # validate the Client Code
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    })->assert_valid;
+    my $client_code = $self->assert_valid_client_code($context);
+    my $content = $context->content;
 
     # Register the account
     my $user = $db->resultset('User')->assert_create({
-        email       => $context->content->{email},
-        username    => $context->content->{username},
-        password    => $context->content->{password},
+        username    => $content->{username},
+        email       => $content->{email},
     });
 
     # Create a Job to send a registration email
@@ -141,7 +150,6 @@ sub ws_loginWithPassword {
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
-    $log->debug(Dumper($context));
 
     $log->debug("ws_loginWithPassword: ");
     # validate the Client Code
@@ -170,7 +178,6 @@ sub ws_loginWithEmailCode {
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
-    $log->debug(Dumper($context));
 
     $log->debug("ws_loginWithEmailCode: ");
     # validate the Client Code
@@ -202,7 +209,6 @@ sub ws_logout {
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
-    $log->debug(Dumper($context));
 
     $log->debug("ws_logout: ");
     # validate the Client Code

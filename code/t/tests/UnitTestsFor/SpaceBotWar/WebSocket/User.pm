@@ -25,41 +25,44 @@ sub test_construction {
 sub test_client_code {
     my ($self) = @_;
 
-    my $content = {
-        msgId       => '123',
-        clientCode  => 'invalid',
-    };
-    my $context = SpaceBotWar::WebSocket::Context->new({
-        content => $content,
+    my $invalid_client_code = SpaceBotWar::ClientCode->new({
+        id          => 'invalid',
     });
-
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        client_code     => $invalid_client_code,
+        msg_id          => 123,
+    });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid clientCode should return a valid one
     #
     my $response = $ws_user->ws_clientCode($context);
-    is($response->{code},           0,                  "Response: code");
-    is($response->{message},        "NEW Client Code",  "Response: message");
-    isnt($response->{clientCode},   'invalid',          "Response: clientCode changed");
-    isnt($context->client_code,     undef,              "There is a client code");
-    isa_ok($context->client_code,   "SpaceBotWar::ClientCode");
+    is($response->{code},       0,                  "Response: code");
+    is($response->{message},    "NEW Client Code",  "Response: message");
 
+    my $client_code_id = $response->{clientCode};
+    isnt($client_code_id,       undef,              "There is a client code");
+    isnt($client_code_id,       'invalid',          "Response: clientCode changed");
     my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $response->{clientCode},
+        id => $client_code_id,
     });
-
-    is($client_code->is_valid, 1, "Client Code is valid");
+    isa_ok($client_code,        "SpaceBotWar::ClientCode");
+    is($client_code->is_valid,  1,              "Client Code is valid");
     
-    # change the content in the context to use a valid client code
-    $content->{msgId}      = 124;
-    $content->{clientCode} = $client_code->id;
+    # Now test with a good client code.
+    my $good_client_code = SpaceBotWar::ClientCode->new;
+
+    $context->client_code($good_client_code);
+    $context->msg_id(124);
 
     $response = $ws_user->ws_clientCode($context);
     is($response->{code},           0,                  "Response: code");
     is($response->{message},        "GOOD Client Code", "Response: message");
-    is($response->{clientCode},    $client_code->id,   "Response: client_code unchanged");
-    isnt($context->client_code,     undef,              "there is a client code");
-    is($context->client_code->id,   $client_code->id,   "Same client_code");
+
+    $client_code_id = $response->{clientCode};
+    isnt($client_code_id,       undef,                  "Response: clientCode is defined");
+    isnt($client_code_id,       undef,                  "There is a client code");
+    is($client_code_id,         $good_client_code->id,  "Client code is unchanged");
 }
 
 sub test_register {
@@ -67,25 +70,32 @@ sub test_register {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
+    # An invalid client code should throw an error
+    my $invalid_client_code = SpaceBotWar::ClientCode->new({
+        id          => 'invalid',
+    });
     my $content = {
-        msgId       => 456,
-        clientCode  => '123',
         username    => 'joe3',
         email       => 'joe3@example.com',
-        password    => 'TopS3kret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content => $content,
+        client_code     => $invalid_client_code,
+        msg_id          => 456,
+        content         => $content,
     });
+
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw 1';
+
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    my $client_code = SpaceBotWar::ClientCode->new;
-    $content->{clientCode} = $client_code->id;
 
+    # Create a valid client code
+    my $client_code = SpaceBotWar::ClientCode->new;
+    $context->client_code($client_code);
+    
     # Missing or too short a username should throw an error
     my @user_tests = ('', qw(a ab ));
     foreach my $username (@user_tests) {
@@ -95,7 +105,7 @@ sub test_register {
         like($@->[1], qr/^Username must be at least 3 characters long/, "Message, username too short"); 
     }
     $content->{username} = 'bert';
-
+    
     # A missing email should throw an error
     delete $content->{email};
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'Throw, no email';
@@ -134,33 +144,33 @@ sub test_register {
     like($@->[1], qr/^Email is not available/, "Message, email already in use");
     $content->{email} = 'joe@example.com';
 
-    # Password should not be too short
-    $content->{password} = 'T1ny';
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, short password";
-    is($@->[0], 1001, "Code, password too short");
-    like($@->[1], qr/^Password must be at least 5 characters long/, "Message, password is too short");
+#    # Password should not be too short
+#    $content->{password} = 'T1ny';
+#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, short password";
+#    is($@->[0], 1001, "Code, password too short");
+#    like($@->[1], qr/^Password must be at least 5 characters long/, "Message, password is too short");
+#    #
+#    ## Password should contain upper case characters
+#    #$content->{password} = 'onlylow3r';
+#    #throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no upper case";
+#    is($@->[0], 1001, "Code, password has no upper case characters");
+#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no upper case characters");
+#
+# Password should contain lower case characters
+#    $content->{password} = '0NLYUPR';
+#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no lower case";
+#    is($@->[0], 1001, "Code, password has no lower case characters");
+#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no lower case characters");
 
-    # Password should contain upper case characters
-    $content->{password} = 'onlylow3r';
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no upper case";
-    is($@->[0], 1001, "Code, password has no upper case characters");
-    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no upper case characters");
+#    # Password should contain numeric characters
+#    $content->{password} = 'noNumBers';
+#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no numbers";
+#    is($@->[0], 1001, "Code, password has no numbers");
+#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no numeric characters");
 
-    # Password should contain lower case characters
-    $content->{password} = '0NLYUPR';
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no lower case";
-    is($@->[0], 1001, "Code, password has no lower case characters");
-    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no lower case characters");
+#    $content->{password} = 'TopS3cr3t';
 
-    # Password should contain numeric characters
-    $content->{password} = 'noNumBers';
-    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no numbers";
-    is($@->[0], 1001, "Code, password has no numbers");
-    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no numeric characters");
-
-    $content->{password} = 'TopS3cr3t';
-
-    # A good client code, username, email and password should now work...
+    # A good client code, username and email should now work
     my $response;
     if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");

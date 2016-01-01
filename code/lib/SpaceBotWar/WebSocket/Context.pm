@@ -26,6 +26,10 @@ has 'user' => (
 #    isa     => 'Maybe[SpaceBotWar::DB::Result::User]',
 );
 
+has 'msg_id' => (
+    is      => 'rw',
+    isa     => 'Int',
+);
 
 # Get a parameter from the input.
 #

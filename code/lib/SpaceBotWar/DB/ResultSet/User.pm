@@ -76,13 +76,11 @@ sub assert_create {
 
     $self->assert_username_available($args->{username});
     $self->assert_email_available($args->{email});
-    $self->assert_password_valid($args->{password});
 
     my $csh = Crypt::SaltedHash->new->add($args->{password})->generate;
 
     my $user = $self->create({
         username    => $args->{username},
-        password    => $csh,
         email       => $args->{email},
     });
 
