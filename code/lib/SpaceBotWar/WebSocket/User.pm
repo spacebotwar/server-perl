@@ -206,6 +206,9 @@ sub ws_enterNewPassword {
     # validate the user is logged in
     my $user = $self->assert_user_is_logged_in($context);
 
+    # validate the password
+    $db->resultset('User')->assert_password_valid($context->content->{password});
+
     # Only certain registration states are allowed
     my $stage = $user->registration_stage;
     if ($stage eq 'complete' or $stage eq 'enterNewPassword') {

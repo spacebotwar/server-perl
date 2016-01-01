@@ -68,7 +68,7 @@ sub test_register {
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
     my $content = {
-        username    => 'joe3',
+        username    => 'joseph',
         email       => 'joe3@example.com',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
@@ -97,7 +97,7 @@ sub test_register {
         is($@->[0], 1001, "Code, too short a username");
         like($@->[1], qr/^Username must be at least 3 characters long/, "Message, username too short"); 
     }
-    $content->{username} = 'bert';
+    $content->{username} = 'bertie';
     
     # A missing email should throw an error
     delete $content->{email};
@@ -124,44 +124,18 @@ sub test_register {
     $fixtures->load('user_albert');
 
     # Username should not already be in use
-    $content->{username} = 'bert';
+    $content->{username} = 'bertie';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
     is($@->[0], 1001, "Code, existing username");
     like($@->[1], qr/^Username not available/, "Message, username already in use");
 
     # Email address should not already be in use
-    $content->{username} = 'joe90';
+    $content->{username} = 'joseph';
     $content->{email} = 'bert@example.com';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing email";
     is($@->[0], 1001, "Code, existing email");
     like($@->[1], qr/^Email is not available/, "Message, email already in use");
     $content->{email} = 'joe@example.com';
-
-#    # Password should not be too short
-#    $content->{password} = 'T1ny';
-#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, short password";
-#    is($@->[0], 1001, "Code, password too short");
-#    like($@->[1], qr/^Password must be at least 5 characters long/, "Message, password is too short");
-#    #
-#    ## Password should contain upper case characters
-#    #$content->{password} = 'onlylow3r';
-#    #throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no upper case";
-#    is($@->[0], 1001, "Code, password has no upper case characters");
-#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no upper case characters");
-#
-# Password should contain lower case characters
-#    $content->{password} = '0NLYUPR';
-#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no lower case";
-#    is($@->[0], 1001, "Code, password has no lower case characters");
-#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no lower case characters");
-
-#    # Password should contain numeric characters
-#    $content->{password} = 'noNumBers';
-#    throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, password has no numbers";
-#    is($@->[0], 1001, "Code, password has no numbers");
-#    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no numeric characters");
-
-#    $content->{password} = 'TopS3cr3t';
 
     # A good client code, username and email should now work
     my $response;
@@ -169,7 +143,7 @@ sub test_register {
         is_deeply($response, {
                 code        => '0',
                 message     => 'OK: Registered',
-                username    => 'joe90',
+                username    => 'joseph',
                 loginStage  => 'enterEmailCode',
             },
             "Response: data is deeply correct"
@@ -198,7 +172,7 @@ sub test_forgot_password {
     my $content = {
         msgId              => 457,
         clientCode         => 'rubbish',
-        usernameOrEmail    => 'joe',
+        usernameOrEmail    => 'joseph',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
         content => $content,
@@ -233,7 +207,7 @@ sub test_forgot_password {
     is($job, undef, "No email job"); 
  
     # existing username should return success
-    $content->{usernameOrEmail} = "bert";
+    $content->{usernameOrEmail} = "bertie";
     if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
         is($response->{message},    "OK",                       "Response: message good");
@@ -276,7 +250,7 @@ sub test_login_with_password {
     my $content = {
         msgId               => 458,
         clientCode          => 'incorrect',
-        username            => 'bert',
+        username            => 'bertie',
         password            => 'secret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
@@ -306,7 +280,7 @@ sub test_login_with_password {
     throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, unknown username";
     is($@->[0], 1001, "Code, Unknown username");
     like($@->[1], qr/^Incorrect credentials 1/, "Message");
-    $content->{username} = 'bert';
+    $content->{username} = 'bertie';
 
     # No matching password should return an error
     $content->{password} = "hack_attack";
@@ -366,6 +340,32 @@ sub test_enter_new_password {
         id      => 1,
     });
     $context->user($user);
+
+    # Password should not be too short
+    $content->{password} = 'T1ny';
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, "Throw, short password";
+    is($@->[0], 1001, "Code, password too short");
+    like($@->[1], qr/^Password must be at least 5 characters long/, "Message, password is too short");
+    #
+    # Password should contain upper case characters
+    $content->{password} = 'onlylow3r';
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, "Throw, password has no upper case";
+    is($@->[0], 1001, "Code, password has no upper case characters");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no upper case characters");
+
+    # Password should contain lower case characters
+    $content->{password} = '0NLYUPR';
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, "Throw, password has no lower case";
+    is($@->[0], 1001, "Code, password has no lower case characters");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no lower case characters");
+
+    # Password should contain numeric characters
+    $content->{password} = 'noNumBers';
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, "Throw, password has no numbers";
+    is($@->[0], 1001, "Code, password has no numbers");
+    like($@->[1], qr/^Password must contain numbers, lowercase and uppercase/, "Message, password has no numeric characters");
+
+    $content->{password} = 'TopS3cr3t';
 
     my $response;
     if ( lives_ok { $response = $ws_user->ws_enterNewPassword($context) } 'good password change' ) {
@@ -465,7 +465,7 @@ sub test_login_with_email_code {
         is_deeply($response, {
             code        => '0',
             message     => 'OK',
-            username    => 'alf',
+            username    => 'alfred',
             loginStage  => 'enterNewPassword',
         });
     }
@@ -514,7 +514,7 @@ sub test_logout {
     $content = {
         msgId               => 458,
         clientCode          => SpaceBotWar::ClientCode->new->id,
-        username            => 'bert',
+        username            => 'bertie',
         password            => 'secret',
     };
     $context->content($content);
