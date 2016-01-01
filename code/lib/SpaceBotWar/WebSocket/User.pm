@@ -132,9 +132,7 @@ sub ws_forgotPassword {
 
     $log->debug("ws_forgotPassword: ");
     # validate the Client Code
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    })->assert_valid;
+    my $client_code = $self->assert_valid_client_code($context);
 
     my $username_or_email = $context->content->{usernameOrEmail} || "";
     trim $username_or_email;

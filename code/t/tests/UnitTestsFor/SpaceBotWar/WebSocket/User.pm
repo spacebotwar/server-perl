@@ -174,11 +174,11 @@ sub test_forgot_password {
     $fixtures->load('user_alfred');
 
     my $content = {
-        msgId              => 457,
-        clientCode         => 'rubbish',
         usernameOrEmail    => 'joseph',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
+        msg_id              => 457,
+        client_code         => 'rubbish',
         content => $content,
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
@@ -187,7 +187,7 @@ sub test_forgot_password {
     throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
+    $context->client_code(SpaceBotWar::ClientCode->new->id);
 
     # Blank username or email should return error
     $content->{usernameOrEmail} = "   ";
@@ -233,6 +233,12 @@ sub test_forgot_password {
     $job = $queue->peek_ready;
     isnt($job, undef, "Email Job should be raised");
     $queue->delete($job->job->id);
+
+    # TODO Need to send out different email depending upon the registration
+    # stage.
+   
+    
+
 
     # Job queue should now be empty
     $job = $queue->peek_ready;
@@ -514,7 +520,7 @@ sub test_logout {
     my $response;
     if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good logout 1' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "Success",                       "Response: message good");
+        is($response->{message},    "Success",                  "Response: message good");
     }
     else {
         diag(Dumper($@));
@@ -524,7 +530,7 @@ sub test_logout {
     $context->user($user);
     if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good logout 2' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "Success",                       "Response: message good");
+        is($response->{message},    "Success",                  "Response: message good");
     }
     else {
         diag(Dumper($@));
