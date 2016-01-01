@@ -97,7 +97,7 @@ sub test_register {
         is($@->[0], 1001, "Code, too short a username");
         like($@->[1], qr/^Username must be at least 3 characters long/, "Message, username too short"); 
     }
-    $content->{username} = 'bertie';
+    $content->{username} = 'alfred';
     
     # A missing email should throw an error
     delete $content->{email};
@@ -121,10 +121,10 @@ sub test_register {
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
+    $fixtures->load('user_alfred');
 
     # Username should not already be in use
-    $content->{username} = 'bertie';
+    $content->{username} = 'alfred';
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, "Throw, existing username";
     is($@->[0], 1001, "Code, existing username");
     like($@->[1], qr/^Username not available/, "Message, username already in use");
@@ -142,7 +142,7 @@ sub test_register {
     if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
         is_deeply($response, {
                 code        => '0',
-                message     => 'OK: Registered',
+                message     => 'Success',
                 username    => 'joseph',
                 loginStage  => 'enterEmailCode',
             },
@@ -169,6 +169,10 @@ sub test_forgot_password {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
+    $fixtures->load('user_alfred');
+
     my $content = {
         msgId              => 457,
         clientCode         => 'rubbish',
@@ -185,10 +189,6 @@ sub test_forgot_password {
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
-    my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
-
     # Blank username or email should return error
     $content->{usernameOrEmail} = "   ";
     throws_ok { $ws_user->ws_forgotPassword($context) } qr/^ARRAY/, "Throw, username/email is blank";
@@ -199,7 +199,7 @@ sub test_forgot_password {
     $content->{usernameOrEmail} = "username_unknown";
     my $response = $ws_user->ws_forgotPassword($context);
     is($response->{code}, 0, "Response: code good");
-    is($response->{message}, "OK", "Response: message OK");
+    is($response->{message}, "Success", "Response: message Success");
 
     # but no email job should be raised
     my $queue = SpaceBotWar::Queue->instance;
@@ -207,10 +207,10 @@ sub test_forgot_password {
     is($job, undef, "No email job"); 
  
     # existing username should return success
-    $content->{usernameOrEmail} = "bertie";
+    $content->{usernameOrEmail} = "alfred";
     if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is($response->{message},    "Success",                  "Response: message good");
     }
     else {
         diag(Dumper($@));
@@ -224,7 +224,7 @@ sub test_forgot_password {
     $content->{usernameOrEmail} = 'bert@example.com';
     if ( lives_ok { $response = $ws_user->ws_forgotPassword($context) } 'good client code' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is($response->{message},    "Success",                  "Response: message good");
     }
     else {
         diag(Dumper($@));
@@ -247,40 +247,47 @@ sub test_login_with_password {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
+    # user (1) 'alfred' is in register_stage 'complete'
+    # user (2) 'bernard', is in register_stage 'enterEmailCode'
+    # user (3) 'charles' is is register_stage 'enterNewPassword'
+    
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
+    $fixtures->load('user_alfred');
+    $fixtures->load('user_bernard');
+    $fixtures->load('user_charles');
+
     my $content = {
-        msgId               => 458,
-        clientCode          => 'incorrect',
-        username            => 'bertie',
-        password            => 'secret',
+        username    => 'alfred',
+        password    => 'secret',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content     => $content,
+        client_code     => 'invalid',
+        msg_id          => 456,
+        content         => $content,
     });
+
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
-    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, 'test throw 1';
+    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, 'test throw, invalid client code';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
+    $context->client_code(SpaceBotWar::ClientCode->new->id);
 
-    my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
+    # User who has completed registration should be allowed to change password.
+    my $user = $db->resultset('User')->find({
+        id      => 1,
+    });
+    $context->user($user);
 
-    # No client_code should return an error
-    $content->{clientCode} = "";
-    throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, client code is blank";
-    is($@->[0], 1001, "Code, no client code");
-    like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
 
     # No matching username should return an error
     $content->{username} = "someone_else";
     throws_ok { $ws_user->ws_loginWithPassword($context) } qr/^ARRAY/, "Throw, unknown username";
     is($@->[0], 1001, "Code, Unknown username");
     like($@->[1], qr/^Incorrect credentials 1/, "Message");
-    $content->{username} = 'bertie';
+    $content->{username} = 'alfred';
 
     # No matching password should return an error
     $content->{password} = "hack_attack";
@@ -293,7 +300,7 @@ sub test_login_with_password {
     my $response;
     if ( lives_ok { $response = $ws_user->ws_loginWithPassword($context) } 'good login' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is($response->{message},    "Success",                  "Response: message good");
     }
     else {
         diag(Dumper($@));
@@ -307,13 +314,15 @@ sub test_enter_new_password {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
-    # user (1) 'albert' is in register_stage 'complete'
-    # user (2) 'alfred', is in register_stage 'enterEmailCode'
-    # user (3) 'bernard' is is register_stage 'enterNewPassword'
+    # user (1) 'alfred' is in register_stage 'complete'
+    # user (2) 'bernard', is in register_stage 'enterEmailCode'
+    # user (3) 'charles' is is register_stage 'enterNewPassword'
     
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
+    $fixtures->load('user_alfred');
+    $fixtures->load('user_bernard');
+    $fixtures->load('user_charles');
 
     my $content = {
         password    => 'Top5ecr3t',
@@ -378,7 +387,6 @@ sub test_enter_new_password {
     }
 
     # If user is in 'enterNewPassword' stage then it should not throw an error
-    $fixtures->load('user_bernard');
     $user = $db->resultset('User')->find({
         id      => 3,
     });
@@ -394,7 +402,6 @@ sub test_enter_new_password {
     }
 
     # If user is in any other state, it should throw an error
-    $fixtures->load('user_alfred');
     $user = $db->resultset('User')->find({
         id      => 2,
     });
@@ -412,11 +419,11 @@ sub test_login_with_email_code {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
-    # user (1) 'user_albert' is in register_stage 'complete'
-    # user (2) 'user_alfred', is in register_stage 'enterEmailCode'
+    # user (1) 'user_alfred' is in register_stage 'complete'
+    # user (2) 'user_bernard', is in register_stage 'enterEmailCode'
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
+    $fixtures->load('user_alfred');
 
     my $email_code = SpaceBotWar::EmailCode->new({ user_id => 1 });
 
@@ -456,7 +463,7 @@ sub test_login_with_email_code {
     like($@->[1], qr/^Email Registration no longer valid./, "Message");
 
     # Login should succeed if all conditions are met
-    $fixtures->load('user_alfred');
+    $fixtures->load('user_bernard');
     $email_code = SpaceBotWar::EmailCode->new({ user_id => 2 });
     $content->{emailCode} = $email_code->id;
 
@@ -464,8 +471,8 @@ sub test_login_with_email_code {
     if ( lives_ok { $response = $ws_user->ws_loginWithEmailCode($context) } 'good login' ) {
         is_deeply($response, {
             code        => '0',
-            message     => 'OK',
-            username    => 'alfred',
+            message     => 'Success',
+            username    => 'bernard',
             loginStage  => 'enterNewPassword',
         });
     }
@@ -481,54 +488,43 @@ sub test_logout {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
-    my $content = {
-        msgId               => 467,
-        clientCode          => 'incorrect',
-    };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content     => $content,
+        client_code     => 'invalid',
+        msg_id          => 467,
+        content         => undef,
     });
+
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
     throws_ok { $ws_user->ws_logout($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
+    $context->{client_code} = SpaceBotWar::ClientCode->new->id;
 
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
+    $fixtures->load('user_alfred');
+    my $user = $db->resultset('User')->find({
+        id => 1,
+    });
 
     # If you are not logged in, it should return success
+    $context->user(undef);
     my $response;
-    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good login' ) {
+    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good logout 1' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is($response->{message},    "Success",                       "Response: message good");
     }
     else {
         diag(Dumper($@));
     }
 
-    # If you *are* logged in, it should return success
-    $content = {
-        msgId               => 458,
-        clientCode          => SpaceBotWar::ClientCode->new->id,
-        username            => 'bertie',
-        password            => 'secret',
-    };
-    $context->content($content);
-
-    unless (lives_ok { $response = $ws_user->ws_loginWithPassword($context) } 'good login' ) {
-        fail('User failed to log on');
-        diag(Dumper($@));
-    }
-
-    is($context->user->id, 1, "First check user is logged on");
-
-    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good login' ) {
+    # If you are logged in, it should return success.
+    $context->user($user);
+    if ( lives_ok { $response = $ws_user->ws_logout($context) } 'good logout 2' ) {
         is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is($response->{message},    "Success",                       "Response: message good");
     }
     else {
         diag(Dumper($@));

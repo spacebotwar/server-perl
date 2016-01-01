@@ -116,7 +116,7 @@ sub ws_register {
     $log->debug("ws_register: return");
     return {
         code        => 0,
-        message     => 'OK: Registered',
+        message     => 'Success',
         loginStage  => 'enterEmailCode',
         username    => $user->username,
     };
@@ -160,7 +160,7 @@ sub ws_forgotPassword {
 
     return {
         code           => 0,
-        message        => "OK",
+        message        => "Success",
     };
 }
 
@@ -174,9 +174,7 @@ sub ws_loginWithPassword {
 
     $log->debug("ws_loginWithPassword: ");
     # validate the Client Code
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    })->assert_valid;
+    my $client_code = $self->assert_valid_client_code($context);
 
     my $user = $db->resultset('User')->assert_login_with_password({
         username    => $context->content->{username},
@@ -187,7 +185,7 @@ sub ws_loginWithPassword {
 
     return {
         code    => 0,
-        message => "OK",
+        message => "Success",
     }
 }
 
@@ -260,7 +258,7 @@ sub ws_loginWithEmailCode {
 
     return {
         code        => 0,
-        message     => 'OK',
+        message     => 'Success',
         loginStage  => 'enterNewPassword',
         username    => $user->username,
     };
@@ -276,15 +274,13 @@ sub ws_logout {
 
     $log->debug("ws_logout: ");
     # validate the Client Code
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    })->assert_valid;
+    my $client_code = $self->assert_valid_client_code($context);
 
     $context->user(undef);
 
     return {
         code    => 0,
-        message => "OK",
+        message => "Success",
     }
 }
 1;

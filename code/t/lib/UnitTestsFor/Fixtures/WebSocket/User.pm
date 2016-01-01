@@ -5,32 +5,32 @@ extends 'DBIx::Class::EasyFixture';
 use namespace::autoclean;
 
 my %definitions = (
-    user_albert => {
+    user_alfred => {
         new => 'User',
         using => {
             id                  => 1,
-            username	        => 'bertie',
+            username	        => 'alfred',
             password            => '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14', # this is encrypted 'secret'
             email               => 'bert@example.com',
             registration_stage  => 'complete',
         },
     },
-    user_alfred => {
+    user_bernard => {
         new => 'User',
         using => {
             id                  => 2,
-            username	        => 'alfred',
+            username	        => 'bernard',
             password            => '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14', # this is encrypted 'secret'
             email               => 'alf@example.com',
             registration_stage  => 'enterEmailCode',
         },
     },
 
-    user_bernard => {
+    user_charles => {
         new => 'User',
         using => {
             id                  => 3,
-            username	        => 'bernie',
+            username	        => 'charles',
             password            => '{SSHA}KnIrp466EYjf16NptDR9bnhjCI5z6D14', # this is encrypted 'secret'
             email               => 'bernie@example.com',
             registration_stage  => 'enterNewPassword',
