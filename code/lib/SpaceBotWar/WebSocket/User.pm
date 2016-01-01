@@ -60,6 +60,17 @@ sub ws_clientCode {
     };
 }
 
+#--- Assert that the user is logged in
+#
+sub assert_user_is_logged_in {
+    my ($self, $context) = @_;
+
+    if (not defined $context->user) {
+        confess [1002, "User is not logged in" ]
+    }
+    return $context->user;
+}
+
 #--- Assert that the client_code is valid
 #
 sub assert_valid_client_code {
@@ -180,6 +191,37 @@ sub ws_loginWithPassword {
     }
 }
 
+#-- Enter New Password
+#
+sub ws_enterNewPassword {
+    my ($self, $context) = @_;
+
+    my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
+    my $db = SpaceBotWar::SDB->instance->db;
+
+    $log->debug("ws_loginWithPassword: ");
+    # validate the Client Code
+    my $client_code = $self->assert_valid_client_code($context);
+
+    # validate the user is logged in
+    my $user = $self->assert_user_is_logged_in($context);
+
+    # Only certain registration states are allowed
+    my $stage = $user->registration_stage;
+    if ($stage eq 'complete' or $stage eq 'enterNewPassword') {
+        return {
+            code        => 0,
+            message     => 'Success',
+            loginStage  => 'complete',
+        }
+    }
+    # otherwise the stage does not allow a password to be set
+    confess [1002, 'Cannot change password yet'];
+
+}
+
+
+
 #-- Login with email code
 #
 sub ws_loginWithEmailCode {
@@ -203,6 +245,14 @@ sub ws_loginWithEmailCode {
     my $user = $db->resultset('User')->find({
         id      => $email_code->user_id,
     });
+    if (not defined $user) {
+        confess [1002, "User cannot be found." ]
+    }
+
+    # User must be in correct registration stage
+    if ($user->registration_stage ne 'enterEmailCode') {
+        confess [1002, "Email Registration no longer valid."];
+    }
     $context->user($user);
 
     return {

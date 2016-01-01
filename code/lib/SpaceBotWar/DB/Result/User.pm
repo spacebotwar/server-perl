@@ -11,9 +11,10 @@ extends 'SpaceBotWar::DB::Result';
 __PACKAGE__->table('user');
 __PACKAGE__->add_columns(
     username                => { data_type => 'varchar',    size => 30,     is_nullable => 0    },
-    password                => { data_type => 'char',       size => 43                          },
+    password                => { data_type => 'char',       size => 45                          },
     email                   => { data_type => 'varchar',    size => 255,    is_nullable => 1    },
     password_recovery_key   => { data_type => 'varchar',    size => 36,     is_nullable => 1    },
+    registration_stage      => { data_type => 'varchar',    size => 16,     is_nullable => 1    },
 );
 
 sub sqlt_deploy_hook {

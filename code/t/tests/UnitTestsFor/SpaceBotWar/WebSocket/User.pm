@@ -328,10 +328,95 @@ sub test_login_with_password {
     $fixtures->unload;
 }
 
+sub test_enter_new_password {
+    my ($self) = @_;
+
+    my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    # user (1) 'albert' is in register_stage 'complete'
+    # user (2) 'alfred', is in register_stage 'enterEmailCode'
+    # user (3) 'bernard' is is register_stage 'enterNewPassword'
+    
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
+    $fixtures->load('user_albert');
+
+    my $content = {
+        password    => 'Top5ecr3t',
+    };
+    my $context = SpaceBotWar::WebSocket::Context->new({
+        client_code     => 'invalid',
+        msg_id          => 456,
+        content         => $content,
+    });
+
+    my $ws_user = SpaceBotWar::WebSocket::User->new;
+
+    # An invalid client code should throw an error
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, 'test throw, invalid client code';
+    is($@->[0], 1001, "Code");
+    like($@->[1], qr/^Client Code is invalid/, "Message");
+    $context->client_code(SpaceBotWar::ClientCode->new->id);
+
+    # If user is not logged in, it should throw an error
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, 'test throw, user not logged in';
+
+    # User who has completed registration should be allowed to change password.
+    my $user = $db->resultset('User')->find({
+        id      => 1,
+    });
+    $context->user($user);
+
+    my $response;
+    if ( lives_ok { $response = $ws_user->ws_enterNewPassword($context) } 'good password change' ) {
+        diag(Dumper($response));
+        is_deeply($response, {
+            code        => 0,
+            message     => 'Success',
+            loginStage  => 'complete',
+        });
+    }
+
+    # If user is in 'enterNewPassword' stage then it should not throw an error
+    $fixtures->load('user_bernard');
+    $user = $db->resultset('User')->find({
+        id      => 3,
+    });
+    $context->user($user);
+
+    if ( lives_ok { $response = $ws_user->ws_enterNewPassword($context) } 'good password change' ) {
+        diag(Dumper($response));
+        is_deeply($response, {
+            code        => 0,
+            message     => 'Success',
+            loginStage  => 'complete',
+        });
+    }
+
+    # If user is in any other state, it should throw an error
+    $fixtures->load('user_alfred');
+    $user = $db->resultset('User')->find({
+        id      => 2,
+    });
+    $context->user($user);
+
+    throws_ok { $ws_user->ws_enterNewPassword($context) } qr/^ARRAY/, 'throws error for wrong registration state';
+    is($@->[0], 1002, "Code");
+    like($@->[1], qr/^Cannot change password yet/, "Message");
+
+}
+
+
 sub test_login_with_email_code {
     my ($self) = @_;
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
+
+    # user (1) 'user_albert' is in register_stage 'complete'
+    # user (2) 'user_alfred', is in register_stage 'enterEmailCode'
+    my $db = SpaceBotWar::SDB->db;
+    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
+    $fixtures->load('user_albert');
 
     my $email_code = SpaceBotWar::EmailCode->new({ user_id => 1 });
 
@@ -351,10 +436,6 @@ sub test_login_with_email_code {
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
     $context->client_code(SpaceBotWar::ClientCode->new->id);
-    
-    my $db = SpaceBotWar::SDB->db;
-    my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
-    $fixtures->load('user_albert');
 
     # No email_code should return an error
     $content->{emailCode} = "";
@@ -368,22 +449,30 @@ sub test_login_with_email_code {
     is($@->[0], 1001, "Code Invalid Email Code");
     like($@->[1], qr/^Invalid Email Code/, "Message");
 
-    # Correct email code should return success
+    # Email code should only apply to user in login_stage 'enterEmailCode'
     $content->{emailCode} = $email_code->id;
+    throws_ok { $ws_user->ws_loginWithEmailCode($context) } qr/^ARRAY/, 'Throw, not registration stage enterEmailCode';
+    is($@->[0], 1002, "Email Registration no longer valid.");
+    like($@->[1], qr/^Email Registration no longer valid./, "Message");
+
+    # Login should succeed if all conditions are met
+    $fixtures->load('user_alfred');
+    $email_code = SpaceBotWar::EmailCode->new({ user_id => 2 });
+    $content->{emailCode} = $email_code->id;
+
     my $response;
     if ( lives_ok { $response = $ws_user->ws_loginWithEmailCode($context) } 'good login' ) {
         is_deeply($response, {
             code        => '0',
             message     => 'OK',
-            username    => 'bert',
+            username    => 'alf',
             loginStage  => 'enterNewPassword',
         });
-        diag(Dumper($response));
     }
     else {
         diag(Dumper($@));
     }
-    is($context->user->id, 1, "Correct user id");
+    is($context->user->id, 2, "Correct user id");
     $fixtures->unload;
 }
 

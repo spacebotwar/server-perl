@@ -7,7 +7,8 @@ create table user (
     username    varchar(30) not null,
     password    varchar(45) not null,
     email       varchar(255) default null,
-    password_recovery_key   varchar(45) default null,
+    password_recovery_key   varchar(36) default null,
+    registration_stage      varchar(16) default null,
     primary key (id),
     key idx_password_recovery_key (password_recovery_key)
 ) engine=InnoDB default charset=utf8;
