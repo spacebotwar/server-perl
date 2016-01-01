@@ -36,10 +36,13 @@ sub ws_clientCode {
 
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     
-    my $client_code = $context->client_code;
-    $log->debug("clientCode: client_code [$client_code]");
+    my $client_code_id = $context->client_code;
+    $log->debug("clientCode: client_code [$client_code_id]");
     my $message = "";
     # if the client code is valid, use it
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id  => $client_code_id,
+    });
     if ($client_code->is_valid) {
         $message = "GOOD Client Code";
     }
@@ -48,7 +51,7 @@ sub ws_clientCode {
         $client_code->get_new_id;
     }
 
-    $context->client_code($client_code);
+    $context->client_code($client_code->id);
 
     return {
         code         => 0,
@@ -65,7 +68,11 @@ sub assert_valid_client_code {
     if (not defined $context->client_code) {
         confess [1002, "clientCode is required." ]
     }
-    $context->client_code->assert_valid;
+    my $client_code = SpaceBotWar::ClientCode->new({
+        id      => $context->client_code,
+    });
+
+    $client_code->assert_valid;
     return $context->client_code;
 }
 
@@ -79,7 +86,7 @@ sub ws_register {
     my $db = SpaceBotWar::SDB->instance->db;
 
     # validate the Client Code
-    my $client_code = $self->assert_valid_client_code($context);
+    $self->assert_valid_client_code($context);
     my $content = $context->content;
 
     # Register the account
@@ -95,9 +102,12 @@ sub ws_register {
         email       => $user->email,
     });
 
+    $log->debug("ws_register: return");
     return {
-        code           => 0,
-        message        => "OK: Registered",
+        code        => 0,
+        message     => 'OK: Registered',
+        loginStage  => 'enterEmailCode',
+        username    => $user->username,
     };
 }
 
@@ -175,31 +185,32 @@ sub ws_loginWithPassword {
 sub ws_loginWithEmailCode {
     my ($self, $context) = @_;
 
-
     my $log = Log::Log4perl->get_logger('SpaceBotWar::WebSocket::User');
     my $db = SpaceBotWar::SDB->instance->db;
 
     $log->debug("ws_loginWithEmailCode: ");
     # validate the Client Code
-    my $client_code = SpaceBotWar::ClientCode->new({
-        id      => $context->content->{clientCode},
-    })->assert_valid;
+    my $client_code = $self->assert_valid_client_code($context);
+    my $content = $context->content;
 
     # validate the Email Code
     my $email_code = SpaceBotWar::EmailCode->new({
-        id      => $context->content->{emailCode},
+        id      => $content->{emailCode},
         user_id => 0,
     })->assert_valid;
 
     $log->debug("Looking for User ID [".$email_code->user_id."]");
-    $context->{user} = $db->resultset('User')->find({
+    my $user = $db->resultset('User')->find({
         id      => $email_code->user_id,
     });
+    $context->user($user);
 
     return {
-        code    => 0,
-        message => "OK",
-    }
+        code        => 0,
+        message     => 'OK',
+        loginStage  => 'enterNewPassword',
+        username    => $user->username,
+    };
 }
 
 #--- Logout

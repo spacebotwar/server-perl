@@ -25,11 +25,8 @@ sub test_construction {
 sub test_client_code {
     my ($self) = @_;
 
-    my $invalid_client_code = SpaceBotWar::ClientCode->new({
-        id          => 'invalid',
-    });
     my $context = SpaceBotWar::WebSocket::Context->new({
-        client_code     => $invalid_client_code,
+        client_code     => 'invalid',
         msg_id          => 123,
     });
     my $ws_user = SpaceBotWar::WebSocket::User->new;
@@ -52,7 +49,7 @@ sub test_client_code {
     # Now test with a good client code.
     my $good_client_code = SpaceBotWar::ClientCode->new;
 
-    $context->client_code($good_client_code);
+    $context->client_code($good_client_code->id);
     $context->msg_id(124);
 
     $response = $ws_user->ws_clientCode($context);
@@ -70,16 +67,12 @@ sub test_register {
 
     my $log = Log::Log4perl->get_logger(__PACKAGE__);
 
-    # An invalid client code should throw an error
-    my $invalid_client_code = SpaceBotWar::ClientCode->new({
-        id          => 'invalid',
-    });
     my $content = {
         username    => 'joe3',
         email       => 'joe3@example.com',
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        client_code     => $invalid_client_code,
+        client_code     => 'invalid',
         msg_id          => 456,
         content         => $content,
     });
@@ -88,13 +81,13 @@ sub test_register {
 
     # An invalid client code should throw an error
     throws_ok { $ws_user->ws_register($context) } qr/^ARRAY/, 'test throw 1';
-
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
 
+
     # Create a valid client code
     my $client_code = SpaceBotWar::ClientCode->new;
-    $context->client_code($client_code);
+    $context->client_code($client_code->id);
     
     # Missing or too short a username should throw an error
     my @user_tests = ('', qw(a ab ));
@@ -173,8 +166,14 @@ sub test_register {
     # A good client code, username and email should now work
     my $response;
     if (lives_ok { $response = $ws_user->ws_register($context) } 'good client code' ) {
-        is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK: Registered",           "Response: message registered");
+        is_deeply($response, {
+                code        => '0',
+                message     => 'OK: Registered',
+                username    => 'joe90',
+                loginStage  => 'enterEmailCode',
+            },
+            "Response: data is deeply correct"
+        );
     }
     else {
         diag(Dumper($@));
@@ -337,21 +336,22 @@ sub test_login_with_email_code {
     my $email_code = SpaceBotWar::EmailCode->new({ user_id => 1 });
 
     my $content = {
-        msgId              => 467,
-        clientCode         => 'incorrect',
         emailCode          => $email_code->id,
     };
     my $context = SpaceBotWar::WebSocket::Context->new({
-        content     => $content,
+        client_code     => 'invalid',
+        msg_id          => 456,
+        content         => $content,
     });
+
     my $ws_user = SpaceBotWar::WebSocket::User->new;
 
     # An invalid client code should throw an error
     throws_ok { $ws_user->ws_loginWithEmailCode($context) } qr/^ARRAY/, 'test throw 1';
     is($@->[0], 1001, "Code");
     like($@->[1], qr/^Client Code is invalid/, "Message");
-    $content->{clientCode} = SpaceBotWar::ClientCode->new->id;
-
+    $context->client_code(SpaceBotWar::ClientCode->new->id);
+    
     my $db = SpaceBotWar::SDB->db;
     my $fixtures = UnitTestsFor::Fixtures::WebSocket::User->new( { schema => $db } );
     $fixtures->load('user_albert');
@@ -372,8 +372,13 @@ sub test_login_with_email_code {
     $content->{emailCode} = $email_code->id;
     my $response;
     if ( lives_ok { $response = $ws_user->ws_loginWithEmailCode($context) } 'good login' ) {
-        is($response->{code},       0,                          "Response: code good");
-        is($response->{message},    "OK",                       "Response: message good");
+        is_deeply($response, {
+            code        => '0',
+            message     => 'OK',
+            username    => 'bert',
+            loginStage  => 'enterNewPassword',
+        });
+        diag(Dumper($response));
     }
     else {
         diag(Dumper($@));

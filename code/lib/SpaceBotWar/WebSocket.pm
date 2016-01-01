@@ -234,7 +234,6 @@ sub on_establish {
     $self->render_json($context, $reply);
 
     my $state = {
-        clientCode => undef,
     };
     $log->debug("Establish");
     
@@ -298,7 +297,6 @@ sub _on_message {
             room            => $self->room,
             connection      => $connection,
             content         => $content,
-            clientCode      => $state->{clientCode},
         });
         $log->debug("Call [$obj][$method]");
 
