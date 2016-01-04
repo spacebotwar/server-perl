@@ -1,12 +1,10 @@
 *.db
 *.pid
-*.conf
 *.swp
 start_plack.sh
 start_redis.sh
 _config.yml
 log
-log4perl.conf
 docs/_site
 bin/dump.rdb
 cover_db
