@@ -24,7 +24,6 @@ RUN cpanm POE::Filter::JSON
 RUN cpanm App::EvalServer
 RUN cpanm DBIx::Class::TimeStamp
 RUN cpanm DBIx::Class::InflateColumn::Serializer
-RUN cpanm Mojo::Base
 RUN cpanm Text::Trim
 RUN cpanm Data::Validate::Email
 RUN cpanm Test::Class::Moose
