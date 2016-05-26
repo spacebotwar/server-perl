@@ -8,3 +8,6 @@ log
 docs/_site
 bin/dump.rdb
 cover_db
+code/etc/log4perl.conf
+code/etc/spacebotwar.conf
+

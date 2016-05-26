@@ -25,7 +25,7 @@ use Plack::Middleware::Headers;
 
 # Connect to the Redis Docker image
 #
-my $redis = Redis->new(server => $ENV{SBW_REDIS_PORT_6379_TCP_ADDR}.":".$ENV{SBW_REDIS_PORT_6379_TCP_PORT});
+my $redis = Redis->new(server => "192.168.99.100:6379");
 SpaceBotWar::Redis->initialize({
     redis => $redis,
 });
@@ -35,13 +35,13 @@ SpaceBotWar::Config->initialize;
 # Connect to the beanstalk Docker image
 #
 SpaceBotWar::Queue->initialize({
-    server      => $ENV{SBW_BEANSTALK_PORT_11300_TCP_ADDR}.":".$ENV{SBW_BEANSTALK_PORT_11300_TCP_PORT},
+    server      => "192.168.99.100:11300",
     
 });
 
 # Connect to the mysql Docker image
 #
-my $dsn = "dbi:mysql:sbw:".$ENV{SBW_MYSQL_PORT_3306_TCP_ADDR}.":".$ENV{SBW_MYSQL_PORT_3306_TCP_PORT};
+my $dsn = "dbi:mysql:sbw:192.168.99.100:3306";
 
 my $db = SpaceBotWar::DB->connect(
     $dsn,

@@ -20,7 +20,7 @@ RUN cpanm YAML
 RUN cpanm Config::JSON
 RUN cpanm DBIx::Class::Schema
 RUN cpanm Crypt::SaltedHash
-RUN cpanm POE::Filter::JSON
+RUN cpanm --force POE::Filter::JSON
 RUN cpanm App::EvalServer
 RUN cpanm DBIx::Class::TimeStamp
 RUN cpanm DBIx::Class::InflateColumn::Serializer
@@ -34,3 +34,4 @@ RUN cpanm DBIx::Class::EasyFixture
 RUN cpanm Redis
 RUN cpanm Plack::Middleware::Headers
 RUN cpanm DBD::mysql
+
